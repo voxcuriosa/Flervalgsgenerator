@@ -224,7 +224,7 @@ def main():
     # Using a key ensures the selection persists even if other things update
     selected_topic = st.sidebar.selectbox("Velg tema", topic_names, key="topic_selector")
     
-    num_questions = st.sidebar.slider("Antall spørsmål", 1, 20, 5)
+    num_questions = st.sidebar.slider("Antall spørsmål", 1, 100, 5)
     num_options = st.sidebar.slider("Antall svaralternativer", 2, 6, 4)
     multiple_correct = st.sidebar.checkbox("Flere rette svar (maks 2)", value=False)
     
