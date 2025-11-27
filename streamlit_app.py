@@ -4,6 +4,7 @@ import os
 from pdf_processor import get_topics, extract_text_by_topic
 from quiz_generator import generate_quiz
 from storage import save_result
+from pdf_generator import generate_quiz_pdf
 import streamlit_oauth as oauth
 import asyncio
 
@@ -376,6 +377,24 @@ def main():
         
         st.metric("Din poengsum", f"{score} / {total_possible}", f"{percentage:.1f}%")
         st.success(f"Resultat: {category}")
+        
+        # PDF Download
+        pdf_bytes = generate_quiz_pdf(
+            selected_topic, 
+            st.session_state.user_name, 
+            score, 
+            total_possible, 
+            percentage, 
+            questions, 
+            answers
+        )
+        
+        st.download_button(
+            label="Last ned resultat (PDF)",
+            data=pdf_bytes,
+            file_name=f"quiz_resultat_{selected_topic.replace(' ', '_')}.pdf",
+            mime="application/pdf"
+        )
         
         if st.button("Ta ny quiz"):
             del st.session_state.quiz_data

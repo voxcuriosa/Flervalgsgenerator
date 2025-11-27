@@ -28,41 +28,208 @@ def generate_html():
             # Or maybe we want it to be its own level 2? 
             # The user said: "Eldre historie er da under emnet 'Historiske perioder'. ... Nå kan du skrape det andre underemnet under Historiske perioder: Å dele i perioder"
             # So structure is:
-            # Historie vg2 -> Historiske perioder -> Eldre historie -> [Topics]
-            # Historie vg2 -> Historiske perioder -> Å dele i perioder -> [Articles]
-            
-            # Since "Å dele i perioder" is the topic name in DB, we can treat it as Level 2
-            # But the articles inside it don't have a further subtopic in the DB currently (topic column is "Å dele i perioder")
-            # So we can put them directly under Level 2
-            
-            # Let's adjust the loop to handle this
-            pass
+        path_str = row['path']
+        
+        if not path_str:
+            # Fallback for old data if any (though scraper should update all)
+            # Try to construct path from topic if possible, or just put under "Diverse"
+            path_parts = ["Diverse", row['topic']]
         else:
-            level2 = "Eldre historie"
-
-        if subject not in hierarchy:
-            hierarchy[subject] = {}
-        if level1 not in hierarchy[subject]:
-            hierarchy[subject][level1] = {}
+            path_parts = path_str.split(" > ")
             
-        if specific_topic == "Å dele i perioder":
-            # Special case: The topic itself is the container
-            if specific_topic not in hierarchy[subject][level1]:
-                hierarchy[subject][level1][specific_topic] = {}
+        # Navigate/Build tree
+        current_level = hierarchy.setdefault(subject, {})
+        
+        # We want to store articles at the leaf.
+        # But a node can have both sub-topics AND articles (though usually resources are at leaves).
+        # Let's assume resources are attached to the last part of the path.
+        
+        for part in path_parts:
+            if part not in current_level:
+                current_level[part] = {}
+            current_level = current_level[part]
             
-            # Use the topic name itself as the key, instead of "Artikler"
-            # This allows us to detect redundancy later
-            if specific_topic not in hierarchy[subject][level1][specific_topic]:
-                hierarchy[subject][level1][specific_topic][specific_topic] = []
-            hierarchy[subject][level1][specific_topic][specific_topic].append(row)
-        else:
-            # Standard Eldre Historie flow
-            if level2 not in hierarchy[subject][level1]:
-                hierarchy[subject][level1][level2] = {}
-            if specific_topic not in hierarchy[subject][level1][level2]:
-                hierarchy[subject][level1][level2][specific_topic] = []
-            hierarchy[subject][level1][level2][specific_topic].append(row)
+        # Now current_level is the dict for the leaf topic.
+        # We need a way to distinguish "subtopics" from "articles".
+        # Let's use a special key "_articles" to store the list of rows.
+        if "_articles" not in current_level:
+            current_level["_articles"] = []
+        current_level["_articles"].append(row)
 
+    # Recursive HTML Generation
+    def generate_html_recursive(node, level, parent_slug=""):
+        html = ""
+        
+        # 1. Render Articles in this node
+        if "_articles" in node:
+            articles = node["_articles"]
+            # Check if we should hide the header (single article with same name as parent)
+            # But here we don't have the parent name easily available unless passed.
+            # Actually, the header is rendered by the caller (parent).
+            # So we just render cards here.
+            
+            for row in articles:
+                title = row['title']
+                content = row['content'].replace("\n", "<br>")
+                url = row['url']
+                
+                html += f"""
+                <details class="article-card">
+                    <summary class="article-summary">{title}</summary>
+                    <div class="article-content">
+                        {content}
+                        <br>
+                        <a href="{url}" target="_blank" class="original-link">Les original på NDLA &rarr;</a>
+                    </div>
+                </details>
+                """
+        
+        # 2. Render Sub-topics
+        for key, value in node.items():
+            if key == "_articles": continue
+            
+            slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
+            
+            # Header size based on level
+            # Level 1 (Subject) is handled outside.
+            # Level 1 here is "Historiske perioder" etc. -> h2 (or div with class)
+            # Level 2 -> h3
+            
+            # We use the CSS classes we defined: level1-header, level2-header, topic-header
+            if level == 1:
+                header_class = "level1-header"
+                container_class = ""
+            elif level == 2:
+                header_class = "level2-header"
+                container_class = ""
+            else:
+                header_class = "topic-header"
+                container_class = "topic-section"
+            
+            # Special check for "Å dele i perioder" style redundancy
+            # If this node has only 1 child which is an article, and names match...
+            # But wait, 'value' is the child node.
+            # If 'value' has '_articles' and len is 1 and title matches 'key'...
+            
+            show_header = True
+            if "_articles" in value and len(value["_articles"]) == 1:
+                if value["_articles"][0]['title'] == key:
+                    show_header = False
+            
+            # If it's a topic section (level 3+), wrap in box
+            if level >= 3:
+                html += f'<div id="{slug}" class="{container_class}">'
+                if show_header:
+                    html += f'<h2 class="{header_class}">{key}</h2>'
+                html += generate_html_recursive(value, level + 1, slug)
+                html += '</div>'
+            else:
+                # Higher levels are just structural dividers
+                html += f'<div id="{slug}">'
+                html += f'<div class="{header_class}">{key}</div>'
+                html += generate_html_recursive(value, level + 1, slug)
+                html += '</div>'
+                
+        return html
+
+    # Generate Sidebar
+    # We assume only one subject "Historie vg2"
+    # Iterate the root node directly
+    
+    # Sort keys: "Diverse" last, others alphabetically
+    root_keys = list(hierarchy.values())[0].keys() # Assuming 1 subject
+    # Wait, hierarchy structure is {Subject: {L1: ...}}
+    # So root_node is hierarchy["Historie vg2"]
+    
+    # Let's get the root node safely
+    if hierarchy:
+        subject = list(hierarchy.keys())[0]
+        root_node = hierarchy[subject]
+        
+        sorted_keys = sorted([k for k in root_node.keys() if k != "_articles"])
+        if "Diverse" in sorted_keys:
+            sorted_keys.remove("Diverse")
+            sorted_keys.append("Diverse")
+            
+        # We need to pass the sorted keys or iterate them here.
+        # But generate_sidebar_recursive handles recursion.
+        # We should modify generate_sidebar_recursive to handle sorting internally?
+        # Or just call it on sorted items here?
+        # The recursive function iterates node.items().
+        
+        # Let's modify the recursive function to handle sorting and collapsibility.
+        
+    def generate_sidebar_recursive(node, level, parent_slug=""):
+        html = ""
+        
+        # Sort keys: "Diverse" last, others alphabetically
+        keys = [k for k in node.keys() if k != "_articles"]
+        keys.sort()
+        if "Diverse" in keys:
+            keys.remove("Diverse")
+            keys.append("Diverse")
+        
+        for key in keys:
+            value = node[key]
+            slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
+            
+            if level == 1:
+                # Level 1: Main Topic (e.g. "Makt og religion") -> H2
+                # Collapsible
+                html += f"""
+                <details open>
+                    <summary><h2>{key}</h2></summary>
+                    <div class="sidebar-section">
+                        {generate_sidebar_recursive(value, level + 1, slug)}
+                    </div>
+                </details>
+                """
+            elif level == 2:
+                # Level 2: Subtopic (e.g. "Fordeling og legitimering av makt") -> H3
+                # Collapsible
+                html += f"""
+                <details>
+                    <summary><h3>{key}</h3></summary>
+                    <ul>
+                """
+                
+                # 1. List Articles directly under this subtopic (Level 3)
+                if "_articles" in value:
+                    # Sort articles by title
+                    articles = sorted(value["_articles"], key=lambda x: x['title'])
+                    for row in articles:
+                        art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
+                        html += f'<li><a href="#{slug}">{row["title"]}</a></li>'
+                
+                # 2. Recurse for deeper levels
+                html += generate_sidebar_recursive(value, level + 1, slug)
+                html += """
+                    </ul>
+                </details>
+                """
+            else:
+                # Level 3+: Just list as items
+                # If it has children, maybe collapsible too?
+                has_children = any(k != "_articles" for k in value.keys())
+                
+                if has_children:
+                    html += f"""
+                    <li>
+                        <details>
+                            <summary><a href="#{slug}" style="display:inline;">{key}</a></summary>
+                            <ul>
+                                {generate_sidebar_recursive(value, level + 1, slug)}
+                            </ul>
+                        </details>
+                    </li>
+                    """
+                else:
+                    html += f'<li><a href="#{slug}">{key}</a></li>'
+                     
+        return html
+
+    # ... (rest of the code)
+    
     html_content = """
     <!DOCTYPE html>
     <html lang="no">
@@ -81,26 +248,42 @@ def generate_html():
             }
             /* Sidebar */
             .sidebar {
-                width: 300px;
+                width: 350px; /* Increased width */
                 background-color: #2c3e50;
                 color: white;
                 padding: 20px;
                 overflow-y: auto;
                 flex-shrink: 0;
             }
-            .sidebar h2 {
-                font-size: 1.1em;
+            
+            /* Navigation Items Spacing */
+            .nav-level-1 {
                 margin-top: 20px;
                 margin-bottom: 5px;
-                color: #ecf0f1;
                 border-bottom: 1px solid #34495e;
                 padding-bottom: 5px;
             }
-            .sidebar h3 {
-                font-size: 1.0em;
-                margin-left: 10px;
+            .nav-level-2 {
                 margin-top: 10px;
                 margin-bottom: 5px;
+                margin-left: 10px;
+            }
+            
+            /* Indentation for Level 2 items (inside Level 1) */
+            .sidebar-section {
+                margin-left: 15px;
+            }
+            
+            /* Reset Header Margins in Sidebar */
+            .sidebar h2 {
+                font-size: 1.1em;
+                margin: 0;
+                color: #ecf0f1;
+                border: none;
+            }
+            .sidebar h3 {
+                font-size: 1.0em;
+                margin: 0;
                 color: #bdc3c7;
                 font-weight: 600;
             }
@@ -143,6 +326,7 @@ def generate_html():
             .subject-header { font-size: 2.2em; color: #2c3e50; margin-bottom: 10px; }
             .level1-header { font-size: 1.8em; color: #34495e; margin-bottom: 20px; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; }
             .level2-header { font-size: 1.5em; color: #7f8c8d; margin-bottom: 15px; margin-top: 30px; }
+            .topic-header { font-size: 1.3em; color: #2980b9; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
             
             .topic-section {
                 margin-bottom: 40px;
@@ -150,14 +334,6 @@ def generate_html():
                 padding: 25px;
                 border-radius: 8px;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            }
-            .topic-header {
-                color: #2980b9;
-                margin-top: 0;
-                border-bottom: 1px solid #eee;
-                padding-bottom: 10px;
-                margin-bottom: 20px;
-                font-size: 1.3em;
             }
             
             /* Article Card */
@@ -196,6 +372,28 @@ def generate_html():
             .original-link:hover {
                 text-decoration: underline;
             }
+            
+            /* Collapsible Sidebar */
+            details > summary {
+                list-style: none;
+                cursor: pointer;
+                display: flex; /* Flexbox for alignment */
+                align-items: flex-start; /* Align top in case of wrapping */
+            }
+            details > summary::-webkit-details-marker {
+                display: none;
+            }
+            details > summary:before {
+                content: '▶';
+                font-size: 0.8em;
+                margin-right: 8px;
+                margin-top: 4px; /* Align with text baseline approx */
+                flex-shrink: 0;
+                transition: transform 0.2s;
+            }
+            details[open] > summary:before {
+                transform: rotate(90deg);
+            }
         </style>
     </head>
     <body>
@@ -203,23 +401,10 @@ def generate_html():
     <div class="sidebar">
         <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 20px; color: #3498db;">Innhold</div>
     """
-    
-    # Generate Sidebar
-    for subject, level1_items in hierarchy.items():
-        html_content += f"<h2>{subject}</h2>"
-        for level1, level2_items in level1_items.items():
-            html_content += f"<h3>{level1}</h3>"
-            for level2, topics in level2_items.items():
-                html_content += f"<h4>{level2}</h4><ul>"
-                for topic in topics.keys():
-                    slug = f"{subject}-{level1}-{level2}-{topic}".replace(" ", "-").replace(":", "").lower()
-                    # Only show sub-topic in sidebar if it's different from level2
-                    display_text = topic
-                    if topic == level2:
-                        display_text = "Artikler" # Or just hide it? Let's keep it as "Artikler" or "Oversikt" for navigation
-                    
-                    html_content += f'<li><a href="#{slug}">{display_text}</a></li>'
-                html_content += "</ul>"
+
+    # Generate Sidebar Loop
+    for subject, root_node in hierarchy.items():
+        html_content += generate_sidebar_recursive(root_node, 1, subject)
     
     html_content += """
     </div>
@@ -228,42 +413,9 @@ def generate_html():
     """
     
     # Generate Content
-    for subject, level1_items in hierarchy.items():
+    for subject, root_node in hierarchy.items():
         html_content += f'<h1 class="subject-header">{subject}</h1>'
-        for level1, level2_items in level1_items.items():
-            html_content += f'<div class="level1-header">{level1}</div>'
-            for level2, topics in level2_items.items():
-                html_content += f'<div class="level2-header">{level2}</div>'
-                
-                for topic, articles in topics.items():
-                    slug = f"{subject}-{level1}-{level2}-{topic}".replace(" ", "-").replace(":", "").lower()
-                    
-                    # HIDE redundant header if topic name equals level 2 name
-                    header_html = f'<h2 class="topic-header">{topic}</h2>'
-                    if topic == level2:
-                        header_html = "" 
-                        
-                    html_content += f"""
-                    <div id="{slug}" class="topic-section">
-                        {header_html}
-                    """
-                    
-                    for row in articles:
-                        title = row['title']
-                        content = row['content'].replace("\n", "<br>")
-                        url = row['url']
-                        
-                        html_content += f"""
-                        <details class="article-card">
-                            <summary class="article-summary">{title}</summary>
-                            <div class="article-content">
-                                {content}
-                                <br>
-                                <a href="{url}" target="_blank" class="original-link">Les original på NDLA &rarr;</a>
-                            </div>
-                        </details>
-                        """
-                    html_content += "</div>"
+        html_content += generate_html_recursive(root_node, 1, subject)
 
     html_content += """
     </div>
