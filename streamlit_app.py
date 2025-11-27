@@ -115,7 +115,8 @@ def main():
             auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
             
             st.markdown(f'''
-                <a href="{auth_url}" target="_self">
+            st.markdown(f'''
+                <a href="{auth_url}" target="_blank">
                     <button style="
                         background-color: #4285F4; 
                         color: white; 
@@ -132,6 +133,7 @@ def main():
                         Logg inn med Google
                     </button>
                 </a>
+            ''', unsafe_allow_html=True)
             ''', unsafe_allow_html=True)
             return
     else:
