@@ -93,16 +93,26 @@ def main():
         else:
             # Show Login Button
             # Generate Auth URL
+            # Generate Auth URL manually to ensure exact format
             import urllib.parse
+            
+            # Ensure no whitespace in secrets
+            client_id = client_id.strip()
+            redirect_uri = redirect_uri.strip()
+            
+            scope = "openid email profile"
+            
             params = {
                 "client_id": client_id,
                 "redirect_uri": redirect_uri,
                 "response_type": "code",
-                "scope": "openid email profile",
+                "scope": scope,
                 "access_type": "offline",
                 "prompt": "consent"
             }
-            auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
+            
+            # Use quote_via=urllib.parse.quote to get %20 instead of + for spaces
+            auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
             
             st.markdown(f'''
                 <a href="{auth_url}" target="_self">
