@@ -151,12 +151,49 @@ def main():
             df = get_all_results()
             
             if not df.empty:
-                st.dataframe(df)
+                # --- User Selection ---
+                users = df['user_email'].unique()
+                selected_user = st.selectbox("Velg bruker for detaljer", ["Alle"] + list(users))
                 
-                # Download button
+                if selected_user != "Alle":
+                    st.subheader(f"Resultater for: {selected_user}")
+                    user_df = df[df['user_email'] == selected_user]
+                    
+                    # --- Summary Stats ---
+                    total_quizzes = len(user_df)
+                    total_questions = user_df['total'].sum()
+                    total_score = user_df['score'].sum()
+                    avg_score = user_df['percentage'].mean()
+                    
+                    col1, col2, col3, col4 = st.columns(4)
+                    col1.metric("Antall Quizer", total_quizzes)
+                    col2.metric("Totalt Spørsmål", total_questions)
+                    col3.metric("Totalt Poeng", total_score)
+                    col4.metric("Snitt Score", f"{avg_score:.1f}%")
+                    
+                    # --- Topic Breakdown ---
+                    st.write("### Resultater per tema")
+                    topic_stats = user_df.groupby('topic').agg({
+                        'score': 'sum',
+                        'total': 'sum',
+                        'percentage': 'mean',
+                        'timestamp': 'count' # Count quizzes per topic
+                    }).rename(columns={'timestamp': 'antall_quizer'}).reset_index()
+                    
+                    topic_stats['snitt_prosent'] = topic_stats['percentage'].map('{:.1f}%'.format)
+                    
+                    st.dataframe(topic_stats[['topic', 'antall_quizer', 'score', 'total', 'snitt_prosent']], hide_index=True)
+                    
+                    st.write("### Historikk")
+                    st.dataframe(user_df)
+                else:
+                    # Show all results
+                    st.dataframe(df)
+                
+                # Download button (always available)
                 csv = df.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    "Last ned resultater",
+                    "Last ned alle resultater (CSV)",
                     csv,
                     "quiz_results.csv",
                     "text/csv",

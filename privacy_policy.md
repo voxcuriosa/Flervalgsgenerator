@@ -1,6 +1,6 @@
 # Personvernerklæring for HPT Flervalgsgenerator
 
-**Sist oppdatert:** 27. november 2024
+**Sist oppdatert:** 27. november 2025
 
 ## 1. Innledning
 Denne personvernerklæringen beskriver hvordan HPT Flervalgsgenerator ("vi", "oss" eller "appen") samler inn, bruker og deler informasjon om deg når du bruker vår applikasjon.
