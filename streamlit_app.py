@@ -143,10 +143,14 @@ def main():
     # --- Admin View ---
     if st.session_state.get("user_email") == "borchgrevink@gmail.com":
         if st.sidebar.checkbox("Vis Admin-panel", key="admin_panel"):
-            st.header("Admin: Resultater")
-            results_file = "quiz_results.csv"
-            if os.path.exists(results_file):
-                df = pd.read_csv(results_file)
+            st.header("Admin: Resultater (fra Database)")
+            
+            # Import the new function
+            from storage import get_all_results
+            
+            df = get_all_results()
+            
+            if not df.empty:
                 st.dataframe(df)
                 
                 # Download button

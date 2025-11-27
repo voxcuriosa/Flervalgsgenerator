@@ -5,3 +5,6 @@ pandas
 streamlit-oauth
 python-dotenv
 watchdog
+psycopg2-binary
+sqlalchemy
+pytz
