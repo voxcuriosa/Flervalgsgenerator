@@ -18,6 +18,7 @@ def get_db_connection():
         engine = create_engine(db_url)
         return engine
     except Exception as e:
+        print(f"DEBUG: Database connection error: {e}")
         st.error(f"Database connection error: {e}")
         return None
 
@@ -27,10 +28,11 @@ def init_db():
     if engine:
         try:
             with engine.connect() as conn:
+                # Create quiz_results table if it doesn't exist
                 conn.execute(text("""
                     CREATE TABLE IF NOT EXISTS quiz_results (
                         id SERIAL PRIMARY KEY,
-                        timestamp TIMESTAMP,
+                        timestamp TEXT,
                         user_email TEXT,
                         user_name TEXT,
                         topic TEXT,
@@ -38,6 +40,20 @@ def init_db():
                         total INTEGER,
                         percentage FLOAT,
                         category TEXT
+                    );
+                """))
+                
+                # Create learning_materials table for NDLA content
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS learning_materials (
+                        id SERIAL PRIMARY KEY,
+                        subject TEXT,
+                        topic TEXT,
+                        title TEXT,
+                        content TEXT,
+                        url TEXT,
+                        source_id TEXT UNIQUE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     );
                 """))
                 conn.commit()

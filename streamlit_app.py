@@ -145,6 +145,11 @@ def main():
         if st.sidebar.checkbox("Vis Admin-panel", key="admin_panel"):
             st.header("Admin: Resultater (fra Database)")
             
+            st.markdown("""
+            **Verktøy:**
+            - [Åpne NDLA Database-visning](http://localhost:8000/ndla_content_viewer.html) (Krever at server kjører lokalt)
+            """)
+            
             # Import the new function
             from storage import get_all_results
             
