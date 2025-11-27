@@ -186,27 +186,44 @@ def generate_html():
                 """
             elif level == 2:
                 # Level 2: Subtopic (e.g. "Fordeling og legitimering av makt") -> H3
-                # Collapsible
-                html += f"""
-                <details>
-                    <summary><h3>{key}</h3></summary>
-                    <ul>
-                """
                 
-                # 1. List Articles directly under this subtopic (Level 3)
-                if "_articles" in value:
-                    # Sort articles by title
-                    articles = sorted(value["_articles"], key=lambda x: x['title'])
-                    for row in articles:
-                        art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
-                        html += f'<li><a href="#{slug}">{row["title"]}</a></li>'
-                
-                # 2. Recurse for deeper levels
-                html += generate_sidebar_recursive(value, level + 1, slug)
-                html += """
-                    </ul>
-                </details>
-                """
+                # Check if this is the ONLY Level 2 item (Redundancy check)
+                if len(keys) == 1:
+                    # Flatten: Skip header, just render content in UL
+                    html += "<ul>"
+                    
+                    # 1. List Articles
+                    if "_articles" in value:
+                        articles = sorted(value["_articles"], key=lambda x: x['title'])
+                        for row in articles:
+                            art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
+                            html += f'<li><a href="#{slug}">{row["title"]}</a></li>'
+                    
+                    # 2. Recurse
+                    html += generate_sidebar_recursive(value, level + 1, slug)
+                    html += "</ul>"
+                else:
+                    # Normal: Collapsible Header
+                    html += f"""
+                    <details class="nav-level-2">
+                        <summary><h3>{key}</h3></summary>
+                        <ul>
+                    """
+                    
+                    # 1. List Articles directly under this subtopic (Level 3)
+                    if "_articles" in value:
+                        # Sort articles by title
+                        articles = sorted(value["_articles"], key=lambda x: x['title'])
+                        for row in articles:
+                            art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
+                            html += f'<li><a href="#{slug}">{row["title"]}</a></li>'
+                    
+                    # 2. Recurse for deeper levels
+                    html += generate_sidebar_recursive(value, level + 1, slug)
+                    html += """
+                        </ul>
+                    </details>
+                    """
             else:
                 # Level 3+: Just list as items
                 # If it has children, maybe collapsible too?
