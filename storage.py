@@ -60,6 +60,51 @@ def init_db():
         except Exception as e:
             st.error(f"Error initializing database: {e}")
 
+def get_content_hierarchy():
+    """
+    Fetches all learning materials and builds a nested dictionary hierarchy.
+    Returns: dict {Subject: {Level1: {Level2: ... {_articles: [rows]} ... }}}
+    """
+    engine = get_db_connection()
+    if not engine:
+        return {}
+    
+    conn = None # Initialize conn to None
+    try:
+        conn = engine.connect() # Get a connection from the engine
+        query = "SELECT * FROM learning_materials ORDER BY subject, path, title"
+        df = pd.read_sql(query, conn)
+        
+        hierarchy = {}
+        
+        for _, row in df.iterrows():
+            subject = row['subject']
+            path_str = row['path']
+            
+            if not path_str:
+                path_parts = ["Diverse", row['topic']]
+            else:
+                path_parts = path_str.split(" > ")
+                
+            current_level = hierarchy.setdefault(subject, {})
+            
+            for part in path_parts:
+                if part not in current_level:
+                    current_level[part] = {}
+                current_level = current_level[part]
+                
+            if "_articles" not in current_level:
+                current_level["_articles"] = []
+            current_level["_articles"].append(row.to_dict())
+            
+        return hierarchy
+    except Exception as e:
+        print(f"Error fetching hierarchy: {e}")
+        return {}
+    finally:
+        if conn: # Ensure conn is not None before closing
+            conn.close()
+
 def get_performance_category(percentage):
     if percentage <= 33:
         return "Lav"
