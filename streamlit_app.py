@@ -27,30 +27,30 @@ def apply_custom_css():
         
         html, body, [class*="css"] {
             font-family: 'Inter', sans-serif;
-            color: #1f1f1f;
         }
         
-        /* Background */
+        /* Background - Dark */
         .stApp {
-            background-color: #ffffff;
+            background-color: #0e1117;
+            color: #fafafa;
         }
         
-        /* Sidebar */
+        /* Sidebar - Slightly lighter dark */
         [data-testid="stSidebar"] {
-            background-color: #f8f9fa;
-            border-right: 1px solid #e9ecef;
+            background-color: #262730;
+            border-right: 1px solid #333;
         }
         
         /* Headers */
         h1, h2, h3 {
             font-weight: 600;
-            color: #111;
+            color: #ffffff !important;
         }
         
         /* Buttons */
         .stButton button {
-            background-color: #1a1a1a;
-            color: white;
+            background-color: #4c4cff; /* Accent color */
+            color: white !important;
             border-radius: 8px;
             border: none;
             padding: 0.5rem 1rem;
@@ -58,28 +58,35 @@ def apply_custom_css():
             transition: all 0.2s;
         }
         .stButton button:hover {
-            background-color: #333;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: #3b3bff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         
         /* Inputs */
         .stTextInput input, .stSelectbox div[data-baseweb="select"] {
             border-radius: 8px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #444;
+            background-color: #1a1c24;
+            color: white;
         }
         
         /* Cards/Containers */
         .css-1r6slb0 {
-            background-color: white;
-            border: 1px solid #eee;
+            background-color: #1a1c24;
+            border: 1px solid #333;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
-        /* Accent Color (NDLA-ish Blue/Purple) */
+        /* Links */
         a {
-            color: #4c4cff;
+            color: #4c4cff !important;
+        }
+        
+        /* Checkbox/Radio text */
+        .stCheckbox label, .stRadio label {
+            color: #fafafa;
         }
         </style>
     """, unsafe_allow_html=True)
