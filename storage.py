@@ -60,8 +60,11 @@ def save_result(user_email, user_name, score, total, percentage, topic):
     
     import pytz
     oslo_tz = pytz.timezone('Europe/Oslo')
+    # Format as string to ensure exact time is stored
+    timestamp_str = datetime.now(oslo_tz).strftime("%Y-%m-%d %H:%M:%S")
+    
     new_data = {
-        "timestamp": datetime.now(oslo_tz),
+        "timestamp": timestamp_str,
         "user_email": user_email,
         "user_name": user_name,
         "topic": topic,
@@ -86,6 +89,9 @@ def save_result(user_email, user_name, score, total, percentage, topic):
 
 def get_all_results():
     """Retrieves all results from the database."""
+    # Ensure table exists before querying
+    init_db()
+    
     engine = get_db_connection()
     if engine:
         try:

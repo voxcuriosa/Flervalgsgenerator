@@ -318,14 +318,19 @@ def main():
             st.write("---")
             
         percentage = (score / total_possible) * 100 if total_possible > 0 else 0
-        category = save_result(
-            st.session_state.user_email, 
-            st.session_state.user_name, 
-            score, 
-            total_possible, 
-            percentage, 
-            selected_topic
-        )
+        if not st.session_state.get("result_saved", False):
+            category = save_result(
+                st.session_state.user_email, 
+                st.session_state.user_name, 
+                score, 
+                total_possible, 
+                percentage, 
+                selected_topic
+            )
+            st.session_state.result_saved = True
+            st.session_state.last_category = category
+        else:
+            category = st.session_state.get("last_category", "Ukjent")
         
         st.metric("Din poengsum", f"{score} / {total_possible}", f"{percentage:.1f}%")
         st.success(f"Resultat: {category}")
@@ -333,6 +338,8 @@ def main():
         if st.button("Ta ny quiz"):
             del st.session_state.quiz_data
             del st.session_state.quiz_submitted
+            if "result_saved" in st.session_state:
+                del st.session_state.result_saved
             st.rerun()
 
 if __name__ == "__main__":
