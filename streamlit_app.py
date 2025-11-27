@@ -115,7 +115,7 @@ def main():
             auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
             
             st.markdown(f'''
-                <a href="{auth_url}" target="_blank">
+                <a href="{auth_url}" target="_top">
                     <button style="
                         background-color: #4285F4; 
                         color: white; 
