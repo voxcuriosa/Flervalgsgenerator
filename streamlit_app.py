@@ -14,7 +14,7 @@ import extra_streamlit_components as stx
 
 # Page Config
 st.set_page_config(
-    page_title=get_text("title"),
+    page_title="Generator for flervalgsoppgaver",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
