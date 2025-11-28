@@ -1090,8 +1090,12 @@ def main():
             
     # --- Admin Button (Visible everywhere if admin) ---
     if "user_email" in st.session_state and st.session_state.user_email in ADMINS:
-        if st.sidebar.button(get_text("admin_panel"), key="admin_btn_top"):
-            st.session_state.show_admin = not st.session_state.get("show_admin", False)
+        is_admin_open = st.session_state.get("show_admin", False)
+        # Dynamic label
+        btn_label = "🔙 Tilbake til meny" if is_admin_open else get_text("admin_panel")
+        
+        if st.sidebar.button(btn_label, key="admin_btn_top"):
+            st.session_state.show_admin = not is_admin_open
             st.rerun()
             
     if st.session_state.get("show_admin", False) and "user_email" in st.session_state and st.session_state.user_email in ADMINS:
