@@ -1271,15 +1271,18 @@ def main():
             cookie_email = cookies["user_email"]
         
             if cookie_email:
-                st.session_state.user_email = cookie_email
-                
-                # Try to get name from cookie too
-                if cookies and "user_name" in cookies:
+                # Only auto-login if we also have the name!
+                # This forces a re-login for users with old cookies (missing name)
+                if "user_name" in cookies:
+                    st.session_state.user_email = cookie_email
                     st.session_state.user_name = cookies["user_name"]
+                    st.rerun()
                 else:
-                    st.session_state.user_name = "User" 
-                    
-                st.rerun()
+                    # Cookie exists but no name. Clear it and force login.
+                    print("DEBUG: Found email cookie but no name. Forcing re-login.")
+                    # We can't easily delete here without a rerun loop, 
+                    # but we can just ignore it and let the login button appear.
+                    pass
             
     # --- Language Selector (Top of Sidebar) ---
     lang_options = {
@@ -1340,8 +1343,11 @@ def main():
                 import time
                 time.sleep(1)
                 
-                # Redirect to Google
-                st.markdown('<meta http-equiv="refresh" content="0;url=https://www.google.com">', unsafe_allow_html=True)
+                # Redirect to Google using JS (more robust)
+                components.html(
+                    "<script>window.top.location.href = 'https://www.google.com';</script>",
+                    height=0, width=0
+                )
                 st.stop()
                 
             except Exception as e:
