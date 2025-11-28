@@ -1224,9 +1224,16 @@ def main():
         if code:
             # Check if we already tried this code
             if code == st.session_state.get("last_auth_code"):
-                st.warning("Duplikat innloggingsforsøk. Dette kan skje hvis siden lastes på nytt.")
-                if st.button("Tilbake til start"):
-                    st.query_params.clear()
+                st.warning("Duplikat innloggingsforsøk. Nettleseren husker en gammel kobling.")
+                if st.button("Klikk her for å fikse det"):
+                    # Use JS to clear query params and reload
+                    st.markdown("""
+                        <script>
+                            window.history.replaceState(null, "", window.location.pathname);
+                            window.location.reload();
+                        </script>
+                    """, unsafe_allow_html=True)
+                    st.query_params.clear() # Fallback
                     st.rerun()
                 st.stop()
             
@@ -1469,8 +1476,14 @@ def main():
             except:
                 pass
             
-            # JS Reload
-            st.markdown("<meta http-equiv='refresh' content='0;URL=/' />", unsafe_allow_html=True)
+            # JS Reload with cleared params
+            st.markdown("""
+                <script>
+                    window.history.replaceState(null, "", window.location.pathname);
+                    window.location.reload();
+                </script>
+                <meta http-equiv='refresh' content='0;URL=/' />
+            """, unsafe_allow_html=True)
 
     else:
             # Show Login Button
