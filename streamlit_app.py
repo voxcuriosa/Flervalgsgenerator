@@ -691,15 +691,33 @@ def render_quiz_generator():
                         # Option to delete specific test?
                         # Let's show a list of recent tests with delete buttons
                         st.write("#### Siste tester (Slett enkelttester)")
+                        
+                        # Collect IDs to delete
+                        delete_ids = []
+                        
+                        # Header
+                        h1, h2, h3, h4, h5 = st.columns([0.5, 2, 2, 1, 1])
+                        h1.write("**Velg**")
+                        h2.write("**Dato**")
+                        h3.write("**Emne**")
+                        h4.write("**Score**")
+                        h5.write("**Prosent**")
+                        
                         for index, row in user_df.iterrows():
-                            c1, c2, c3, c4, c5 = st.columns([2, 2, 1, 1, 1])
-                            c1.text(row['timestamp'])
-                            c2.text(row['topic'])
-                            c3.text(f"{row['score']}/{row['total']}")
-                            c4.text(f"{row['percentage']}%")
-                            if c5.button("Slett", key=f"del_res_{row['id']}"):
-                                if delete_results(result_ids=[row['id']]):
-                                    st.success("Slettet!")
+                            c1, c2, c3, c4, c5 = st.columns([0.5, 2, 2, 1, 1])
+                            # Use a unique key for each checkbox
+                            if c1.checkbox("", key=f"sel_res_{row['id']}"):
+                                delete_ids.append(row['id'])
+                            c2.text(row['timestamp'])
+                            c3.text(row['topic'])
+                            c4.text(f"{row['score']}/{row['total']}")
+                            c5.text(f"{row['percentage']}%")
+                            
+                        if delete_ids:
+                            st.write("")
+                            if st.button(f"Slett {len(delete_ids)} valgte tester", type="primary", key="bulk_delete_btn"):
+                                if delete_results(result_ids=delete_ids):
+                                    st.success(f"Slettet {len(delete_ids)} tester!")
                                     st.rerun()
                         
                     else:
