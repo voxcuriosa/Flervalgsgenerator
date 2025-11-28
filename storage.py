@@ -190,6 +190,53 @@ def save_result(user_email, user_name, score, total, percentage, topic):
     else:
         return None
 
+def delete_results(result_ids=None, user_email=None, topic=None):
+    """
+    Deletes results based on criteria.
+    result_ids: list of IDs to delete
+    user_email: delete all results for this email
+    topic: delete all results for this topic (can be combined with user_email)
+    """
+    engine = get_db_connection()
+    if not engine:
+        return False
+        
+    try:
+        with engine.connect() as conn:
+            if result_ids:
+                # Delete specific IDs
+                # Use tuple for IN clause, handle single item tuple quirk
+                if len(result_ids) == 1:
+                    ids_tuple = f"({result_ids[0]})"
+                else:
+                    ids_tuple = tuple(result_ids)
+                
+                query = f"DELETE FROM quiz_results WHERE id IN {ids_tuple}"
+                conn.execute(text(query))
+                conn.commit()
+                return True
+                
+            elif user_email:
+                if topic:
+                    conn.execute(text("DELETE FROM quiz_results WHERE user_email = :email AND topic = :topic"), 
+                                {"email": user_email, "topic": topic})
+                else:
+                    conn.execute(text("DELETE FROM quiz_results WHERE user_email = :email"), 
+                                {"email": user_email})
+                conn.commit()
+                return True
+                
+            elif topic:
+                 conn.execute(text("DELETE FROM quiz_results WHERE topic = :topic"), 
+                                {"topic": topic})
+                 conn.commit()
+                 return True
+                 
+    except Exception as e:
+        print(f"Error deleting results: {e}")
+        return False
+    return False
+
 def get_all_results():
     """Retrieves all results from the database."""
     # Ensure table exists before querying
