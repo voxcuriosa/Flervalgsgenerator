@@ -1232,6 +1232,8 @@ def main():
                             payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode('utf-8'))
                             st.session_state.user_email = payload.get("email")
                             st.session_state.user_name = payload.get("name", "Unknown")
+                            print(f"DEBUG: OAuth Login - Email: {st.session_state.user_email}, Name: {st.session_state.user_name}")
+                            print(f"DEBUG: Payload: {payload}")
                     
                     # Clear query params to clean URL
                     # Set persistent cookie (expires in 30 days)
@@ -1264,6 +1266,7 @@ def main():
         # Retry mechanism for cookies is NOT safe with components (DuplicateKey error)
         # Just check once. The rerun from login should have set it.
         cookies = cookie_manager.get_all()
+        print(f"DEBUG: Cookies loaded: {cookies.keys() if cookies else 'None'}")
         if cookies and "user_email" in cookies:
             cookie_email = cookies["user_email"]
         
@@ -1344,6 +1347,11 @@ def main():
     else:
             # Show Login Button
             # We show this INSTEAD of the main app if not logged in
+            
+            # Prevent flicker if we are in the middle of auth flow
+            if "code" in st.query_params:
+                 st.info("Logg inn pågår... Vennligst vent.")
+                 return
             
             # Show Language Selector on Login Screen too!
             st.image(LOGO_URL, width=150)
