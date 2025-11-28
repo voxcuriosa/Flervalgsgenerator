@@ -1274,7 +1274,7 @@ def main():
                     ms_client_secret = st.secrets["microsoft"]["client_secret"]
                     ms_redirect_uri = st.secrets["microsoft"]["redirect_uri"]
                     
-                    token_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/token"
+                    token_url = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
                     data = {
                         "code": code,
                         "client_id": ms_client_id,
@@ -1483,7 +1483,7 @@ def main():
                     "scope": "User.Read openid profile email",
                     "state": f"microsoft|{st.session_state.language}"
                 }
-                ms_auth_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
+                ms_auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
             # --- Render Buttons ---
             import textwrap
