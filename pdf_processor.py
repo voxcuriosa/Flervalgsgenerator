@@ -51,6 +51,11 @@ def extract_text_by_topic(pdf_path, start_page, end_page=None):
         if end_page is None or end_page >= total_pages:
             end_page = total_pages
             
+        # Fix for single-page topics (start == end)
+        if start_page == end_page and start_page < total_pages:
+            end_page = start_page + 1
+            
+            
         for i in range(start_page, end_page):
             page = reader.pages[i]
             text += page.extract_text() + "\n"
