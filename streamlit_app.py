@@ -515,7 +515,6 @@ def render_quiz_generator():
     # --- Admin View ---
     if st.session_state.get("user_email") == "borchgrevink@gmail.com":
         if st.sidebar.checkbox(get_text("admin_panel"), key="admin_panel"):
-            st.header(get_text("admin_header"))
             
             # --- 1. Settings (Max Questions) ---
             st.info("⚙️ **Innstillinger**")
