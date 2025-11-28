@@ -18,21 +18,10 @@ def generate_html():
     
     for _, row in df.iterrows():
         subject = row['subject']
-        specific_topic = row['topic']
-        
-        # Determine hierarchy based on topic name
-        level1 = "Historiske perioder"
-        
-        if specific_topic == "Å dele i perioder":
-            level2 = "Å dele i perioder" # It's a direct child of Historiske perioder
-            # Or maybe we want it to be its own level 2? 
-            # The user said: "Eldre historie er da under emnet 'Historiske perioder'. ... Nå kan du skrape det andre underemnet under Historiske perioder: Å dele i perioder"
-            # So structure is:
         path_str = row['path']
         
         if not path_str:
-            # Fallback for old data if any (though scraper should update all)
-            # Try to construct path from topic if possible, or just put under "Diverse"
+            # Fallback for old data or missing paths
             path_parts = ["Diverse", row['topic']]
         else:
             path_parts = path_str.split(" > ")
@@ -40,18 +29,11 @@ def generate_html():
         # Navigate/Build tree
         current_level = hierarchy.setdefault(subject, {})
         
-        # We want to store articles at the leaf.
-        # But a node can have both sub-topics AND articles (though usually resources are at leaves).
-        # Let's assume resources are attached to the last part of the path.
-        
         for part in path_parts:
             if part not in current_level:
                 current_level[part] = {}
             current_level = current_level[part]
             
-        # Now current_level is the dict for the leaf topic.
-        # We need a way to distinguish "subtopics" from "articles".
-        # Let's use a special key "_articles" to store the list of rows.
         if "_articles" not in current_level:
             current_level["_articles"] = []
         current_level["_articles"].append(row)
@@ -422,6 +404,7 @@ def generate_html():
 
     # Generate Sidebar Loop
     for subject, root_node in hierarchy.items():
+        html_content += f'<div class="nav-level-1" style="color: #e67e22; font-weight: bold; padding-left: 10px; margin-top: 20px;">{subject}</div>'
         html_content += generate_sidebar_recursive(root_node, 1, subject)
     
     html_content += """

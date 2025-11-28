@@ -7,10 +7,20 @@ def render_ndla_selector(hierarchy):
     """
     selected_articles = []
     
-    # We assume one subject "Historie vg2" for now, but iterate to be safe
-    for subject, root_node in hierarchy.items():
-        st.subheader(subject)
-        _recursive_render(root_node, selected_articles, level=1, parent_key=subject)
+    # Get available subjects
+    subjects = list(hierarchy.keys())
+    
+    if not subjects:
+        st.warning("Ingen fag funnet i databasen.")
+        return []
+        
+    # Subject Selector
+    selected_subject = st.selectbox("Velg fag / Subject", subjects, key="ndla_subject_selector")
+    
+    if selected_subject:
+        root_node = hierarchy[selected_subject]
+        # Render the tree for the selected subject
+        _recursive_render(root_node, selected_articles, level=1, parent_key=selected_subject)
         
     return selected_articles
 

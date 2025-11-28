@@ -24,6 +24,8 @@ def generate_quiz(text, num_questions, num_options, multiple_correct, language="
         lang_str = "Tigrinya"
     elif language == "uk":
         lang_str = "Ukrainian"
+    elif language == "th":
+        lang_str = "Thai"
         
     prompt = f"""
     Generate {num_questions} multiple choice questions based on the text provided below.
