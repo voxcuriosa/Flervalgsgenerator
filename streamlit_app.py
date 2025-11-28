@@ -13,7 +13,12 @@ import streamlit.components.v1 as components
 import extra_streamlit_components as stx
 
 # Page Config
-st.set_page_config(page_title="HPT Quiz Generator", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title=get_text("title"),
+    page_icon="📚",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # Constants
 PDF_PATH = "HPT.pdf"
@@ -848,20 +853,28 @@ def render_quiz_generator():
         st.sidebar.info(get_text("ndla_info"))
         hierarchy = get_content_hierarchy()
         
-        with st.sidebar.expander(get_text("ndla_expand"), expanded=True):
+        # Layout: Left sidebar (navigation) vs Right content
+        # Make content wider (1:3 ratio)
+        col1, col2 = st.columns([1, 3])
+        
+        with col1:
+            st.subheader(get_text("navigation"))
             selected_articles = render_ndla_selector(hierarchy)
             
-        if selected_articles:
-            st.sidebar.success(get_text("selected_articles", len(selected_articles)))
-            # Combine text
-            selected_text = "\n\n".join([art['content'] for art in selected_articles])
-            # Topic name? Maybe "NDLA Utvalg" or list topics?
-            if len(selected_articles) == 1:
-                selected_topic_name = selected_articles[0]['title']
+        with col2:
+            if selected_articles:
+                st.success(get_text("selected_articles", len(selected_articles)))
+                # Combine text
+                selected_text = "\n\n".join([art['content'] for art in selected_articles])
+                
+                # Display content in a nice container
+                st.markdown(f"""
+                <div style="background-color: #262730; padding: 30px; border-radius: 10px; border: 1px solid #444;">
+                    {selected_text}
+                </div>
+                """, unsafe_allow_html=True)
             else:
-                selected_topic_name = f"NDLA Utvalg ({len(selected_articles)} artikler)"
-        else:
-            st.sidebar.warning(get_text("no_articles"))
+                st.info(get_text("ndla_info"))
     
     # Get configured max limit
     from storage import get_setting
@@ -1052,14 +1065,28 @@ def main():
     if "user_email" not in st.session_state:
         # We need to wait a bit for the cookie manager to load
         import time
-        time.sleep(0.5) # Increased sleep
-        cookies = cookie_manager.get_all()
-        cookie_email = cookies.get("user_email") if cookies else None
+        # Retry mechanism for cookies
+        cookie_email = None
+        for _ in range(5): # Try 5 times
+            time.sleep(0.2)
+            cookies = cookie_manager.get_all()
+            if cookies and "user_email" in cookies:
+                cookie_email = cookies["user_email"]
+                break
         
-        if cookie_email:
             st.session_state.user_email = cookie_email
             st.session_state.user_name = "User" # We don't have the name in cookie, but that's fine
             st.rerun()
+            
+    # --- Admin Button (Visible everywhere if admin) ---
+    if "user_email" in st.session_state and st.session_state.user_email in ADMINS:
+        if st.sidebar.button(get_text("admin_panel"), key="admin_btn_top"):
+            st.session_state.show_admin = not st.session_state.get("show_admin", False)
+            st.rerun()
+            
+    if st.session_state.get("show_admin", False) and "user_email" in st.session_state and st.session_state.user_email in ADMINS:
+        render_admin_panel()
+        return # Stop rendering the rest of the app
             
     if "user_email" in st.session_state:
         # Logout Button in Sidebar
