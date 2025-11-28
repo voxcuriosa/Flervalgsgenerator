@@ -566,35 +566,14 @@ def render_quiz_generator():
             # Import the new function
             from storage import get_all_results, delete_results
             
-            # --- Auth & Persistence ---
-    
-            # Initialize Cookie Manager
-            cookie_manager = stx.CookieManager()
-            
-            # Check for existing login cookie if not in session state
-            if "user_email" not in st.session_state:
-                # We need to wait a bit for the cookie manager to load
-                cookie_email = cookie_manager.get("user_email")
-                if cookie_email:
-                    st.session_state.user_email = cookie_email
-                    st.session_state.user_name = "User" # We don't have the name in cookie, but that's fine
-                    st.rerun()
-                    
-            if "user_email" in st.session_state:
-                # Logout Button in Sidebar
-                if st.sidebar.button(get_text("logout")):
-                    # Delete cookie
-                    cookie_manager.delete("user_email")
-                    
-                    # Clear session state
-                    for key in list(st.session_state.keys()):
-                        del st.session_state[key]
-                    st.rerun()
-            
-            # --- Login Flow ---
-            if "user_email" not in st.session_state:
+            # Lazy Loading
+            if "load_results" not in st.session_state:
                 st.session_state.load_results = False
-                st.rerun()
+                
+            if not st.session_state.load_results:
+                if st.button("Last inn resultater"):
+                    st.session_state.load_results = True
+                    st.rerun()
             else:
                 if st.button("Skjul resultater"):
                     st.session_state.load_results = False
@@ -1224,9 +1203,6 @@ def main():
     st.sidebar.title(get_text("navigation"))
     app_mode = st.sidebar.radio(get_text("navigation"), [get_text("module_quiz"), get_text("module_ndla")], label_visibility="collapsed")
     
-    if st.sidebar.button(get_text("logout")):
-        del st.session_state.token
-        st.rerun()
         
     st.divider()
     
