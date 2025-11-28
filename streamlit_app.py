@@ -39,7 +39,7 @@ TRANSLATIONS = {
         "welcome": "Velkommen",
         "logout": "Logg ut",
         "navigation": "Navigasjon",
-        "module_quiz": "Quiz Generator",
+        "module_quiz": "Quiz-generator",
         "module_ndla": "NDLA Fagstoff",
         "settings": "Innstillinger",
         "source": "Velg kilde:",
@@ -952,6 +952,8 @@ def render_quiz_generator():
                 print(f"DEBUG: Final topics: {list(all_topics.keys())}")
                 st.session_state.topics = all_topics
                 
+        topic_names = list(st.session_state.topics.keys())
+        
         # Using a key ensures the selection persists even if other things update
         selected_topic = st.sidebar.selectbox(get_text("select_topic"), topic_names, key="topic_selector")
         selected_topic_name = selected_topic
