@@ -990,6 +990,8 @@ def main():
     # Check for existing login cookie if not in session state
     if "user_email" not in st.session_state:
         # We need to wait a bit for the cookie manager to load
+        import time
+        time.sleep(0.1)
         cookie_email = cookie_manager.get("user_email")
         if cookie_email:
             st.session_state.user_email = cookie_email
@@ -1180,7 +1182,6 @@ def main():
     # Use a callback to update state immediately
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
-        st.rerun()
         
     st.sidebar.radio(
         get_text("language"),
