@@ -580,8 +580,13 @@ def main():
         # st.query_params is the new way in recent Streamlit versions
         query_params = st.query_params
         code = query_params.get("code")
+        state = query_params.get("state")
         
         if code:
+            # Restore language from state if valid
+            if state and state in ["no", "en"]:
+                st.session_state.language = state
+                
             try:
                 # Exchange code for token
                 import requests
@@ -637,7 +642,8 @@ def main():
                 "response_type": "code",
                 "scope": scope,
                 "access_type": "offline",
-                "prompt": "consent"
+                "prompt": "consent",
+                "state": st.session_state.language # Pass language as state
             }
             
             # Use quote_via=urllib.parse.quote to get %20 instead of + for spaces
