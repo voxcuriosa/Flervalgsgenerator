@@ -1154,8 +1154,12 @@ def main():
                     st.rerun()
                 else:
                     st.error(f"Feil ved innlogging: {result.get('error_description', result)}")
+                    # Clear params to avoid infinite loop of bad requests
+                    st.query_params.clear()
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
+                # Clear params to avoid infinite loop of bad requests
+                st.query_params.clear()
         else:
             # Show Login Button
             # We show this INSTEAD of the main app if not logged in
@@ -1247,11 +1251,18 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
         
+    # Determine index safely
+    lang_keys = list(lang_options.keys())
+    try:
+        current_index = lang_keys.index(st.session_state.language)
+    except ValueError:
+        current_index = 0
+        
     st.sidebar.radio(
         get_text("language"),
-        options=list(lang_options.keys()),
+        options=lang_keys,
         format_func=lambda x: lang_options[x],
-        index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "en" else (2 if st.session_state.language == "ar" else (3 if st.session_state.language == "so" else (4 if st.session_state.language == "ti" else (5 if st.session_state.language == "uk" else 6))))),
+        index=current_index,
         key="lang_selector",
         label_visibility="collapsed",
         on_change=update_lang
