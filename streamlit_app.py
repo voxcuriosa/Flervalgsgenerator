@@ -12,7 +12,7 @@ import asyncio
 import streamlit.components.v1 as components
 
 # Page Config
-st.set_page_config(page_title="HPT Quiz Generator", layout="wide")
+st.set_page_config(page_title="HPT Quiz Generator", layout="wide", initial_sidebar_state="expanded")
 
 # Constants
 PDF_PATH = "HPT.pdf"
@@ -466,6 +466,24 @@ def apply_custom_css():
         .stCheckbox label, .stRadio label {{
             color: #fafafa;
         }}
+        /* Sidebar Toggle Button (Mobile) */
+        [data-testid="stSidebarCollapsedControl"] {
+            background-color: #262730;
+            border: 1px solid #4c4cff;
+            border-radius: 5px;
+            padding: 5px;
+            color: white;
+        }
+        
+        [data-testid="stSidebarCollapsedControl"] svg {
+            height: 30px !important;
+            width: 30px !important;
+        }
+        
+        /* Make the header toolbar background visible on mobile to contrast the button */
+        header[data-testid="stHeader"] {
+            background-color: #0e1117;
+        }
         </style>
     """, unsafe_allow_html=True)
 
