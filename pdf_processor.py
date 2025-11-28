@@ -141,11 +141,14 @@ def get_topics(pdf_path):
                          title = title_match.group(1).strip()
                          # Remove (DEL 1) if present? User didn't specify, but cleaner is better.
                          title = title.split('(')[0].strip()
+                         # User explicitly requested "Tema X"
+                         num = "X"
                      else:
                          # Fallback to the line after the number?
                          # This is hard to generalize. 
                          # But for HPTx we know what we want.
                          title = "Imperiers vekst og fall"
+                         num = "X" # Default to X for this file if we are here
                      
                      full_title = f"Tema {num}: {title}"
                      
