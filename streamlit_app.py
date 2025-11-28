@@ -1339,6 +1339,11 @@ def main():
                     
                 import time
                 time.sleep(1)
+                
+                # Redirect to Google
+                st.markdown('<meta http-equiv="refresh" content="0;url=https://www.google.com">', unsafe_allow_html=True)
+                st.stop()
+                
             except Exception as e:
                 print(f"Logout error: {e}")
             
