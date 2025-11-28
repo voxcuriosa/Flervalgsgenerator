@@ -1343,12 +1343,8 @@ def main():
                 import time
                 time.sleep(1)
                 
-                # Redirect to Google using JS (more robust)
-                components.html(
-                    "<script>window.top.location.href = 'https://www.google.com';</script>",
-                    height=0, width=0
-                )
-                st.stop()
+                # Just rerun to show login screen
+                st.rerun()
                 
             except Exception as e:
                 print(f"Logout error: {e}")
