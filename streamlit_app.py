@@ -407,8 +407,14 @@ def apply_custom_css():
         [data-testid="stSidebar"] {{
             background-color: #262730;
             border-right: 1px solid #333;
-            min-width: 500px; /* Widen sidebar even more */
-            max-width: 800px;
+        }}
+        
+        /* Desktop only sidebar width */
+        @media (min-width: 768px) {{
+            [data-testid="stSidebar"] {{
+                min-width: 500px;
+                max-width: 800px;
+            }}
         }}
         
         /* Headers */
