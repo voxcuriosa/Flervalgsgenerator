@@ -1483,12 +1483,13 @@ def main():
                 }
                 ms_auth_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
-            import textwrap
-
             # --- Render Buttons ---
-            # Google Button HTML
-            google_btn_html = textwrap.dedent(f'''
-                <a href="{auth_url}" target="_top" style="text-decoration: none;">
+            # Construct HTML string directly to avoid indentation issues
+            
+            # Google Button
+            html_content = f'''
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
+                <a href="{auth_url}" target="_blank" style="text-decoration: none;">
                     <button style="
                         background-color: #4285F4; 
                         color: white; 
@@ -1508,62 +1509,59 @@ def main():
                         <span>{get_text("login_google")}</span>
                     </button>
                 </a>
-            ''')
+            '''
 
-            # Microsoft Button HTML
+            # Microsoft Button
             if ms_auth_url:
-                ms_btn_html = textwrap.dedent(f'''
-                    <a href="{ms_auth_url}" target="_top" style="text-decoration: none;">
-                        <button style="
-                            background-color: #2F2F2F; 
-                            color: white; 
-                            padding: 12px 24px; 
-                            border: 1px solid #555; 
-                            border-radius: 4px; 
-                            cursor: pointer; 
-                            font-size: 16px;
-                            font-family: Segoe UI, sans-serif;
-                            display: flex;
-                            align-items: center;
-                            gap: 12px;
-                            width: 250px;
-                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                        ">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
-                            <span>Logg inn med Microsoft</span>
-                        </button>
-                    </a>
-                ''')
-            else:
-                # Disabled state if secrets missing
-                ms_btn_html = textwrap.dedent(f'''
+                html_content += f'''
+                <a href="{ms_auth_url}" target="_blank" style="text-decoration: none;">
                     <button style="
                         background-color: #2F2F2F; 
                         color: white; 
                         padding: 12px 24px; 
                         border: 1px solid #555; 
                         border-radius: 4px; 
-                        cursor: not-allowed; 
+                        cursor: pointer; 
                         font-size: 16px;
                         font-family: Segoe UI, sans-serif;
                         display: flex;
                         align-items: center;
                         gap: 12px;
                         width: 250px;
-                        box-shadow: none;
-                        opacity: 0.5;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                     ">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
                         <span>Logg inn med Microsoft</span>
                     </button>
-                ''')
+                </a>
+                '''
+            else:
+                # Disabled state
+                html_content += f'''
+                <button style="
+                    background-color: #2F2F2F; 
+                    color: white; 
+                    padding: 12px 24px; 
+                    border: 1px solid #555; 
+                    border-radius: 4px; 
+                    cursor: not-allowed; 
+                    font-size: 16px;
+                    font-family: Segoe UI, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    width: 250px;
+                    box-shadow: none;
+                    opacity: 0.5;
+                ">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
+                    <span>Logg inn med Microsoft</span>
+                </button>
+                '''
 
-            st.markdown(textwrap.dedent(f'''
-                <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
-                    {google_btn_html}
-                    {ms_btn_html}
-                </div>
-            '''), unsafe_allow_html=True)
+            html_content += "</div>"
+
+            st.markdown(html_content, unsafe_allow_html=True)
             return
 
     # --- Main App (Only reached if logged in) ---
