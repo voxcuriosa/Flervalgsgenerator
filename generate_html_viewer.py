@@ -72,9 +72,10 @@ def generate_html():
                 title = row['title']
                 content = row['content'].replace("\n", "<br>")
                 url = row['url']
+                art_slug = f"{parent_slug}-{title}".replace(" ", "-").replace(":", "").replace(",", "").lower()
                 
                 html += f"""
-                <details class="article-card">
+                <details class="article-card" id="{art_slug}">
                     <summary class="article-summary">{title}</summary>
                     <div class="article-content">
                         {content}
@@ -197,7 +198,7 @@ def generate_html():
                         articles = sorted(value["_articles"], key=lambda x: x['title'])
                         for row in articles:
                             art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
-                            html += f'<li><a href="#" onclick="document.getElementById(\'{slug}\').scrollIntoView({{behavior: \'smooth\'}}); return false;">{row["title"]}</a></li>'
+                            html += f'<li><a href="#" onclick="var el = document.getElementById(\'{art_slug}\'); if(el) {{ el.open = true; el.scrollIntoView({{behavior: \'smooth\', block: \'center\'}}); }} return false;">{row["title"]}</a></li>'
                     
                     # 2. Recurse
                     html += generate_sidebar_recursive(value, level + 1, slug)
@@ -216,7 +217,7 @@ def generate_html():
                         articles = sorted(value["_articles"], key=lambda x: x['title'])
                         for row in articles:
                             art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
-                            html += f'<li><a href="#" onclick="document.getElementById(\'{slug}\').scrollIntoView({{behavior: \'smooth\'}}); return false;">{row["title"]}</a></li>'
+                            html += f'<li><a href="#" onclick="var el = document.getElementById(\'{art_slug}\'); if(el) {{ el.open = true; el.scrollIntoView({{behavior: \'smooth\', block: \'center\'}}); }} return false;">{row["title"]}</a></li>'
                     
                     # 2. Recurse for deeper levels
                     html += generate_sidebar_recursive(value, level + 1, slug)
