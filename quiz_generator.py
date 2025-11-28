@@ -2,7 +2,7 @@ import openai
 import json
 import streamlit as st
 
-def generate_quiz(text, num_questions, num_options, multiple_correct):
+def generate_quiz(text, num_questions, num_options, multiple_correct, language="no"):
     """
     Generates a quiz using OpenAI API.
     """
@@ -13,11 +13,13 @@ def generate_quiz(text, num_questions, num_options, multiple_correct):
         
     client = openai.OpenAI(api_key=st.secrets["openai"]["api_key"])
     
+    lang_instruction = "Language: Norwegian." if language == "no" else "Language: English."
+    
     prompt = f"""
     Generate {num_questions} multiple choice questions based on the following text.
     
     Constraints:
-    - Language: Norwegian.
+    - {lang_instruction}
     - Each question should have {num_options} options.
     - {"If multiple options can be correct: Randomly vary between providing 1 or 2 correct answers per question. NEVER provide more than 2 correct answers." if multiple_correct else "Only one option should be correct."}
     - Options should be plausible and similar in length/style.

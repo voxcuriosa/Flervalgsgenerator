@@ -19,6 +19,133 @@ PDF_PATH = "HPT.pdf"
 HTML_VIEWER_PATH = "ndla_content_viewer.html"
 LOGO_URL = "logo.png"
 
+# Translations
+TRANSLATIONS = {
+    "no": {
+        "title": "Flervalgsgenerator",
+        "login_google": "Logg inn med Google",
+        "welcome": "Velkommen",
+        "logout": "Logg ut",
+        "navigation": "Navigasjon",
+        "module_quiz": "Quiz Generator",
+        "module_ndla": "NDLA Fagstoff",
+        "settings": "Innstillinger",
+        "source": "Velg kilde:",
+        "source_pdf": "Historie på Tvers (Lærebok)",
+        "source_ndla": "NDLA (Nettressurs)",
+        "update_topics": "Oppdater temaer",
+        "topics_found": "Fant {} temaer.",
+        "select_topic": "Velg tema",
+        "ndla_info": "Velg emner og artikler fra NDLA-databasen nedenfor.",
+        "ndla_expand": "Velg NDLA-innhold",
+        "selected_articles": "Valgt {} artikler.",
+        "no_articles": "Ingen artikler valgt.",
+        "num_questions": "Antall spørsmål",
+        "num_options": "Antall svaralternativer",
+        "multiple_correct": "Flere rette svar (maks 2)",
+        "generate_btn": "Generer Quiz",
+        "analyzing_pdf": "Analyserer PDF...",
+        "fetching_text": "Henter tekst fra {}...",
+        "error_ndla_select": "Du må velge minst én artikkel fra NDLA.",
+        "generating": "Generer spørsmål med AI...",
+        "error_gen": "Feil ved generering: {}",
+        "quiz_header": "Quiz: {}",
+        "submit_btn": "Lever svar",
+        "results_header": "Resultater",
+        "question": "Spørsmål",
+        "your_answer_correct": "✅ (Ditt svar - Riktig)",
+        "your_answer_wrong": "❌ (Ditt svar - Feil)",
+        "correct_answer": "⚠️ (Riktig svar)",
+        "justification": "Begrunnelse",
+        "score": "Din poengsum",
+        "result_cat": "Resultat: {}",
+        "download_pdf": "Last ned resultat (PDF)",
+        "new_quiz": "Ta ny quiz",
+        "admin_panel": "Vis Admin-panel",
+        "admin_header": "Admin: Resultater (fra Database)",
+        "admin_tools": "**Verktøy:**\n- [Åpne NDLA Database-visning](http://localhost:8000/ndla_content_viewer.html) (Krever at server kjører lokalt)",
+        "select_user": "Velg bruker for detaljer",
+        "results_for": "Resultater for: {}",
+        "total_quizzes": "Antall Quizer",
+        "total_questions": "Totalt Spørsmål",
+        "total_score": "Totalt Poeng",
+        "avg_score": "Snitt Score",
+        "results_per_topic": "Resultater per tema",
+        "history": "Historikk",
+        "download_csv": "Last ned alle resultater (CSV)",
+        "no_results": "Ingen resultater funnet ennå.",
+        "ndla_viewer_header": "NDLA Fagstoff",
+        "ndla_viewer_info": "Innholdet hentes fra lokal database basert på NDLA-skraping.",
+        "ndla_viewer_error": "Kunne ikke laste innholdsvisning: {}",
+        "reset_app": "Nullstill app (Debug)"
+    },
+    "en": {
+        "title": "Multiple Choice Generator",
+        "login_google": "Login with Google",
+        "welcome": "Welcome",
+        "logout": "Log out",
+        "navigation": "Navigation",
+        "module_quiz": "Quiz Generator",
+        "module_ndla": "NDLA Content",
+        "settings": "Settings",
+        "source": "Select Source:",
+        "source_pdf": "Historie på Tvers (Textbook)",
+        "source_ndla": "NDLA (Online Resource)",
+        "update_topics": "Update Topics",
+        "topics_found": "Found {} topics.",
+        "select_topic": "Select Topic",
+        "ndla_info": "Select topics and articles from the NDLA database below.",
+        "ndla_expand": "Select NDLA Content",
+        "selected_articles": "Selected {} articles.",
+        "no_articles": "No articles selected.",
+        "num_questions": "Number of Questions",
+        "num_options": "Number of Options",
+        "multiple_correct": "Multiple Correct Answers (max 2)",
+        "generate_btn": "Generate Quiz",
+        "analyzing_pdf": "Analyzing PDF...",
+        "fetching_text": "Fetching text from {}...",
+        "error_ndla_select": "You must select at least one article from NDLA.",
+        "generating": "Generating questions with AI...",
+        "error_gen": "Generation error: {}",
+        "quiz_header": "Quiz: {}",
+        "submit_btn": "Submit Answers",
+        "results_header": "Results",
+        "question": "Question",
+        "your_answer_correct": "✅ (Your Answer - Correct)",
+        "your_answer_wrong": "❌ (Your Answer - Wrong)",
+        "correct_answer": "⚠️ (Correct Answer)",
+        "justification": "Justification",
+        "score": "Your Score",
+        "result_cat": "Result: {}",
+        "download_pdf": "Download Result (PDF)",
+        "new_quiz": "Take New Quiz",
+        "admin_panel": "Show Admin Panel",
+        "admin_header": "Admin: Results (from Database)",
+        "admin_tools": "**Tools:**\n- [Open NDLA Database View](http://localhost:8000/ndla_content_viewer.html) (Requires local server)",
+        "select_user": "Select User for Details",
+        "results_for": "Results for: {}",
+        "total_quizzes": "Total Quizzes",
+        "total_questions": "Total Questions",
+        "total_score": "Total Score",
+        "avg_score": "Avg Score",
+        "results_per_topic": "Results per Topic",
+        "history": "History",
+        "download_csv": "Download All Results (CSV)",
+        "no_results": "No results found yet.",
+        "ndla_viewer_header": "NDLA Content",
+        "ndla_viewer_info": "Content fetched from local database based on NDLA scraping.",
+        "ndla_viewer_error": "Could not load content viewer: {}",
+        "reset_app": "Reset App (Debug)"
+    }
+}
+
+def get_text(key, *args):
+    lang = st.session_state.get("language", "no")
+    text = TRANSLATIONS[lang].get(key, key)
+    if args:
+        return text.format(*args)
+    return text
+
 def apply_custom_css():
     st.markdown("""
         <style>
@@ -94,7 +221,7 @@ def apply_custom_css():
     """, unsafe_allow_html=True)
 
 def render_ndla_viewer():
-    st.header("NDLA Fagstoff")
+    st.header(get_text("ndla_viewer_header"))
     
     # Ensure HTML exists
     if not os.path.exists(HTML_VIEWER_PATH):
@@ -110,21 +237,17 @@ def render_ndla_viewer():
         # Height needs to be sufficient, scrolling=True handles overflow
         components.html(html_content, height=800, scrolling=True)
         
-        st.info("Innholdet hentes fra lokal database basert på NDLA-skraping.")
+        st.info(get_text("ndla_viewer_info"))
     except Exception as e:
-        st.error(f"Kunne ikke laste innholdsvisning: {e}")
+        st.error(get_text("ndla_viewer_error", e))
 
 def render_quiz_generator():
-    # ... (rest of function)
     # --- Admin View ---
     if st.session_state.get("user_email") == "borchgrevink@gmail.com":
-        if st.sidebar.checkbox("Vis Admin-panel", key="admin_panel"):
-            st.header("Admin: Resultater (fra Database)")
+        if st.sidebar.checkbox(get_text("admin_panel"), key="admin_panel"):
+            st.header(get_text("admin_header"))
             
-            st.markdown("""
-            **Verktøy:**
-            - [Åpne NDLA Database-visning](http://localhost:8000/ndla_content_viewer.html) (Krever at server kjører lokalt)
-            """)
+            st.markdown(get_text("admin_tools"))
             
             # Import the new function
             from storage import get_all_results
@@ -134,10 +257,10 @@ def render_quiz_generator():
             if not df.empty:
                 # --- User Selection ---
                 users = df['user_email'].unique()
-                selected_user = st.selectbox("Velg bruker for detaljer", ["Alle"] + list(users))
+                selected_user = st.selectbox(get_text("select_user"), ["Alle"] + list(users))
                 
                 if selected_user != "Alle":
-                    st.subheader(f"Resultater for: {selected_user}")
+                    st.subheader(get_text("results_for", selected_user))
                     user_df = df[df['user_email'] == selected_user]
                     
                     # --- Summary Stats ---
@@ -147,13 +270,13 @@ def render_quiz_generator():
                     avg_score = user_df['percentage'].mean()
                     
                     col1, col2, col3, col4 = st.columns(4)
-                    col1.metric("Antall Quizer", total_quizzes)
-                    col2.metric("Totalt Spørsmål", total_questions)
-                    col3.metric("Totalt Poeng", total_score)
-                    col4.metric("Snitt Score", f"{avg_score:.1f}%")
+                    col1.metric(get_text("total_quizzes"), total_quizzes)
+                    col2.metric(get_text("total_questions"), total_questions)
+                    col3.metric(get_text("total_score"), total_score)
+                    col4.metric(get_text("avg_score"), f"{avg_score:.1f}%")
                     
                     # --- Topic Breakdown ---
-                    st.write("### Resultater per tema")
+                    st.write(f"### {get_text('results_per_topic')}")
                     topic_stats = user_df.groupby('topic').agg({
                         'score': 'sum',
                         'total': 'sum',
@@ -165,7 +288,7 @@ def render_quiz_generator():
                     
                     st.dataframe(topic_stats[['topic', 'antall_quizer', 'score', 'total', 'snitt_prosent']], hide_index=True)
                     
-                    st.write("### Historikk")
+                    st.write(f"### {get_text('history')}")
                     st.dataframe(user_df)
                 else:
                     # Show all results
@@ -174,14 +297,14 @@ def render_quiz_generator():
                 # Download button (always available)
                 csv = df.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    "Last ned alle resultater (CSV)",
+                    get_text("download_csv"),
                     csv,
                     "quiz_results.csv",
                     "text/csv",
                     key='download-csv'
                 )
             else:
-                st.info("Ingen resultater funnet ennå.")
+                st.info(get_text("no_results"))
             st.write("---")
 
     # --- App Logic ---
@@ -192,36 +315,37 @@ def render_quiz_generator():
         return
 
     # Sidebar
-    st.sidebar.header("Innstillinger")
+    st.sidebar.header(get_text("settings"))
     
     # Source Selection
-    source_type = st.sidebar.radio("Velg kilde:", ["Historie på Tvers (Lærebok)", "NDLA (Nettressurs)"])
+    source_options = [get_text("source_pdf"), get_text("source_ndla")]
+    source_type = st.sidebar.radio(get_text("source"), source_options)
     
     selected_text = ""
     selected_topic_name = ""
     
-    if source_type == "Historie på Tvers (Lærebok)":
+    if source_type == get_text("source_pdf"):
         # Topics
-        if "topics" not in st.session_state or st.sidebar.button("Oppdater temaer"):
-            with st.spinner("Analyserer PDF..."):
+        if "topics" not in st.session_state or st.sidebar.button(get_text("update_topics")):
+            with st.spinner(get_text("analyzing_pdf")):
                 st.session_state.topics = get_topics(PDF_PATH)
                 
         topic_names = list(st.session_state.topics.keys())
-        st.sidebar.write(f"Fant {len(topic_names)} temaer.") # Debug info
+        st.sidebar.write(get_text("topics_found", len(topic_names))) # Debug info
         
         # Using a key ensures the selection persists even if other things update
-        selected_topic = st.sidebar.selectbox("Velg tema", topic_names, key="topic_selector")
+        selected_topic = st.sidebar.selectbox(get_text("select_topic"), topic_names, key="topic_selector")
         selected_topic_name = selected_topic
         
     else: # NDLA
-        st.sidebar.info("Velg emner og artikler fra NDLA-databasen nedenfor.")
+        st.sidebar.info(get_text("ndla_info"))
         hierarchy = get_content_hierarchy()
         
-        with st.sidebar.expander("Velg NDLA-innhold", expanded=True):
+        with st.sidebar.expander(get_text("ndla_expand"), expanded=True):
             selected_articles = render_ndla_selector(hierarchy)
             
         if selected_articles:
-            st.sidebar.success(f"Valgt {len(selected_articles)} artikler.")
+            st.sidebar.success(get_text("selected_articles", len(selected_articles)))
             # Combine text
             selected_text = "\n\n".join([art['content'] for art in selected_articles])
             # Topic name? Maybe "NDLA Utvalg" or list topics?
@@ -230,29 +354,31 @@ def render_quiz_generator():
             else:
                 selected_topic_name = f"NDLA Utvalg ({len(selected_articles)} artikler)"
         else:
-            st.sidebar.warning("Ingen artikler valgt.")
+            st.sidebar.warning(get_text("no_articles"))
     
-    num_questions = st.sidebar.slider("Antall spørsmål", 1, 100, 5)
-    num_options = st.sidebar.slider("Antall svaralternativer", 2, 6, 4)
-    multiple_correct = st.sidebar.checkbox("Flere rette svar (maks 2)", value=False)
+    num_questions = st.sidebar.slider(get_text("num_questions"), 1, 100, 5)
+    num_options = st.sidebar.slider(get_text("num_options"), 2, 6, 4)
+    multiple_correct = st.sidebar.checkbox(get_text("multiple_correct"), value=False)
     
-    if st.sidebar.button("Generer Quiz"):
-        if source_type == "Historie på Tvers (Lærebok)":
+    if st.sidebar.button(get_text("generate_btn")):
+        if source_type == get_text("source_pdf"):
             start_page, end_page = st.session_state.topics[selected_topic]
-            with st.spinner(f"Henter tekst fra {selected_topic}..."):
+            with st.spinner(get_text("fetching_text", selected_topic)):
                 text = extract_text_by_topic(PDF_PATH, start_page, end_page)
         else:
             # NDLA
             if not selected_text:
-                st.error("Du må velge minst én artikkel fra NDLA.")
+                st.error(get_text("error_ndla_select"))
                 st.stop()
             text = selected_text
             
-        with st.spinner("Genererer spørsmål med AI..."):
-            quiz_data = generate_quiz(text, num_questions, num_options, multiple_correct)
+        with st.spinner(get_text("generating")):
+            # Pass language to generate_quiz
+            lang = st.session_state.get("language", "no")
+            quiz_data = generate_quiz(text, num_questions, num_options, multiple_correct, language=lang)
             
             if "error" in quiz_data:
-                st.error(f"Feil ved generering: {quiz_data['error']}")
+                st.error(get_text("error_gen", quiz_data['error']))
             else:
                 st.session_state.quiz_data = quiz_data
                 st.session_state.current_answers = {}
@@ -263,7 +389,7 @@ def render_quiz_generator():
     # Display Quiz
     if "quiz_data" in st.session_state and not st.session_state.get("quiz_submitted", False):
         topic_display = st.session_state.get("selected_topic_name", "Quiz")
-        st.header(f"Quiz: {topic_display}")
+        st.header(get_text("quiz_header", topic_display))
         
         form = st.form("quiz_form")
         questions = st.session_state.quiz_data.get("questions", [])
@@ -293,14 +419,14 @@ def render_quiz_generator():
                     
             form.write("---")
             
-        if form.form_submit_button("Lever svar"):
+        if form.form_submit_button(get_text("submit_btn")):
             st.session_state.current_answers = user_answers
             st.session_state.quiz_submitted = True
             st.rerun()
 
     # Display Results
     if st.session_state.get("quiz_submitted", False):
-        st.header("Resultater")
+        st.header(get_text("results_header"))
         
         questions = st.session_state.quiz_data.get("questions", [])
         answers = st.session_state.current_answers
@@ -327,7 +453,7 @@ def render_quiz_generator():
             total_possible += q_max
             
             # Display feedback
-            st.subheader(f"Spørsmål {i+1}")
+            st.subheader(f"{get_text('question')} {i+1}")
             st.write(q['question'])
             
             # Show options with colors
@@ -339,13 +465,13 @@ def render_quiz_generator():
                 is_correct = j in correct_indices
                 
                 if is_selected and is_correct:
-                    prefix = "✅ (Ditt svar - Riktig)"
+                    prefix = get_text("your_answer_correct")
                     color = "green"
                 elif is_selected and not is_correct:
-                    prefix = "❌ (Ditt svar - Feil)"
+                    prefix = get_text("your_answer_wrong")
                     color = "red"
                 elif not is_selected and is_correct:
-                    prefix = "⚠️ (Riktig svar)"
+                    prefix = get_text("correct_answer")
                     color = "orange"
                 else:
                     prefix = "⚪"
@@ -353,7 +479,7 @@ def render_quiz_generator():
                 
                 st.markdown(f":{color}[{prefix} {opt}]")
             
-            st.info(f"Begrunnelse: {q.get('justification', 'Ingen begrunnelse.')}")
+            st.info(f"{get_text('justification')}: {q.get('justification', 'Ingen begrunnelse.')}")
             st.write("---")
             
         percentage = (score / total_possible) * 100 if total_possible > 0 else 0
@@ -371,8 +497,8 @@ def render_quiz_generator():
         else:
             category = st.session_state.get("last_category", "Ukjent")
         
-        st.metric("Din poengsum", f"{score} / {total_possible}", f"{percentage:.1f}%")
-        st.success(f"Resultat: {category}")
+        st.metric(get_text("score"), f"{score} / {total_possible}", f"{percentage:.1f}%")
+        st.success(get_text("result_cat", category))
         
         # PDF Download
         pdf_bytes = generate_quiz_pdf(
@@ -386,13 +512,13 @@ def render_quiz_generator():
         )
         
         st.download_button(
-            label="Last ned resultat (PDF)",
+            label=get_text("download_pdf"),
             data=pdf_bytes,
             file_name=f"quiz_resultat.pdf",
             mime="application/pdf"
         )
         
-        if st.button("Ta ny quiz"):
+        if st.button(get_text("new_quiz")):
             del st.session_state.quiz_data
             del st.session_state.quiz_submitted
             if "result_saved" in st.session_state:
@@ -402,13 +528,32 @@ def render_quiz_generator():
 def main():
     apply_custom_css()
     
+    # Initialize Language
+    if "language" not in st.session_state:
+        st.session_state.language = "no"
+    
     # Logo in Sidebar
     st.sidebar.image(LOGO_URL, width=150)
-    st.sidebar.title("Flervalgsgenerator")
+    st.sidebar.title(get_text("title"))
     
-    if st.sidebar.button("Nullstill app (Debug)"):
+    # Language Selector
+    lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English"}
+    selected_lang = st.sidebar.radio(
+        "Language / Språk", 
+        options=list(lang_options.keys()), 
+        format_func=lambda x: lang_options[x],
+        index=0 if st.session_state.language == "no" else 1,
+        key="lang_selector"
+    )
+    
+    if selected_lang != st.session_state.language:
+        st.session_state.language = selected_lang
+        st.rerun()
+    
+    if st.sidebar.button(get_text("reset_app")):
         for key in list(st.session_state.keys()):
-            del st.session_state[key]
+            if key != "language": # Keep language
+                del st.session_state[key]
         st.rerun()
 
     # --- Authentication ---
@@ -513,28 +658,28 @@ def main():
                         gap: 10px;
                     ">
                         <img src="https://www.google.com/favicon.ico" width="20" style="background: white; border-radius: 50%; padding: 2px;">
-                        Logg inn med Google
+                        {get_text("login_google")}
                     </button>
                 </a>
             ''', unsafe_allow_html=True)
             return
     else:
-        st.write(f"Velkommen, {st.session_state.user_name}!")
+        st.write(f"{get_text('welcome')}, {st.session_state.user_name}!")
         
         # --- Main Navigation ---
         # Using a sidebar radio to switch modes
-        st.sidebar.title("Navigasjon")
-        app_mode = st.sidebar.radio("Velg modul:", ["Quiz Generator", "NDLA Fagstoff"])
+        st.sidebar.title(get_text("navigation"))
+        app_mode = st.sidebar.radio(get_text("navigation"), [get_text("module_quiz"), get_text("module_ndla")], label_visibility="collapsed")
         
-        if st.sidebar.button("Logg ut"):
+        if st.sidebar.button(get_text("logout")):
             del st.session_state.token
             st.rerun()
             
         st.divider()
         
-        if app_mode == "Quiz Generator":
+        if app_mode == get_text("module_quiz"):
             render_quiz_generator()
-        elif app_mode == "NDLA Fagstoff":
+        elif app_mode == get_text("module_ndla"):
             render_ndla_viewer()
 
 if __name__ == "__main__":
