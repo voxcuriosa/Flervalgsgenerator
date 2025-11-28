@@ -467,23 +467,24 @@ def apply_custom_css():
             color: #fafafa;
         }}
         /* Sidebar Toggle Button (Mobile) */
-        [data-testid="stSidebarCollapsedControl"] {
+        /* Sidebar Toggle Button (Mobile) */
+        [data-testid="stSidebarCollapsedControl"] {{
             background-color: #262730;
             border: 1px solid #4c4cff;
             border-radius: 5px;
             padding: 5px;
             color: white;
-        }
+        }}
         
-        [data-testid="stSidebarCollapsedControl"] svg {
+        [data-testid="stSidebarCollapsedControl"] svg {{
             height: 30px !important;
             width: 30px !important;
-        }
+        }}
         
         /* Make the header toolbar background visible on mobile to contrast the button */
-        header[data-testid="stHeader"] {
+        header[data-testid="stHeader"] {{
             background-color: #0e1117;
-        }
+        }}
         </style>
     """, unsafe_allow_html=True)
 
@@ -516,116 +517,7 @@ def render_quiz_generator():
         if st.sidebar.checkbox(get_text("admin_panel"), key="admin_panel"):
             st.header(get_text("admin_header"))
             
-            # --- Content Update Section (Moved to Top) ---
-            st.info("🛠️ **Verktøy for innholdsoppdatering**")
-            
-            st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
-            
-            # Select Subject
-            update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3"], key="update_subject")
-            
-            # Fetch available topics for this subject
-            from scrape_ndla import get_subject_topics, update_topic
-            
-            with st.spinner(f"Henter emner for {update_subject}..."):
-                available_topics = get_subject_topics(update_subject)
-                
-            if available_topics:
-                # Create a form/list for selection
-                st.write("Velg emner å oppdaterte:")
-                
-                selected_nodes = []
-                
-                # "Select All" option for everything
-                select_all_global = st.checkbox("Velg ALT innhold (alle emner og underemner)")
-                
-                for topic in available_topics:
-                    # Top level topic
-                    with st.expander(f"{topic['name']}", expanded=False):
-                        # Option to select the entire top-level topic
-                        col1, col2 = st.columns([0.05, 0.95])
-                        with col1:
-                            # If global select is on, this should be on. 
-                            # But Streamlit widgets don't update dynamically from other widgets easily without session state.
-                            # We'll use the value to determine selection logic.
-                            is_parent_selected = st.checkbox("", key=f"parent_{topic['id']}", value=select_all_global)
-                        with col2:
-                            st.markdown(f"**Oppdater hele '{topic['name']}'** (inkludert alle underemner)")
-                        
-                        # Subtopics
-                        if topic['children']:
-                            st.markdown("Eller velg spesifikke underemner:")
-                            for sub in topic['children']:
-                                # If parent is selected, subtopics are implicitly selected for update by the backend logic,
-                                # but visually we might want to show them checked? 
-                                # Actually, if parent is checked, we add parent ID.
-                                # If parent is NOT checked, we check if children are checked.
-                                is_sub_selected = st.checkbox(sub['name'], key=f"sub_{sub['id']}", value=is_parent_selected or select_all_global)
-                                
-                                if is_sub_selected:
-                                    # Logic: If parent is selected, we don't strictly need to add child, 
-                                    # BUT adding it doesn't hurt (deduplication happens later or we just process it).
-                                    # However, if we select Parent, scraping Parent covers children.
-                                    # If we select Child, scraping Child covers Child's children.
-                                    # To avoid double scraping, we should prefer the highest level selected node.
-                                    # But for simplicity, let's just add everything selected to the list
-                                    # and let the user be responsible, or do simple filtering.
-                                    selected_nodes.append(sub)
-                        
-                        # If parent was selected, we should add the PARENT node to the list.
-                        # But wait, if we add Parent, we don't need to add Children.
-                        # If we add Children, we don't need Parent.
-                        # Let's handle this:
-                        if is_parent_selected:
-                            # Add parent to list. 
-                            # We need to make sure we don't add it twice if we iterate.
-                            # Let's use a dictionary to track unique selected IDs to avoid duplicates in `selected_nodes` list display logic?
-                            # Actually, simpler: Just add it. The loop below will process it.
-                            selected_nodes.append(topic)
-
-                # Deduplicate selected nodes by ID to avoid processing same thing twice
-                # (e.g. if I selected Parent AND Child, Parent covers Child, but we might process both. 
-                # It's safer to just process what is asked. 
-                # But if Parent is in list, we should probably remove Children of that Parent from list to save time?
-                # That requires knowing the hierarchy. 
-                # Let's just run it. The scraper checks if content exists/updates it. It's fine.)
-                unique_nodes = {node['id']: node for node in selected_nodes}.values()
-                
-                st.write("") # Spacing
-                
-                if st.button(f"Oppdater {len(unique_nodes)} valgte emner", type="primary"):
-                    if unique_nodes:
-                        progress_bar = st.progress(0)
-                        status_text = st.empty()
-                        
-                        total = len(unique_nodes)
-                        success_count = 0
-                        
-                        for i, node in enumerate(unique_nodes):
-                            status_text.text(f"Oppdaterer: {node['name']}...")
-                            # We pass the node name and ID. 
-                            # If it's a subtopic, update_topic handles it.
-                            if update_topic(update_subject, node['name'], node['id']):
-                                success_count += 1
-                            progress_bar.progress((i + 1) / total)
-                            
-                        status_text.text("Ferdig!")
-                        st.success(f"Oppdatering fullført! {success_count} av {total} emner ble oppdatert.")
-                        
-                        # Regenerate HTML
-                        with st.spinner("Oppdaterer visning..."):
-                            import subprocess
-                            subprocess.run(["python3", "generate_html_viewer.py"])
-                        st.info("HTML-visning er oppdatert.")
-                        
-                    else:
-                        st.warning("Ingen emner valgt.")
-            else:
-                st.error("Kunne ikke hente emner fra NDLA. Sjekk internettforbindelsen.")
-            
-            st.divider()
-            
-            # --- General Settings ---
+            # --- 1. Settings (Max Questions) ---
             st.info("⚙️ **Innstillinger**")
             
             # Max Question Limit Setting
@@ -652,7 +544,7 @@ def render_quiz_generator():
             
             st.divider()
 
-            # --- Quiz Results Section ---
+            # --- 2. Quiz Results Section ---
             st.markdown(get_text("admin_tools"))
             
             # Import the new function
@@ -706,10 +598,6 @@ def render_quiz_generator():
                                     st.error("Kunne ikke slette resultater.")
                         
                         # Display user results with delete buttons per row
-                        # Streamlit dataframe doesn't support buttons inside easily.
-                        # We can use st.data_editor with a delete column in newer versions, or just list them.
-                        # Let's list them in a table-like structure with buttons.
-                        
                         st.dataframe(user_df[['timestamp', 'topic', 'score', 'total', 'percentage', 'category']], hide_index=True)
                         
                         # Option to delete specific test?
@@ -764,6 +652,86 @@ def render_quiz_generator():
                     )
                 else:
                     st.info(get_text("no_results"))
+            
+            st.divider()
+
+            # --- 3. Content Update Section (Moved to Bottom) ---
+            st.info("🛠️ **Verktøy for innholdsoppdatering**")
+            
+            st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
+            
+            # Select Subject
+            update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3"], key="update_subject")
+            
+            # Fetch available topics for this subject
+            from scrape_ndla import get_subject_topics, update_topic
+            
+            with st.spinner(f"Henter emner for {update_subject}..."):
+                available_topics = get_subject_topics(update_subject)
+                
+            if available_topics:
+                # Create a form/list for selection
+                st.write("Velg emner å oppdaterte:")
+                
+                selected_nodes = []
+                
+                # "Select All" option for everything
+                select_all_global = st.checkbox("Velg ALT innhold (alle emner og underemner)")
+                
+                for topic in available_topics:
+                    # Top level topic
+                    with st.expander(f"{topic['name']}", expanded=False):
+                        # Option to select the entire top-level topic
+                        col1, col2 = st.columns([0.05, 0.95])
+                        with col1:
+                            is_parent_selected = st.checkbox("", key=f"parent_{topic['id']}", value=select_all_global)
+                        with col2:
+                            st.markdown(f"**Oppdater hele '{topic['name']}'** (inkludert alle underemner)")
+                        
+                        # Subtopics
+                        if topic['children']:
+                            st.markdown("Eller velg spesifikke underemner:")
+                            for sub in topic['children']:
+                                is_sub_selected = st.checkbox(sub['name'], key=f"sub_{sub['id']}", value=is_parent_selected or select_all_global)
+                                
+                                if is_sub_selected:
+                                    selected_nodes.append(sub)
+                        
+                        if is_parent_selected:
+                            selected_nodes.append(topic)
+
+                # Deduplicate selected nodes by ID
+                unique_nodes = {node['id']: node for node in selected_nodes}.values()
+                
+                st.write("") # Spacing
+                
+                if st.button(f"Oppdater {len(unique_nodes)} valgte emner", type="primary"):
+                    if unique_nodes:
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
+                        
+                        total = len(unique_nodes)
+                        success_count = 0
+                        
+                        for i, node in enumerate(unique_nodes):
+                            status_text.text(f"Oppdaterer: {node['name']}...")
+                            if update_topic(update_subject, node['name'], node['id']):
+                                success_count += 1
+                            progress_bar.progress((i + 1) / total)
+                            
+                        status_text.text("Ferdig!")
+                        st.success(f"Oppdatering fullført! {success_count} av {total} emner ble oppdatert.")
+                        
+                        # Regenerate HTML
+                        with st.spinner("Oppdaterer visning..."):
+                            import subprocess
+                            subprocess.run(["python3", "generate_html_viewer.py"])
+                        st.info("HTML-visning er oppdatert.")
+                        
+                    else:
+                        st.warning("Ingen emner valgt.")
+            else:
+                st.error("Kunne ikke hente emner fra NDLA. Sjekk internettforbindelsen.")
             
             st.write("---")
 
