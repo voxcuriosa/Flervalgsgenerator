@@ -195,12 +195,12 @@ def render_quiz_generator():
     st.sidebar.header("Innstillinger")
     
     # Source Selection
-    source_type = st.sidebar.radio("Velg kilde:", ["HPT Boka (PDF)", "NDLA (Nettressurs)"])
+    source_type = st.sidebar.radio("Velg kilde:", ["Historie på Tvers (Lærebok)", "NDLA (Nettressurs)"])
     
     selected_text = ""
     selected_topic_name = ""
     
-    if source_type == "HPT Boka (PDF)":
+    if source_type == "Historie på Tvers (Lærebok)":
         # Topics
         if "topics" not in st.session_state or st.sidebar.button("Oppdater temaer"):
             with st.spinner("Analyserer PDF..."):
@@ -237,7 +237,7 @@ def render_quiz_generator():
     multiple_correct = st.sidebar.checkbox("Flere rette svar (maks 2)", value=False)
     
     if st.sidebar.button("Generer Quiz"):
-        if source_type == "HPT Boka (PDF)":
+        if source_type == "Historie på Tvers (Lærebok)":
             start_page, end_page = st.session_state.topics[selected_topic]
             with st.spinner(f"Henter tekst fra {selected_topic}..."):
                 text = extract_text_by_topic(PDF_PATH, start_page, end_page)
