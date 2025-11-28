@@ -248,50 +248,52 @@ def generate_html():
             }
             /* Sidebar */
             .sidebar {
-                width: 450px; /* Increased width again */
+                width: 280px; /* Reduced from 450px */
                 background-color: #2c3e50;
                 color: white;
-                padding: 20px;
+                padding: 15px;
                 overflow-y: auto;
                 flex-shrink: 0;
+                font-size: 0.9em; /* Overall smaller font in sidebar */
             }
             
             /* Navigation Items Spacing */
             .nav-level-1 {
-                margin-top: 20px;
+                margin-top: 15px;
                 margin-bottom: 5px;
                 border-bottom: 1px solid #34495e;
                 padding-bottom: 5px;
+                font-size: 1.1em; /* Reduced */
             }
             .nav-level-2 {
-                margin-top: 10px;
-                margin-bottom: 5px;
-                margin-left: 10px;
+                margin-top: 8px;
+                margin-bottom: 4px;
+                margin-left: 8px;
             }
             
             /* Indentation for Level 2 items (inside Level 1) */
             .sidebar-section {
-                margin-left: 15px;
+                margin-left: 10px;
             }
             
             /* Reset Header Margins in Sidebar */
             .sidebar h2 {
-                font-size: 1.1em;
+                font-size: 1.0em; /* Reduced */
                 margin: 0;
                 color: #ecf0f1;
                 border: none;
             }
             .sidebar h3 {
-                font-size: 1.0em;
+                font-size: 0.9em; /* Reduced */
                 margin: 0;
                 color: #bdc3c7;
                 font-weight: 600;
             }
             .sidebar h4 {
-                font-size: 0.9em;
-                margin-left: 20px;
-                margin-top: 5px;
-                margin-bottom: 5px;
+                font-size: 0.85em; /* Reduced */
+                margin-left: 15px;
+                margin-top: 4px;
+                margin-bottom: 4px;
                 color: #95a5a6;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
@@ -299,16 +301,16 @@ def generate_html():
             .sidebar ul {
                 list-style: none;
                 padding: 0;
-                margin-left: 20px;
+                margin-left: 15px;
             }
             .sidebar li {
-                margin-bottom: 2px;
+                margin-bottom: 1px;
             }
             .sidebar a {
                 color: #ecf0f1;
                 text-decoration: none;
                 display: block;
-                padding: 5px 10px;
+                padding: 4px 8px;
                 border-radius: 4px;
                 font-size: 0.85em;
                 transition: background 0.2s;
