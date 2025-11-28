@@ -310,6 +310,64 @@ TRANSLATIONS = {
         "ndla_viewer_info": "ትሕዝቶ ካብቲ ብ NDLA ዝተረኽበ ናይ ውሽጢ ቋት ሓበሬታ እዩ ተወሲዱ።",
         "ndla_viewer_error": "መራእዪ ትሕዝቶ ክጽዕን ኣይከኣለን: {}",
         "reset_app": "App ሪሰት ግበር (Debug)"
+    },
+    "uk": {
+        "title": "Генератор тестів з варіантами відповідей",
+        "login_google": "Увійти через Google",
+        "welcome": "Ласкаво просимо",
+        "logout": "Вийти",
+        "navigation": "Навігація",
+        "module_quiz": "Генератор тестів",
+        "module_ndla": "Контент NDLA",
+        "settings": "Налаштування",
+        "source": "Оберіть джерело:",
+        "source_pdf": "Historie på Tvers (Підручник)",
+        "source_ndla": "NDLA (Онлайн ресурс)",
+        "update_topics": "Оновити теми",
+        "topics_found": "Знайдено {} тем.",
+        "select_topic": "Оберіть тему",
+        "ndla_info": "Оберіть теми та статті з бази даних NDLA нижче.",
+        "ndla_expand": "Оберіть контент NDLA",
+        "selected_articles": "Обрано {} статей.",
+        "no_articles": "Статті не обрано.",
+        "num_questions": "Кількість питань",
+        "num_options": "Кількість варіантів",
+        "multiple_correct": "Кілька правильних відповідей (макс. 2)",
+        "generate_btn": "Згенерувати тест",
+        "analyzing_pdf": "Аналіз PDF...",
+        "fetching_text": "Отримання тексту з {}...",
+        "error_ndla_select": "Ви повинні обрати хоча б одну статтю з NDLA.",
+        "generating": "Генерація питань за допомогою ШІ...",
+        "error_gen": "Помилка генерації: {}",
+        "quiz_header": "Тест: {}",
+        "submit_btn": "Надіслати відповіді",
+        "results_header": "Результати",
+        "question": "Питання",
+        "your_answer_correct": "✅ (Ваша відповідь - Правильно)",
+        "your_answer_wrong": "❌ (Ваша відповідь - Неправильно)",
+        "correct_answer": "⚠️ (Правильна відповідь)",
+        "justification": "Обґрунтування",
+        "score": "Ваш результат",
+        "result_cat": "Результат: {}",
+        "download_pdf": "Завантажити результат (PDF)",
+        "new_quiz": "Пройти новий тест",
+        "admin_panel": "Показати панель адміністратора",
+        "admin_header": "Адмін: Результати (з бази даних)",
+        "admin_tools": "**Інструменти:**\n- [Відкрити перегляд бази даних NDLA](http://localhost:8000/ndla_content_viewer.html) (Потрібен локальний сервер)",
+        "select_user": "Оберіть користувача для деталей",
+        "results_for": "Результати для: {}",
+        "total_quizzes": "Всього тестів",
+        "total_questions": "Всього питань",
+        "total_score": "Загальний бал",
+        "avg_score": "Середній бал",
+        "results_per_topic": "Результати за темами",
+        "history": "Історія",
+        "download_csv": "Завантажити всі результати (CSV)",
+        "no_results": "Результатів поки не знайдено.",
+        "ndla_viewer_header": "Контент NDLA",
+        "ndla_viewer_info": "Контент отримано з локальної бази даних на основі скрапінгу NDLA.",
+        "ndla_viewer_error": "Не вдалося завантажити переглядач контенту: {}",
+        "reset_app": "Скинути додаток (Debug)"
     }
 }
 
@@ -407,6 +465,311 @@ def apply_custom_css():
 
 # ... (render_ndla_viewer and render_quiz_generator unchanged) ...
 
+def render_ndla_viewer():
+    st.header(get_text("ndla_viewer_header"))
+    
+    # Ensure HTML exists
+    if not os.path.exists(HTML_VIEWER_PATH):
+        with st.spinner("Genererer innholdsvisning..."):
+            generate_html()
+            
+    # Read HTML content
+    try:
+        with open(HTML_VIEWER_PATH, "r", encoding="utf-8") as f:
+            html_content = f.read()
+            
+        # Embed HTML
+        # Height needs to be sufficient, scrolling=True handles overflow
+        components.html(html_content, height=800, scrolling=True)
+        
+        st.info(get_text("ndla_viewer_info"))
+    except Exception as e:
+        st.error(get_text("ndla_viewer_error", e))
+
+def render_quiz_generator():
+    # --- Admin View ---
+    if st.session_state.get("user_email") == "borchgrevink@gmail.com":
+        if st.sidebar.checkbox(get_text("admin_panel"), key="admin_panel"):
+            st.header(get_text("admin_header"))
+            
+            st.markdown(get_text("admin_tools"))
+            
+            # Import the new function
+            from storage import get_all_results
+            
+            df = get_all_results()
+            
+            if not df.empty:
+                # --- User Selection ---
+                users = df['user_email'].unique()
+                selected_user = st.selectbox(get_text("select_user"), ["Alle"] + list(users))
+                
+                if selected_user != "Alle":
+                    st.subheader(get_text("results_for", selected_user))
+                    user_df = df[df['user_email'] == selected_user]
+                    
+                    # --- Summary Stats ---
+                    total_quizzes = len(user_df)
+                    total_questions = user_df['total'].sum()
+                    total_score = user_df['score'].sum()
+                    avg_score = user_df['percentage'].mean()
+                    
+                    col1, col2, col3, col4 = st.columns(4)
+                    col1.metric(get_text("total_quizzes"), total_quizzes)
+                    col2.metric(get_text("total_questions"), total_questions)
+                    col3.metric(get_text("total_score"), total_score)
+                    col4.metric(get_text("avg_score"), f"{avg_score:.1f}%")
+                    
+                    # --- Topic Breakdown ---
+                    st.write(f"### {get_text('results_per_topic')}")
+                    topic_stats = user_df.groupby('topic').agg({
+                        'score': 'sum',
+                        'total': 'sum',
+                        'percentage': 'mean',
+                        'timestamp': 'count' # Count quizzes per topic
+                    }).rename(columns={'timestamp': 'antall_quizer'}).reset_index()
+                    
+                    topic_stats['snitt_prosent'] = topic_stats['percentage'].map('{:.1f}%'.format)
+                    
+                    st.dataframe(topic_stats[['topic', 'antall_quizer', 'score', 'total', 'snitt_prosent']], hide_index=True)
+                    
+                    st.write(f"### {get_text('history')}")
+                    st.dataframe(user_df)
+                else:
+                    # Show all results
+                    st.dataframe(df)
+                
+                # Download button (always available)
+                csv = df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    get_text("download_csv"),
+                    csv,
+                    "quiz_results.csv",
+                    "text/csv",
+                    key='download-csv'
+                )
+            else:
+                st.info(get_text("no_results"))
+            st.write("---")
+
+    # --- App Logic ---
+    
+    # Check PDF
+    if not os.path.exists(PDF_PATH):
+        st.error(f"Fant ikke filen: {PDF_PATH}")
+        return
+
+    # Sidebar
+    st.sidebar.header(get_text("settings"))
+    
+    # Source Selection
+    source_options = [get_text("source_pdf"), get_text("source_ndla")]
+    source_type = st.sidebar.radio(get_text("source"), source_options)
+    
+    selected_text = ""
+    selected_topic_name = ""
+    
+    if source_type == get_text("source_pdf"):
+        # Topics
+        if "topics" not in st.session_state or st.sidebar.button(get_text("update_topics")):
+            with st.spinner(get_text("analyzing_pdf")):
+                st.session_state.topics = get_topics(PDF_PATH)
+                
+        topic_names = list(st.session_state.topics.keys())
+        st.sidebar.write(get_text("topics_found", len(topic_names))) # Debug info
+        
+        # Using a key ensures the selection persists even if other things update
+        selected_topic = st.sidebar.selectbox(get_text("select_topic"), topic_names, key="topic_selector")
+        selected_topic_name = selected_topic
+        
+    else: # NDLA
+        st.sidebar.info(get_text("ndla_info"))
+        hierarchy = get_content_hierarchy()
+        
+        with st.sidebar.expander(get_text("ndla_expand"), expanded=True):
+            selected_articles = render_ndla_selector(hierarchy)
+            
+        if selected_articles:
+            st.sidebar.success(get_text("selected_articles", len(selected_articles)))
+            # Combine text
+            selected_text = "\n\n".join([art['content'] for art in selected_articles])
+            # Topic name? Maybe "NDLA Utvalg" or list topics?
+            if len(selected_articles) == 1:
+                selected_topic_name = selected_articles[0]['title']
+            else:
+                selected_topic_name = f"NDLA Utvalg ({len(selected_articles)} artikler)"
+        else:
+            st.sidebar.warning(get_text("no_articles"))
+    
+    num_questions = st.sidebar.slider(get_text("num_questions"), 1, 100, 5)
+    num_options = st.sidebar.slider(get_text("num_options"), 2, 6, 4)
+    multiple_correct = st.sidebar.checkbox(get_text("multiple_correct"), value=False)
+    
+    if st.sidebar.button(get_text("generate_btn")):
+        if source_type == get_text("source_pdf"):
+            start_page, end_page = st.session_state.topics[selected_topic]
+            with st.spinner(get_text("fetching_text", selected_topic)):
+                text = extract_text_by_topic(PDF_PATH, start_page, end_page)
+        else:
+            # NDLA
+            if not selected_text:
+                st.error(get_text("error_ndla_select"))
+                st.stop()
+            text = selected_text
+            
+        with st.spinner(get_text("generating")):
+            # Pass language to generate_quiz
+            lang = st.session_state.get("language", "no")
+            quiz_data = generate_quiz(text, num_questions, num_options, multiple_correct, language=lang)
+            
+            if "error" in quiz_data:
+                st.error(get_text("error_gen", quiz_data['error']))
+            else:
+                st.session_state.quiz_data = quiz_data
+                st.session_state.current_answers = {}
+                st.session_state.quiz_submitted = False
+                st.session_state.selected_topic_name = selected_topic_name # Store for results
+                st.rerun()
+
+    # Display Quiz
+    if "quiz_data" in st.session_state and not st.session_state.get("quiz_submitted", False):
+        topic_display = st.session_state.get("selected_topic_name", "Quiz")
+        st.header(get_text("quiz_header", topic_display))
+        
+        form = st.form("quiz_form")
+        questions = st.session_state.quiz_data.get("questions", [])
+        
+        user_answers = {}
+        
+        for i, q in enumerate(questions):
+            form.subheader(f"{i+1}. {q['question']}")
+            
+            options = q['options']
+            
+            if multiple_correct:
+                # Checkboxes
+                selected = []
+                for j, opt in enumerate(options):
+                    if form.checkbox(opt, key=f"q{i}_opt{j}"):
+                        selected.append(j)
+                user_answers[i] = selected
+            else:
+                # Radio
+                selected = form.radio("Velg svar:", options, key=f"q{i}", index=None)
+                # Map back to index
+                if selected:
+                    user_answers[i] = [options.index(selected)]
+                else:
+                    user_answers[i] = []
+                    
+            form.write("---")
+            
+        if form.form_submit_button(get_text("submit_btn")):
+            st.session_state.current_answers = user_answers
+            st.session_state.quiz_submitted = True
+            st.rerun()
+
+    # Display Results
+    if st.session_state.get("quiz_submitted", False):
+        st.header(get_text("results_header"))
+        
+        questions = st.session_state.quiz_data.get("questions", [])
+        answers = st.session_state.current_answers
+        
+        score = 0
+        total_possible = 0
+        
+        for i, q in enumerate(questions):
+            correct_indices = q['correct_indices']
+            user_indices = answers.get(i, [])
+            
+            q_score = 0
+            q_max = len(correct_indices)
+            
+            # Let's calculate points
+            for idx in user_indices:
+                if idx in correct_indices:
+                    q_score += 1
+                else:
+                    pass
+            
+            # If single choice, max is 1.
+            score += q_score
+            total_possible += q_max
+            
+            # Display feedback
+            st.subheader(f"{get_text('question')} {i+1}")
+            st.write(q['question'])
+            
+            # Show options with colors
+            for j, opt in enumerate(q['options']):
+                prefix = ""
+                color = "black"
+                
+                is_selected = j in user_indices
+                is_correct = j in correct_indices
+                
+                if is_selected and is_correct:
+                    prefix = get_text("your_answer_correct")
+                    color = "green"
+                elif is_selected and not is_correct:
+                    prefix = get_text("your_answer_wrong")
+                    color = "red"
+                elif not is_selected and is_correct:
+                    prefix = get_text("correct_answer")
+                    color = "orange"
+                else:
+                    prefix = "⚪"
+                    color = "gray" # 'black' is not supported in Streamlit markdown colors
+                
+                st.markdown(f":{color}[{prefix} {opt}]")
+            
+            st.info(f"{get_text('justification')}: {q.get('justification', 'Ingen begrunnelse.')}")
+            st.write("---")
+            
+        percentage = (score / total_possible) * 100 if total_possible > 0 else 0
+        if not st.session_state.get("result_saved", False):
+            category = save_result(
+                st.session_state.user_email, 
+                st.session_state.user_name, 
+                score, 
+                total_possible, 
+                percentage, 
+                st.session_state.get("selected_topic_name", "Ukjent")
+            )
+            st.session_state.result_saved = True
+            st.session_state.last_category = category
+        else:
+            category = st.session_state.get("last_category", "Ukjent")
+        
+        st.metric(get_text("score"), f"{score} / {total_possible}", f"{percentage:.1f}%")
+        st.success(get_text("result_cat", category))
+        
+        # PDF Download
+        pdf_bytes = generate_quiz_pdf(
+            st.session_state.get("selected_topic_name", "Quiz"), 
+            st.session_state.user_name, 
+            score, 
+            total_possible, 
+            percentage, 
+            questions, 
+            answers
+        )
+        
+        st.download_button(
+            label=get_text("download_pdf"),
+            data=pdf_bytes,
+            file_name=f"quiz_resultat.pdf",
+            mime="application/pdf"
+        )
+        
+        if st.button(get_text("new_quiz")):
+            del st.session_state.quiz_data
+            del st.session_state.quiz_submitted
+            if "result_saved" in st.session_state:
+                del st.session_state.result_saved
+            st.rerun()
+
 def main():
     # Initialize Language FIRST
     if "language" not in st.session_state:
@@ -447,7 +810,7 @@ def main():
         
         if code:
             # Restore language from state if valid
-            if state and state in ["no", "en", "ar", "so", "ti"]:
+            if state and state in ["no", "en", "ar", "so", "ti", "uk"]:
                 st.session_state.language = state
                 # We can safely set this here because the widget hasn't been rendered yet!
                 st.session_state["lang_selector"] = state
@@ -500,12 +863,12 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English", "ar": "🇸🇦 العربية", "so": "🇸🇴 Soomaali", "ti": "🇪🇷 ትግርኛ"}
+            lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English", "ar": "🇸🇦 العربية", "so": "🇸🇴 Soomaali", "ti": "🇪🇷 ትግርኛ", "uk": "🇺🇦 Українська"}
             selected_lang = st.radio(
                 "Language / Språk / لغة", 
                 options=list(lang_options.keys()), 
                 format_func=lambda x: lang_options[x],
-                index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "en" else (2 if st.session_state.language == "ar" else (3 if st.session_state.language == "so" else 4))),
+                index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "en" else (2 if st.session_state.language == "ar" else (3 if st.session_state.language == "so" else (4 if st.session_state.language == "ti" else 5)))),
                 key="lang_selector_login",
                 horizontal=True
             )
@@ -560,18 +923,42 @@ def main():
     st.sidebar.title(get_text("title"))
     
     # Language Selector (Sidebar)
-    lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English", "ar": "🇸🇦 العربية", "so": "🇸🇴 Soomaali", "ti": "🇪🇷 ትግርኛ"}
+    lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English", "ar": "🇸🇦 العربية", "so": "🇸🇴 Soomaali", "ti": "🇪🇷 ትግርኛ", "uk": "🇺🇦 Українська"}
     selected_lang = st.sidebar.radio(
         "Language / Språk / لغة", 
         options=list(lang_options.keys()), 
         format_func=lambda x: lang_options[x],
-        index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "en" else (2 if st.session_state.language == "ar" else (3 if st.session_state.language == "so" else 4))),
+        index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "en" else (2 if st.session_state.language == "ar" else (3 if st.session_state.language == "so" else (4 if st.session_state.language == "ti" else 5)))),
         key="lang_selector"
     )
     
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
         st.rerun()
+
+    if st.sidebar.button(get_text("reset_app")):
+        for key in list(st.session_state.keys()):
+            if key != "language": # Keep language
+                del st.session_state[key]
+        st.rerun()
+
+    st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')}!")
+    
+    # --- Main Navigation ---
+    # Using a sidebar radio to switch modes
+    st.sidebar.title(get_text("navigation"))
+    app_mode = st.sidebar.radio(get_text("navigation"), [get_text("module_quiz"), get_text("module_ndla")], label_visibility="collapsed")
+    
+    if st.sidebar.button(get_text("logout")):
+        del st.session_state.token
+        st.rerun()
+        
+    st.divider()
+    
+    if app_mode == get_text("module_quiz"):
+        render_quiz_generator()
+    elif app_mode == get_text("module_ndla"):
+        render_ndla_viewer()
 
 if __name__ == "__main__":
     main()
