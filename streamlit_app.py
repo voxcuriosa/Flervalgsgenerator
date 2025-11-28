@@ -1318,13 +1318,13 @@ def main():
                     st.rerun()
                 else:
                     st.error(f"Feil ved innlogging ({provider}): {token_data.get('error_description', token_data)}")
-                    # st.query_params.clear() # Commented out to debug
-                    st.stop() # Stop to show error
+                    st.query_params.clear() # Clear params to prevent loop
+                    # st.stop() # Allow script to continue so user can try again
                     
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
-                # st.query_params.clear() # Commented out to debug
-                st.stop() # Stop to show error
+                st.query_params.clear() # Clear params to prevent loop
+                # st.stop() # Allow script to continue so user can try again
     
     # Check for existing login cookie if not in session state
     if "user_email" not in st.session_state:
@@ -1564,6 +1564,7 @@ def main():
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
                         <span>Logg inn med Microsoft</span>
                     </button>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px; text-align: center;">(Kun personlig Microsoft-konto, ikke jobb/skole)</p>
                 ''')
 
             # Combine in a container
