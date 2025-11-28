@@ -1241,9 +1241,9 @@ def main():
                     expires = datetime.datetime.now() + datetime.timedelta(days=30)
                     # FIX: Use st.session_state.user_email instead of undefined 'email'
                     if "user_email" in st.session_state:
-                        cookie_manager.set("user_email", st.session_state.user_email, expires_at=expires)
+                        cookie_manager.set("user_email", st.session_state.user_email, expires_at=expires, key="set_email")
                         # Also save user name
-                        cookie_manager.set("user_name", st.session_state.user_name, expires_at=expires)
+                        cookie_manager.set("user_name", st.session_state.user_name, expires_at=expires, key="set_name")
                     
                     # Wait a bit to ensure cookie is set before reload
                     import time
@@ -1333,8 +1333,8 @@ def main():
         if st.sidebar.button(get_text("logout")):
             try:
                 # Delete cookie
-                cookie_manager.delete("user_email")
-                cookie_manager.delete("user_name")
+                cookie_manager.delete("user_email", key="del_email")
+                cookie_manager.delete("user_name", key="del_name")
                 
                 # Clear session state
                 for key in list(st.session_state.keys()):
