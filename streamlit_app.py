@@ -55,7 +55,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Analyserer PDF...",
         "fetching_text": "Henter tekst fra {}...",
         "error_ndla_select": "Du må velge minst én artikkel fra NDLA.",
-        "generating": "Generer spørsmål med AI...",
+        "generating": "Generer spørsmål med AI (OpenAI GPT-4o)...",
         "error_gen": "Feil ved generering: {}",
         "quiz_header": "Quiz: {}",
         "submit_btn": "Lever svar",
@@ -114,7 +114,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Analyzing PDF...",
         "fetching_text": "Fetching text from {}...",
         "error_ndla_select": "You must select at least one article from NDLA.",
-        "generating": "Generating questions with AI...",
+        "generating": "Generating questions with AI (OpenAI GPT-4o)...",
         "error_gen": "Generation error: {}",
         "quiz_header": "Quiz: {}",
         "submit_btn": "Submit Answers",
@@ -172,7 +172,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "جاري تحليل ملف PDF...",
         "fetching_text": "جاري جلب النص من {}...",
         "error_ndla_select": "يجب عليك اختيار مقال واحد على الأقل من NDLA.",
-        "generating": "جاري إنشاء الأسئلة باستخدام الذكاء الاصطناعي...",
+        "generating": "جاري إنشاء الأسئلة باستخدام الذكاء الاصطناعي (OpenAI GPT-4o)...",
         "error_gen": "خطأ في الإنشاء: {}",
         "quiz_header": "اختبار: {}",
         "submit_btn": "إرسال الإجابات",
@@ -230,7 +230,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Falanqaynta PDF...",
         "fetching_text": "Ka soo qaadashada qoraalka {}...",
         "error_ndla_select": "Waa inaad doorataa ugu yaraan hal maqaal NDLA.",
-        "generating": "Samaynta su'aalaha iyadoo la isticmaalayo AI...",
+        "generating": "Samaynta su'aalaha iyadoo la isticmaalayo AI (OpenAI GPT-4o)...",
         "error_gen": "Khalad samaynta: {}",
         "quiz_header": "Imtixaan: {}",
         "submit_btn": "Gudbi Jawaabaha",
@@ -288,7 +288,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "PDF ይምርምር ኣሎ...",
         "fetching_text": "ጽሑፍ ካብ {} የውጽእ ኣሎ...",
         "error_ndla_select": "ካብ NDLA እንተወሓደ ሓደ ዓንቀጽ ክትመርጽ ኣለካ።",
-        "generating": "ብ AI ሕቶታት ይፈጥር ኣሎ...",
+        "generating": "ብ AI ሕቶታት ይፈጥር ኣሎ (OpenAI GPT-4o)...",
         "error_gen": "ጌጋ ኣብ ምፍጣር: {}",
         "quiz_header": "ፈተና: {}",
         "submit_btn": "መልሲ ኣረክብ",
@@ -347,7 +347,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "กำลังวิเคราะห์ PDF...",
         "fetching_text": "กำลังดึงข้อความจาก {}...",
         "error_ndla_select": "คุณต้องเลือกบทความอย่างน้อยหนึ่งบทความจาก NDLA",
-        "generating": "กำลังสร้างคำถามด้วย AI...",
+        "generating": "กำลังสร้างคำถามด้วย AI (OpenAI GPT-4o)...",
         "error_gen": "เกิดข้อผิดพลาดในการสร้าง: {}",
         "quiz_header": "แบบทดสอบ: {}",
         "submit_btn": "ส่งคำตอบ",
@@ -405,7 +405,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Аналіз PDF...",
         "fetching_text": "Отримання тексту з {}...",
         "error_ndla_select": "Ви повинні обрати хоча б одну статтю з NDLA.",
-        "generating": "Генерація питань за допомогою ШІ...",
+        "generating": "Генерація питань за допомогою ШІ (OpenAI GPT-4o)...",
         "error_gen": "Помилка генерації: {}",
         "quiz_header": "Тест: {}",
         "submit_btn": "Надіслати відповіді",
@@ -896,7 +896,7 @@ def render_quiz_generator():
         uploaded_file = st.sidebar.file_uploader("Velg fil", type=["pdf", "docx", "pptx"])
         
         if uploaded_file:
-            if st.sidebar.button("Generer Quiz fra fil", type="primary"):
+            if st.sidebar.button("Generer quiz fra fil", type="primary"):
                 with st.spinner("Leser fil..."):
                     try:
                         from file_processor import extract_text_from_file
