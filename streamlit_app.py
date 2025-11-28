@@ -10,6 +10,7 @@ from generate_html_viewer import generate_html
 import streamlit_oauth as oauth
 import asyncio
 import streamlit.components.v1 as components
+import extra_streamlit_components as stx
 
 # Page Config
 st.set_page_config(page_title="HPT Quiz Generator", layout="wide", initial_sidebar_state="expanded")
@@ -528,7 +529,8 @@ def render_ndla_viewer():
 
 def render_quiz_generator():
     # --- Admin View ---
-    if st.session_state.get("user_email") == "borchgrevink@gmail.com":
+    ADMINS = ["borchgrevink@gmail.com", "hanslaa@gmail.com", "nilsnaas@gmail.com"]
+    if st.session_state.get("user_email") in ADMINS:
         if st.sidebar.checkbox(get_text("admin_panel"), key="admin_panel"):
             
             # --- 1. Settings (Max Questions) ---
@@ -564,14 +566,35 @@ def render_quiz_generator():
             # Import the new function
             from storage import get_all_results, delete_results
             
-            # Lazy Loading
-            if "load_results" not in st.session_state:
-                st.session_state.load_results = False
-                
-            if not st.session_state.load_results:
-                if st.button("Last inn resultater"):
-                    st.session_state.load_results = True
+            # --- Auth & Persistence ---
+    
+            # Initialize Cookie Manager
+            cookie_manager = stx.CookieManager()
+            
+            # Check for existing login cookie if not in session state
+            if "user_email" not in st.session_state:
+                # We need to wait a bit for the cookie manager to load
+                cookie_email = cookie_manager.get("user_email")
+                if cookie_email:
+                    st.session_state.user_email = cookie_email
+                    st.session_state.user_name = "User" # We don't have the name in cookie, but that's fine
                     st.rerun()
+                    
+            if "user_email" in st.session_state:
+                # Logout Button in Sidebar
+                if st.sidebar.button(get_text("logout")):
+                    # Delete cookie
+                    cookie_manager.delete("user_email")
+                    
+                    # Clear session state
+                    for key in list(st.session_state.keys()):
+                        del st.session_state[key]
+                    st.rerun()
+            
+            # --- Login Flow ---
+            if "user_email" not in st.session_state:
+                st.session_state.load_results = False
+                st.rerun()
             else:
                 if st.button("Skjul resultater"):
                     st.session_state.load_results = False
@@ -978,6 +1001,31 @@ def main():
 
     apply_custom_css()
 
+    # --- Auth & Persistence ---
+    
+    # Initialize Cookie Manager
+    cookie_manager = stx.CookieManager()
+    
+    # Check for existing login cookie if not in session state
+    if "user_email" not in st.session_state:
+        # We need to wait a bit for the cookie manager to load
+        cookie_email = cookie_manager.get("user_email")
+        if cookie_email:
+            st.session_state.user_email = cookie_email
+            st.session_state.user_name = "User" # We don't have the name in cookie, but that's fine
+            st.rerun()
+            
+    if "user_email" in st.session_state:
+        # Logout Button in Sidebar
+        if st.sidebar.button(get_text("logout")):
+            # Delete cookie
+            cookie_manager.delete("user_email")
+            
+            # Clear session state
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+
     # --- Authentication (MOVED TO TOP) ---
     if "google" not in st.secrets:
         st.error("Google secrets not found in .streamlit/secrets.toml")
@@ -1050,6 +1098,11 @@ def main():
                             st.session_state.user_name = payload.get("name", "Unknown")
                     
                     # Clear query params to clean URL
+                    # Set persistent cookie (expires in 30 days)
+                    import datetime
+                    expires = datetime.datetime.now() + datetime.timedelta(days=30)
+                    cookie_manager.set("user_email", email, expires_at=expires)
+                    
                     st.query_params.clear()
                     st.rerun()
                 else:

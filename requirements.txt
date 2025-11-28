@@ -10,3 +10,4 @@ sqlalchemy
 pytz
 beautifulsoup4
 fpdf
+extra-streamlit-components
