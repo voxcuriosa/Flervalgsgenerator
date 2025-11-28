@@ -1419,6 +1419,7 @@ def main():
                 time.sleep(1)
                 
                 # Just rerun to show login screen
+                st.query_params.clear()
                 st.rerun()
                 
             except Exception as e:

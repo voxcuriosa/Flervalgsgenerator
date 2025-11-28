@@ -319,6 +319,7 @@ def get_subject_topics(subject_name):
         
         topics = []
         for child in children:
+            name = child.get('name', '').strip()
             # Filter out "Om faget" (robust check) - ENABLED AGAIN
             # if name.lower() == "om faget":
             #     continue
