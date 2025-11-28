@@ -13,3 +13,5 @@ fpdf
 extra-streamlit-components
 python-docx
 python-pptx
+pyjwt
+requests
