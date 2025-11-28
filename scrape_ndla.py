@@ -317,10 +317,15 @@ def get_subject_topics(subject_name):
         
         topics = []
         for child in children:
+            # Filter out "Om faget" (robust check)
+            name = child.get('name', '').strip()
+            if name.lower() == "om faget":
+                continue
+                
             # We only want topics, not resources (though at this level they should be topics)
             # Filter out "Diverse" if we want, or keep it.
             topic_data = {
-                'name': child.get('name', 'Ukjent emne'),
+                'name': name,
                 'id': child.get('id'),
                 'children': []
             }
@@ -329,8 +334,12 @@ def get_subject_topics(subject_name):
             try:
                 sub_children = get_nodes(child.get('id'))
                 for sub in sub_children:
+                    sub_name = sub.get('name', '').strip()
+                    if sub_name.lower() == "om faget":
+                        continue
+                        
                     topic_data['children'].append({
-                        'name': sub.get('name'),
+                        'name': sub_name,
                         'id': sub.get('id')
                     })
             except:
