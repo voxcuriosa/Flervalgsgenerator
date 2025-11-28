@@ -301,7 +301,7 @@ def get_subject_topics(subject_name):
     if subject_name == "Historie vg3":
         root_node_id = "urn:subject:cc109c51-a083-413b-b497-7f80a0569a92"
     elif subject_name == "Historie vg2":
-        root_node_id = "urn:subject:d1fe9d0a-a54d-49db-a4c2-fd5463a7c9e7"
+        root_node_id = "urn:subject:1:ff69c291-6374-4766-80c2-47d5840d8bbf"
     
     if not root_node_id:
         return []
