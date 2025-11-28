@@ -313,7 +313,7 @@ def get_subject_topics(subject_name):
             return []
             
         # Get children
-        children = get_children(root_node_id)
+        children = get_nodes(root_node_id)
         
         topics = []
         for child in children:
