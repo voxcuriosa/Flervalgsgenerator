@@ -8,4 +8,5 @@ watchdog
 psycopg2-binary
 sqlalchemy
 pytz
+beautifulsoup4
 fpdf

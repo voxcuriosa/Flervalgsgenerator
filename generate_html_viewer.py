@@ -158,9 +158,9 @@ def generate_html():
             
             if level == 1:
                 # Level 1: Main Topic (e.g. "Makt og religion") -> H2
-                # Collapsible
+                # Collapsible (Closed by default)
                 html += f"""
-                <details open>
+                <details>
                     <summary><h2>{key}</h2></summary>
                     <div class="sidebar-section">
                         {generate_sidebar_recursive(value, level + 1, slug)}
