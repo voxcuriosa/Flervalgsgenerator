@@ -848,11 +848,40 @@ def render_quiz_generator():
     st.sidebar.header(get_text("settings"))
     
     # Source Selection
-    source_options = [get_text("source_pdf"), get_text("source_ndla")]
-    source_type = st.sidebar.radio(get_text("source"), source_options)
+    source_type = st.sidebar.radio(
+        get_text("choose_source"),
+        [get_text("source_pdf"), get_text("source_ndla"), "Nettside (URL)"]
+    )
     
     selected_text = ""
     selected_topic_name = ""
+    
+    if source_type == "Nettside (URL)":
+        st.sidebar.info("Lim inn en lenke til en nettside du vil lage quiz fra.")
+        url_input = st.sidebar.text_input("URL til nettside", key="url_input")
+        
+        if url_input:
+            if st.sidebar.button("Hent innhold"):
+                with st.spinner("Henter innhold fra nettside..."):
+                    try:
+                        from scrape_url import scrape_url
+                        text = scrape_url(url_input)
+                        if text:
+                            st.session_state['url_text'] = text
+                            st.session_state['url_source'] = url_input
+                            st.sidebar.success("Innhold hentet!")
+                        else:
+                            st.sidebar.warning("Fant ingen tekst på siden.")
+                    except Exception as e:
+                        st.sidebar.error(f"Feil: {e}")
+        
+        if 'url_text' in st.session_state and st.session_state.get('url_source') == url_input:
+            selected_text = st.session_state['url_text']
+            selected_topic_name = "Nettside: " + url_input
+            
+            # Preview
+            with st.expander("Vis hentet tekst"):
+                st.write(selected_text[:1000] + "...")
     
     if source_type == get_text("source_pdf"):
         # Topics
@@ -866,6 +895,15 @@ def render_quiz_generator():
         # Using a key ensures the selection persists even if other things update
         selected_topic = st.sidebar.selectbox(get_text("select_topic"), topic_names, key="topic_selector")
         selected_topic_name = selected_topic
+        
+    elif source_type == "Nettside (URL)":
+        if not selected_text:
+            st.error("Du må hente innhold fra en URL først.")
+            st.stop()
+        
+        # Use the text directly
+        final_text = selected_text
+        topic_name = selected_topic_name
         
     else: # NDLA
         st.sidebar.info(get_text("ndla_info"))
