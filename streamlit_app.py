@@ -937,6 +937,13 @@ def render_quiz_generator():
                             if topic in all_topics and "HPT.pdf" in all_topics[topic][2] and "HPTx.pdf" in pdf_file:
                                 print(f"DEBUG: Ignoring {topic} from {pdf_file} because it exists in {all_topics[topic][2]}")
                                 continue
+                            
+                            # Manual Override for Tema 1 (User reported 9-17)
+                            # "Tema 1" might be "Tema 1: Introkapittel"
+                            if "Tema 1" in topic and "HPT.pdf" in pdf_file:
+                                print(f"DEBUG: Overriding {topic} range to 8-17 (Pages 9-17)")
+                                start = 8  # Page 9
+                                end = 17   # Page 17 (inclusive) -> index 17 (exclusive)
                                 
                             all_topics[topic] = (start, end, pdf_file)
                     else:
