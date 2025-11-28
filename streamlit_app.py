@@ -310,9 +310,68 @@ TRANSLATIONS = {
         "download_csv": "ኩሉ ውጽኢት ኣውርድ (CSV)",
         "no_results": "ክሳብ ሕጂ ዝኾነ ውጽኢት ኣይተረኽበን።",
         "ndla_viewer_header": "ትሕዝቶ NDLA",
-        "ndla_viewer_info": "ትሕዝቶ ካብቲ ብ NDLA ዝተረኽበ ናይ ውሽጢ ቋት ሓበሬታ እዩ ተወሲዱ።",
-        "ndla_viewer_error": "መራእዪ ትሕዝቶ ክጽዕን ኣይከኣለን: {}",
-        "reset_app": "App ሪሰት ግበር (Debug)"
+        "ndla_viewer_info": "Innholdet hentes fra lokal database basert på NDLA-skraping.",
+        "ndla_viewer_error": "Kunne ikke laste innholdsvisning: {}",
+        "reset_app": "Nullstill app (Debug)"
+    },
+    "th": {
+        "title": "เครื่องมือสร้างข้อสอบปรนัย",
+        "language": "ภาษา",
+        "login_google": "เข้าสู่ระบบด้วย Google",
+        "welcome": "ยินดีต้อนรับ",
+        "logout": "ออกจากระบบ",
+        "navigation": "การนำทาง",
+        "module_quiz": "เครื่องมือสร้างแบบทดสอบ",
+        "module_ndla": "เนื้อหา NDLA",
+        "settings": "การตั้งค่า",
+        "source": "เลือกแหล่งที่มา:",
+        "source_pdf": "ประวัติศาสตร์ข้ามพรมแดน (หนังสือเรียน)",
+        "source_ndla": "NDLA (แหล่งข้อมูลออนไลน์)",
+        "update_topics": "อัปเดตหัวข้อ",
+        "topics_found": "พบ {} หัวข้อ",
+        "select_topic": "เลือกหัวข้อ",
+        "ndla_info": "เลือกหัวข้อและบทความจากฐานข้อมูล NDLA ด้านล่าง",
+        "ndla_expand": "เลือกเนื้อหา NDLA",
+        "selected_articles": "เลือก {} บทความ",
+        "no_articles": "ไม่ได้เลือกบทความ",
+        "num_questions": "จำนวนคำถาม",
+        "num_options": "จำนวนตัวเลือก",
+        "multiple_correct": "คำตอบที่ถูกต้องหลายข้อ (สูงสุด 2)",
+        "generate_btn": "สร้างแบบทดสอบ",
+        "analyzing_pdf": "กำลังวิเคราะห์ PDF...",
+        "fetching_text": "กำลังดึงข้อความจาก {}...",
+        "error_ndla_select": "คุณต้องเลือกบทความอย่างน้อยหนึ่งบทความจาก NDLA",
+        "generating": "กำลังสร้างคำถามด้วย AI...",
+        "error_gen": "เกิดข้อผิดพลาดในการสร้าง: {}",
+        "quiz_header": "แบบทดสอบ: {}",
+        "submit_btn": "ส่งคำตอบ",
+        "results_header": "ผลลัพธ์",
+        "question": "คำถาม",
+        "your_answer_correct": "✅ (คำตอบของคุณ - ถูกต้อง)",
+        "your_answer_wrong": "❌ (คำตอบของคุณ - ผิด)",
+        "correct_answer": "⚠️ (คำตอบที่ถูกต้อง)",
+        "justification": "เหตุผล",
+        "score": "คะแนนของคุณ",
+        "result_cat": "ผลลัพธ์: {}",
+        "download_pdf": "ดาวน์โหลดผลลัพธ์ (PDF)",
+        "new_quiz": "ทำแบบทดสอบใหม่",
+        "admin_panel": "แสดงแผงผู้ดูแลระบบ",
+        "admin_header": "ผู้ดูแลระบบ: ผลลัพธ์ (จากฐานข้อมูล)",
+        "admin_tools": "**เครื่องมือ:**\n- [เปิดมุมมองฐานข้อมูล NDLA](http://localhost:8000/ndla_content_viewer.html) (ต้องใช้เซิร์ฟเวอร์ภายในเครื่อง)",
+        "select_user": "เลือกผู้ใช้เพื่อดูรายละเอียด",
+        "results_for": "ผลลัพธ์สำหรับ: {}",
+        "total_quizzes": "แบบทดสอบทั้งหมด",
+        "total_questions": "คำถามทั้งหมด",
+        "total_score": "คะแนนรวม",
+        "avg_score": "คะแนนเฉลี่ย",
+        "results_per_topic": "ผลลัพธ์ตามหัวข้อ",
+        "history": "ประวัติ",
+        "download_csv": "ดาวน์โหลดผลลัพธ์ทั้งหมด (CSV)",
+        "no_results": "ยังไม่พบผลลัพธ์",
+        "ndla_viewer_header": "เนื้อหา NDLA",
+        "ndla_viewer_info": "ดึงเนื้อหาจากฐานข้อมูลภายในเครื่องตามการขูดข้อมูล NDLA",
+        "ndla_viewer_error": "ไม่สามารถโหลดมุมมองเนื้อหา: {}",
+        "reset_app": "รีเซ็ตแอป (แก้ไขจุดบกพร่อง)"
     },
     "uk": {
         "title": "Генератор тестів з варіантами відповідей",
@@ -475,26 +534,29 @@ def apply_custom_css():
             background-color: #4c4cff; /* High contrast blue */
             border: 2px solid white;
             border-radius: 8px;
-            padding: 8px 12px;
+            padding: 10px 15px; /* Larger padding */
             color: white;
             display: flex;
             align-items: center;
-            gap: 5px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             z-index: 999999; /* Ensure it's on top */
+            width: auto !important;
+            height: auto !important;
         }}
         
         /* Add "MENY" text */
         [data-testid="stSidebarCollapsedControl"]::after {{
             content: "MENY";
-            font-weight: 800;
-            font-size: 16px;
-            letter-spacing: 1px;
+            font-weight: 900;
+            font-size: 18px; /* Larger font */
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
         }}
         
         [data-testid="stSidebarCollapsedControl"] svg {{
-            height: 24px !important;
-            width: 24px !important;
+            height: 28px !important; /* Larger icon */
+            width: 28px !important;
             fill: white !important;
         }}
         
@@ -991,8 +1053,10 @@ def main():
     if "user_email" not in st.session_state:
         # We need to wait a bit for the cookie manager to load
         import time
-        time.sleep(0.1)
-        cookie_email = cookie_manager.get("user_email")
+        time.sleep(0.5) # Increased sleep
+        cookies = cookie_manager.get_all()
+        cookie_email = cookies.get("user_email") if cookies else None
+        
         if cookie_email:
             st.session_state.user_email = cookie_email
             st.session_state.user_name = "User" # We don't have the name in cookie, but that's fine
