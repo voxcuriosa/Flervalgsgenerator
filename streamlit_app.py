@@ -627,101 +627,29 @@ def render_admin_panel():
     st.divider()
 
     # --- 2. Quiz Results Section ---
+    # --- 2. Quiz Results Section ---
     st.info("📊 **Resultater**")
     
-    # Import the new function
-    from storage import get_all_results, delete_results
+    # Tabs for Admin Panel
+    tab_results, tab_logs = st.tabs(["📊 Resultater", "📋 Innlogginger"])
     
-    # Lazy Loading
-    if "load_results" not in st.session_state:
-        st.session_state.load_results = False
+    with tab_logs:
+        st.subheader("Innloggingslogg")
+        from storage import get_login_logs
+        logs_df = get_login_logs()
         
-    if not st.session_state.load_results:
-        if st.button("Last inn resultater"):
-            st.session_state.load_results = True
-            st.rerun()
-    else:
-        if st.button("Skjul resultater"):
+        if not logs_df.empty:
+            st.dataframe(logs_df, use_container_width=True)
+        else:
+            st.info("Ingen innlogginger registrert ennå.")
+            
+    with tab_results:
+        # Import the new function
+        from storage import get_all_results, delete_results
+        
+        # Lazy Loading
+        if "load_results" not in st.session_state:
             st.session_state.load_results = False
-            st.rerun()
-            
-        df = get_all_results()
-        
-        if not df.empty:
-            # Summary Metrics
-            total_quizzes = len(df)
-            unique_users = df['user_email'].nunique()
-            avg_score_all = df['percentage'].mean()
-            
-            m1, m2, m3 = st.columns(3)
-            m1.metric("Totalt antall quizer", total_quizzes)
-            m2.metric("Unike brukere", unique_users)
-            m3.metric("Snittscore (alle)", f"{avg_score_all:.1f}%")
-            
-            st.write("### Detaljerte resultater")
-            
-            # Filter by user
-            users = ["Alle"] + list(df['user_email'].unique())
-            selected_user = st.selectbox("Filtrer på bruker:", users)
-            
-            if selected_user != "Alle":
-                user_df = df[df['user_email'] == selected_user]
-                
-                # User specific actions
-                col_u1, col_u2 = st.columns([0.8, 0.2])
-                with col_u1:
-                    st.write(f"Viser {len(user_df)} resultater for {selected_user}")
-                with col_u2:
-                    if st.button("Slett alle for bruker", type="primary", key=f"del_user_{selected_user}"):
-                        if delete_results(user_email=selected_user):
-                            st.success(f"Slettet alle resultater for {selected_user}")
-                            st.rerun()
-                        else:
-                            st.error("Kunne ikke slette resultater.")
-                
-                # Display user results with delete buttons per row
-                st.dataframe(user_df[['timestamp', 'topic', 'score', 'total', 'percentage', 'category']], hide_index=True)
-                
-                # Option to delete specific test?
-                # Let's show a list of recent tests with delete buttons
-                st.write("#### Siste tester (Slett enkelttester)")
-                
-                # Collect IDs to delete
-                delete_ids = []
-                
-                # Header
-                h1, h2, h3, h4, h5 = st.columns([0.5, 2, 2, 1, 1])
-                h1.write("**Velg**")
-                h2.write("**Dato**")
-                h3.write("**Emne**")
-                h4.write("**Score**")
-                h5.write("**Prosent**")
-                
-                for index, row in user_df.iterrows():
-                    c1, c2, c3, c4, c5 = st.columns([0.5, 2, 2, 1, 1])
-                    # Use a unique key for each checkbox
-                    if c1.checkbox("", key=f"sel_res_{row['id']}"):
-                        delete_ids.append(row['id'])
-                    c2.text(row['timestamp'])
-                    c3.text(row['topic'])
-                    c4.text(f"{row['score']}/{row['total']}")
-                    c5.text(f"{row['percentage']}%")
-                    
-                if delete_ids:
-                    st.write("")
-                    if st.button(f"Slett {len(delete_ids)} valgte tester", type="primary", key="bulk_delete_btn"):
-                        if delete_results(result_ids=delete_ids):
-                            st.success(f"Slettet {len(delete_ids)} tester!")
-                            st.rerun()
-                
-            else:
-                # Show all results
-                st.dataframe(df)
-                
-                # Delete all results option (Dangerous!)
-                with st.expander("Faresone"):
-                    if st.button("Slett ALLE resultater i databasen", type="primary"):
-                        st.warning("Dette er ikke implementert for sikkerhets skyld. Kontakt utvikler.")
             
             # Download button (always available)
             csv = df.to_csv(index=False).encode('utf-8')
@@ -1063,6 +991,25 @@ def render_quiz_generator():
             st.session_state.quiz_submitted = True
             st.rerun()
 
+    # Tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Oversikt", "📝 Detaljer", "⚙️ Innstillinger", "📋 Innlogginger"])
+    
+    with tab1:
+        st.subheader(get_text("results_per_topic"))
+        # ... (existing code) ...
+        
+    # ... (tab2 and tab3 existing code) ...
+    
+    with tab4:
+        st.subheader("Innloggingslogg")
+        from storage import get_login_logs
+        logs_df = get_login_logs()
+        
+        if not logs_df.empty:
+            st.dataframe(logs_df, use_container_width=True)
+        else:
+            st.info("Ingen innlogginger registrert ennå.")
+        
     # Display Results
     if st.session_state.get("quiz_submitted", False):
         st.header(get_text("results_header"))
@@ -1315,6 +1262,11 @@ def main():
                     st.session_state.user_name = user_name
                     
                     print(f"DEBUG: Login Success ({provider}) - Email: {user_email}, Name: {user_name}")
+                    
+                    # Log login (exclude admin)
+                    if user_email != "borchgrevink@gmail.com":
+                        from storage import log_login
+                        log_login(user_email, user_name)
                     
                     # Set persistent cookie
                     import datetime

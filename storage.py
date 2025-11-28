@@ -65,6 +65,16 @@ def init_db():
                     );
                 """))
                 
+                # Create login_logs table
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS login_logs (
+                        id SERIAL PRIMARY KEY,
+                        timestamp TEXT,
+                        user_email TEXT,
+                        user_name TEXT
+                    );
+                """))
+                
                 conn.commit()
         except Exception as e:
             print(f"DEBUG: Database init error: {e}")
