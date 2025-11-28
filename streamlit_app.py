@@ -651,17 +651,27 @@ def render_admin_panel():
         if "load_results" not in st.session_state:
             st.session_state.load_results = False
             
-            # Download button (always available)
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                get_text("download_csv"),
-                csv,
-                "quiz_results.csv",
-                "text/csv",
-                key='download-csv'
-            )
+        if not st.session_state.load_results:
+            if st.button("Last inn resultater"):
+                st.session_state.load_results = True
+                st.rerun()
         else:
-            st.info(get_text("no_results"))
+            if st.button("Skjul resultater"):
+                st.session_state.load_results = False
+                st.rerun()
+            
+            df = get_all_results()
+            
+            if not df.empty:
+                # Download button (always available when loaded)
+                csv = df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    get_text("download_csv"),
+                    csv,
+                    "quiz_results.csv",
+                    "text/csv",
+                    key='download-csv'
+                )
     
     st.divider()
 
@@ -992,24 +1002,6 @@ def render_quiz_generator():
             st.rerun()
 
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Oversikt", "📝 Detaljer", "⚙️ Innstillinger", "📋 Innlogginger"])
-    
-    with tab1:
-        st.subheader(get_text("results_per_topic"))
-        # ... (existing code) ...
-        
-    # ... (tab2 and tab3 existing code) ...
-    
-    with tab4:
-        st.subheader("Innloggingslogg")
-        from storage import get_login_logs
-        logs_df = get_login_logs()
-        
-        if not logs_df.empty:
-            st.dataframe(logs_df, use_container_width=True)
-        else:
-            st.info("Ingen innlogginger registrert ennå.")
-        
     # Display Results
     if st.session_state.get("quiz_submitted", False):
         st.header(get_text("results_header"))
