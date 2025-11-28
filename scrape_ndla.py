@@ -302,6 +302,8 @@ def get_subject_topics(subject_name):
         root_node_id = "urn:subject:cc109c51-a083-413b-b497-7f80a0569a92"
     elif subject_name == "Historie vg2":
         root_node_id = "urn:subject:1:ff69c291-6374-4766-80c2-47d5840d8bbf"
+    elif subject_name == "Sosiologi og sosialantropologi":
+        root_node_id = "urn:subject:1:fb6ad516-0108-4059-acc3-3c5f13f49368"
     
     if not root_node_id:
         return []

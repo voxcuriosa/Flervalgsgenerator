@@ -743,7 +743,7 @@ def render_admin_panel():
     st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
     
     # Select Subject
-    update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3"], key="update_subject")
+    update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3", "Sosiologi og sosialantropologi"], key="update_subject")
     
     # Fetch available topics for this subject
     # Fetch available topics for this subject
