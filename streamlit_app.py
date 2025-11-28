@@ -1064,7 +1064,21 @@ def render_quiz_generator():
         total_possible = 0
         
         for i, q in enumerate(questions):
-            correct_indices = q['correct_indices']
+            # Robustly get correct indices
+            correct_indices = q.get('correct_indices')
+            if correct_indices is None:
+                # Fallback: Check for 'correct_index' (single) or 'answer'
+                if 'correct_index' in q:
+                    correct_indices = [q['correct_index']]
+                elif 'answer' in q: # Sometimes returns string answer
+                     # Try to find index of answer string in options
+                     try:
+                         idx = q['options'].index(q['answer'])
+                         correct_indices = [idx]
+                     except:
+                         correct_indices = []
+                else:
+                    correct_indices = []
             user_indices = answers.get(i, [])
             
             q_score = 0

@@ -31,11 +31,14 @@ def generate_quiz(text, num_questions, num_options, multiple_correct, language="
     Generate {num_questions} multiple choice questions based on the text provided below.
     The questions should be in {lang_str}.
     
-    For each question:
-    - Provide {num_options} options.
-    - If 'multiple_correct' is {multiple_correct}, allow up to 2 correct answers. Otherwise, exactly one correct answer.
-    - Provide a short justification for the correct answer(s).
-    - Ensure the output is valid JSON.
+    The output must be a valid JSON object with a "questions" key containing a list of questions.
+    Each question object must have the following fields:
+    - "question": The question text.
+    - "options": A list of {num_options} strings.
+    - "correct_indices": A list of integers representing the indices of the correct options (0-indexed).
+    - "justification": A short explanation for the correct answer(s).
+
+    If 'multiple_correct' is {multiple_correct}, allow up to 2 correct answers in "correct_indices". Otherwise, exactly one correct answer.
     
     Text:
     {text[:15000]} 
