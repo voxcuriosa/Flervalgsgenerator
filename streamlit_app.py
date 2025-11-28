@@ -948,6 +948,19 @@ def render_quiz_generator():
         topic_names = list(st.session_state.topics.keys())
         st.sidebar.write(get_text("topics_found", len(topic_names))) # Debug info
         
+        # Debug Info
+        with st.sidebar.expander("Debug Info"):
+            st.write(f"Antall temaer: {len(topic_names)}")
+            if "topic_selector" in st.session_state:
+                sel = st.session_state.topic_selector
+                if sel in st.session_state.topics:
+                    data = st.session_state.topics[sel]
+                    st.write(f"Valgt: {sel}")
+                    st.write(f"Data: {data}")
+                    # data is (start, end, filename)
+            if "last_text_len" in st.session_state:
+                st.write(f"Sist hentet tekst lengde: {st.session_state.last_text_len}")
+        
         # Using a key ensures the selection persists even if other things update
         selected_topic = st.sidebar.selectbox(get_text("select_topic"), topic_names, key="topic_selector")
         selected_topic_name = selected_topic
@@ -956,6 +969,7 @@ def render_quiz_generator():
              start_page, end_page, source_pdf = st.session_state.topics[selected_topic]
              with st.spinner(get_text("fetching_text", selected_topic)):
                  final_text = extract_text_by_topic(source_pdf, start_page, end_page)
+                 st.session_state.last_text_len = len(final_text) if final_text else 0
                  final_topic_name = selected_topic_name
                  trigger_generation = True
 
@@ -1426,6 +1440,20 @@ def main():
                 print(f"Logout error: {e}")
             
             st.rerun()
+            
+        # Hard Logout (JS Reload)
+        if st.sidebar.button("Hard Utlogging (hvis vanlig feiler)"):
+            # Clear cookies first
+            try:
+                cookie_manager.delete("user_email", key="del_email_hard")
+                cookie_manager.delete("user_name", key="del_name_hard")
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+            except:
+                pass
+            
+            # JS Reload
+            st.markdown("<meta http-equiv='refresh' content='0;URL=/' />", unsafe_allow_html=True)
 
     else:
             # Show Login Button
