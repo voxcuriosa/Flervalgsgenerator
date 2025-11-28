@@ -116,10 +116,10 @@ def process_node(node, path_stack, engine, subject_name):
     node_name = node.get('name')
     node_id = node.get('id')
     
-    # Filter out "Om faget"
-    if node_name == "Om faget":
-        print("Skipping 'Om faget'")
-        return
+    # Filter out "Om faget" - ENABLED AGAIN per user request
+    # if node_name == "Om faget":
+    #     print("Skipping 'Om faget'")
+    #     return
 
     current_path = path_stack + [node_name]
     path_str = " > ".join(current_path)
@@ -319,10 +319,9 @@ def get_subject_topics(subject_name):
         
         topics = []
         for child in children:
-            # Filter out "Om faget" (robust check)
-            name = child.get('name', '').strip()
-            if name.lower() == "om faget":
-                continue
+            # Filter out "Om faget" (robust check) - ENABLED AGAIN
+            # if name.lower() == "om faget":
+            #     continue
                 
             # We only want topics, not resources (though at this level they should be topics)
             # Filter out "Diverse" if we want, or keep it.
@@ -337,8 +336,8 @@ def get_subject_topics(subject_name):
                 sub_children = get_nodes(child.get('id'))
                 for sub in sub_children:
                     sub_name = sub.get('name', '').strip()
-                    if sub_name.lower() == "om faget":
-                        continue
+                    # if sub_name.lower() == "om faget":
+                    #     continue
                         
                     topic_data['children'].append({
                         'name': sub_name,
