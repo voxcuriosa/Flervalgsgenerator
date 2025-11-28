@@ -531,32 +531,8 @@ def main():
     # Initialize Language
     if "language" not in st.session_state:
         st.session_state.language = "no"
-    
-    # Logo in Sidebar
-    st.sidebar.image(LOGO_URL, width=150)
-    st.sidebar.title(get_text("title"))
-    
-    # Language Selector
-    lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English"}
-    selected_lang = st.sidebar.radio(
-        "Language / Språk", 
-        options=list(lang_options.keys()), 
-        format_func=lambda x: lang_options[x],
-        index=0 if st.session_state.language == "no" else 1,
-        key="lang_selector"
-    )
-    
-    if selected_lang != st.session_state.language:
-        st.session_state.language = selected_lang
-        st.rerun()
-    
-    if st.sidebar.button(get_text("reset_app")):
-        for key in list(st.session_state.keys()):
-            if key != "language": # Keep language
-                del st.session_state[key]
-        st.rerun()
 
-    # --- Authentication ---
+    # --- Authentication (MOVED TO TOP) ---
     if "google" not in st.secrets:
         st.error("Google secrets not found in .streamlit/secrets.toml")
         st.stop()
@@ -582,18 +558,15 @@ def main():
         code = query_params.get("code")
         state = query_params.get("state")
         
-        # Handle list if necessary (though st.query_params usually returns string for single value)
+        # Handle list if necessary
         if isinstance(state, list):
             state = state[0]
             
-        if state:
-            st.toast(f"Debug: Language State = {state}")
-        
         if code:
             # Restore language from state if valid
             if state and state in ["no", "en"]:
                 st.session_state.language = state
-                # Force update to ensure it sticks before rerun
+                # We can safely set this here because the widget hasn't been rendered yet!
                 st.session_state["lang_selector"] = "no" if state == "no" else "en"
                 
             try:
@@ -637,6 +610,26 @@ def main():
                 st.error(f"Feil under token-utveksling: {e}")
         else:
             # Show Login Button
+            # We show this INSTEAD of the main app if not logged in
+            
+            # Show Language Selector on Login Screen too!
+            st.image(LOGO_URL, width=150)
+            st.title(get_text("title"))
+            
+            lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English"}
+            selected_lang = st.radio(
+                "Language / Språk", 
+                options=list(lang_options.keys()), 
+                format_func=lambda x: lang_options[x],
+                index=0 if st.session_state.language == "no" else 1,
+                key="lang_selector_login",
+                horizontal=True
+            )
+            
+            if selected_lang != st.session_state.language:
+                st.session_state.language = selected_lang
+                st.rerun()
+            
             import urllib.parse
             
             # Ensure no whitespace in secrets
@@ -659,7 +652,8 @@ def main():
             auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
             
             st.markdown(f'''
-                <a href="{auth_url}" target="_blank">
+                <br>
+                <a href="{auth_url}" target="_self">
                     <button style="
                         background-color: #4285F4; 
                         color: white; 
@@ -678,24 +672,50 @@ def main():
                 </a>
             ''', unsafe_allow_html=True)
             return
-    else:
-        st.write(f"{get_text('welcome')}, {st.session_state.user_name}!")
+
+    # --- Main App (Only reached if logged in) ---
+    
+    # Logo in Sidebar
+    st.sidebar.image(LOGO_URL, width=150)
+    st.sidebar.title(get_text("title"))
+    
+    # Language Selector (Sidebar)
+    lang_options = {"no": "🇳🇴 Norsk", "en": "🇬🇧 English"}
+    selected_lang = st.sidebar.radio(
+        "Language / Språk", 
+        options=list(lang_options.keys()), 
+        format_func=lambda x: lang_options[x],
+        index=0 if st.session_state.language == "no" else 1,
+        key="lang_selector"
+    )
+    
+    if selected_lang != st.session_state.language:
+        st.session_state.language = selected_lang
+        st.rerun()
+    
+    if st.sidebar.button(get_text("reset_app")):
+        for key in list(st.session_state.keys()):
+            if key != "language": # Keep language
+                del st.session_state[key]
+        st.rerun()
+
+    st.write(f"{get_text('welcome')}, {st.session_state.user_name}!")
+    
+    # --- Main Navigation ---
+    # Using a sidebar radio to switch modes
+    st.sidebar.title(get_text("navigation"))
+    app_mode = st.sidebar.radio(get_text("navigation"), [get_text("module_quiz"), get_text("module_ndla")], label_visibility="collapsed")
+    
+    if st.sidebar.button(get_text("logout")):
+        del st.session_state.token
+        st.rerun()
         
-        # --- Main Navigation ---
-        # Using a sidebar radio to switch modes
-        st.sidebar.title(get_text("navigation"))
-        app_mode = st.sidebar.radio(get_text("navigation"), [get_text("module_quiz"), get_text("module_ndla")], label_visibility="collapsed")
-        
-        if st.sidebar.button(get_text("logout")):
-            del st.session_state.token
-            st.rerun()
-            
-        st.divider()
-        
-        if app_mode == get_text("module_quiz"):
-            render_quiz_generator()
-        elif app_mode == get_text("module_ndla"):
-            render_ndla_viewer()
+    st.divider()
+    
+    if app_mode == get_text("module_quiz"):
+        render_quiz_generator()
+    elif app_mode == get_text("module_ndla"):
+        render_ndla_viewer()
 
 if __name__ == "__main__":
     main()
