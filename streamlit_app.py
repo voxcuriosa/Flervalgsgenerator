@@ -55,7 +55,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Analyserer PDF...",
         "fetching_text": "Henter tekst fra {}...",
         "error_ndla_select": "Du må velge minst én artikkel fra NDLA.",
-        "generating": "Generer spørsmål med AI (OpenAI GPT-5.1)...",
+        "generating": "Generer spørsmål med AI (OpenAI GPT-4o)...",
         "error_gen": "Feil ved generering: {}",
         "quiz_header": "Quiz: {}",
         "submit_btn": "Lever svar",
@@ -114,7 +114,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Analyzing PDF...",
         "fetching_text": "Fetching text from {}...",
         "error_ndla_select": "You must select at least one article from NDLA.",
-        "generating": "Generating questions with AI (OpenAI GPT-5.1)...",
+        "generating": "Generating questions with AI (OpenAI GPT-4o)...",
         "error_gen": "Generation error: {}",
         "quiz_header": "Quiz: {}",
         "submit_btn": "Submit Answers",
@@ -172,7 +172,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "جاري تحليل ملف PDF...",
         "fetching_text": "جاري جلب النص من {}...",
         "error_ndla_select": "يجب عليك اختيار مقال واحد على الأقل من NDLA.",
-        "generating": "جاري إنشاء الأسئلة باستخدام الذكاء الاصطناعي (OpenAI GPT-5.1)...",
+        "generating": "جاري إنشاء الأسئلة باستخدام الذكاء الاصطناعي (OpenAI GPT-4o)...",
         "error_gen": "خطأ في الإنشاء: {}",
         "quiz_header": "اختبار: {}",
         "submit_btn": "إرسال الإجابات",
@@ -230,7 +230,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Falanqaynta PDF...",
         "fetching_text": "Ka soo qaadashada qoraalka {}...",
         "error_ndla_select": "Waa inaad doorataa ugu yaraan hal maqaal NDLA.",
-        "generating": "Samaynta su'aalaha iyadoo la isticmaalayo AI (OpenAI GPT-5.1)...",
+        "generating": "Samaynta su'aalaha iyadoo la isticmaalayo AI (OpenAI GPT-4o)...",
         "error_gen": "Khalad samaynta: {}",
         "quiz_header": "Imtixaan: {}",
         "submit_btn": "Gudbi Jawaabaha",
@@ -288,7 +288,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "PDF ይምርምር ኣሎ...",
         "fetching_text": "ጽሑፍ ካብ {} የውጽእ ኣሎ...",
         "error_ndla_select": "ካብ NDLA እንተወሓደ ሓደ ዓንቀጽ ክትመርጽ ኣለካ።",
-        "generating": "ብ AI ሕቶታት ይፈጥር ኣሎ (OpenAI GPT-5.1)...",
+        "generating": "ብ AI ሕቶታት ይፈጥር ኣሎ (OpenAI GPT-4o)...",
         "error_gen": "ጌጋ ኣብ ምፍጣር: {}",
         "quiz_header": "ፈተና: {}",
         "submit_btn": "መልሲ ኣረክብ",
@@ -347,7 +347,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "กำลังวิเคราะห์ PDF...",
         "fetching_text": "กำลังดึงข้อความจาก {}...",
         "error_ndla_select": "คุณต้องเลือกบทความอย่างน้อยหนึ่งบทความจาก NDLA",
-        "generating": "กำลังสร้างคำถามด้วย AI (OpenAI GPT-5.1)...",
+        "generating": "กำลังสร้างคำถามด้วย AI (OpenAI GPT-4o)...",
         "error_gen": "เกิดข้อผิดพลาดในการสร้าง: {}",
         "quiz_header": "แบบทดสอบ: {}",
         "submit_btn": "ส่งคำตอบ",
@@ -405,7 +405,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Аналіз PDF...",
         "fetching_text": "Отримання тексту з {}...",
         "error_ndla_select": "Ви повинні обрати хоча б одну статтю з NDLA.",
-        "generating": "Генерація питань за допомогою ШІ (OpenAI GPT-5.1)...",
+        "generating": "Генерація питань за допомогою ШІ (OpenAI GPT-4o)...",
         "error_gen": "Помилка генерації: {}",
         "quiz_header": "Тест: {}",
         "submit_btn": "Надіслати відповіді",
@@ -1265,15 +1265,16 @@ def main():
                 cookie_email = cookies["user_email"]
                 break
         
-            st.session_state.user_email = cookie_email
-            
-            # Try to get name from cookie too
-            if cookies and "user_name" in cookies:
-                st.session_state.user_name = cookies["user_name"]
-            else:
-                st.session_state.user_name = "User" 
+            if cookie_email:
+                st.session_state.user_email = cookie_email
                 
-            st.rerun()
+                # Try to get name from cookie too
+                if cookies and "user_name" in cookies:
+                    st.session_state.user_name = cookies["user_name"]
+                else:
+                    st.session_state.user_name = "User" 
+                    
+                st.rerun()
             
     # --- Language Selector (Top of Sidebar) ---
     lang_options = {
@@ -1306,7 +1307,7 @@ def main():
     )
     
     # --- Admin Button (Visible everywhere if admin) ---
-    if "user_email" in st.session_state and st.session_state.user_email in ADMINS:
+    if st.session_state.get("user_email") and st.session_state.user_email in ADMINS:
         is_admin_open = st.session_state.get("show_admin", False)
         # Dynamic label
         btn_label = "🔙 Tilbake til meny" if is_admin_open else get_text("admin_panel")
@@ -1315,11 +1316,11 @@ def main():
             st.session_state.show_admin = not is_admin_open
             st.rerun()
             
-    if st.session_state.get("show_admin", False) and "user_email" in st.session_state and st.session_state.user_email in ADMINS:
+    if st.session_state.get("show_admin", False) and st.session_state.get("user_email") and st.session_state.user_email in ADMINS:
         render_admin_panel()
         return # Stop rendering the rest of the app
             
-    if "user_email" in st.session_state:
+    if st.session_state.get("user_email"):
         # Logout Button in Sidebar
         if st.sidebar.button(get_text("logout")):
             try:

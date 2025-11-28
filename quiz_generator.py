@@ -45,7 +45,7 @@ def generate_quiz(text, num_questions, num_options, multiple_correct, language="
     
     try:
         response = client.chat.completions.create(
-            model="gpt-5.1", # Using the latest model as requested
+            model="gpt-4o", # Reverted to gpt-4o for speed
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that generates quizzes in JSON format."},
                 {"role": "user", "content": prompt}
