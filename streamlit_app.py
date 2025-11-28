@@ -627,52 +627,118 @@ def render_admin_panel():
     st.divider()
 
     # --- 2. Quiz Results Section ---
-    # --- 2. Quiz Results Section ---
     st.info("📊 **Resultater**")
     
-    # Tabs for Admin Panel
-    tab_results, tab_logs = st.tabs(["📊 Resultater", "📋 Innlogginger"])
+    # Import the new function
+    from storage import get_all_results, delete_results
     
-    with tab_logs:
-        st.subheader("Innloggingslogg")
-        from storage import get_login_logs
-        logs_df = get_login_logs()
+    # Lazy Loading
+    if "load_results" not in st.session_state:
+        st.session_state.load_results = False
         
-        if not logs_df.empty:
-            st.dataframe(logs_df, use_container_width=True)
-        else:
-            st.info("Ingen innlogginger registrert ennå.")
-            
-    with tab_results:
-        # Import the new function
-        from storage import get_all_results, delete_results
-        
-        # Lazy Loading
-        if "load_results" not in st.session_state:
+    if not st.session_state.load_results:
+        if st.button("Last inn resultater"):
+            st.session_state.load_results = True
+            st.rerun()
+    else:
+        if st.button("Skjul resultater"):
             st.session_state.load_results = False
+            st.rerun()
+        
+        df = get_all_results()
+        
+        if not df.empty:
+            # Download button (always available when loaded)
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                get_text("download_csv"),
+                csv,
+                "quiz_results.csv",
+                "text/csv",
+                key='download-csv'
+            )
             
-        if not st.session_state.load_results:
-            if st.button("Last inn resultater"):
-                st.session_state.load_results = True
-                st.rerun()
+            # Summary Metrics
+            total_quizzes = len(df)
+            unique_users = df['user_email'].nunique()
+            avg_score_all = df['percentage'].mean()
+            
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Totalt antall quizer", total_quizzes)
+            m2.metric("Unike brukere", unique_users)
+            m3.metric("Snittscore (alle)", f"{avg_score_all:.1f}%")
+            
+            st.write("### Detaljerte resultater")
+            
+            # Filter by user
+            users = ["Alle"] + list(df['user_email'].unique())
+            selected_user = st.selectbox("Filtrer på bruker:", users)
+            
+            if selected_user != "Alle":
+                user_df = df[df['user_email'] == selected_user]
+                
+                # User specific actions
+                col_u1, col_u2 = st.columns([0.8, 0.2])
+                with col_u1:
+                    st.write(f"Viser {len(user_df)} resultater for {selected_user}")
+                with col_u2:
+                    if st.button("Slett alle for bruker", type="primary", key=f"del_user_{selected_user}"):
+                        if delete_results(user_email=selected_user):
+                            st.success(f"Slettet alle resultater for {selected_user}")
+                            st.rerun()
+                        else:
+                            st.error("Kunne ikke slette resultater.")
+                
+                # Display user results with delete buttons per row
+                st.dataframe(user_df[['timestamp', 'topic', 'score', 'total', 'percentage', 'category']], hide_index=True)
+                
+                # Option to delete specific test?
+                # Let's show a list of recent tests with delete buttons
+                st.write("#### Siste tester (Slett enkelttester)")
+                
+                # Collect IDs to delete
+                delete_ids = []
+                
+                # Header
+                h1, h2, h3, h4, h5 = st.columns([0.5, 2, 2, 1, 1])
+                h1.write("**Velg**")
+                h2.write("**Dato**")
+                h3.write("**Emne**")
+                h4.write("**Score**")
+                h5.write("**Prosent**")
+                
+                for index, row in user_df.iterrows():
+                    c1, c2, c3, c4, c5 = st.columns([0.5, 2, 2, 1, 1])
+                    if c1.checkbox("", key=f"del_{row['id']}"):
+                        delete_ids.append(row['id'])
+                    c2.write(row['timestamp'])
+                    c3.write(row['topic'])
+                    c4.write(row['score'])
+                    c5.write(f"{row['percentage']:.1f}%")
+                    
+                if delete_ids:
+                    if st.button(f"Slett {len(delete_ids)} valgte resultater", type="primary"):
+                        if delete_results(result_ids=delete_ids):
+                            st.success("Slettet valgte resultater.")
+                            st.rerun()
+            else:
+                st.dataframe(df)
         else:
-            if st.button("Skjul resultater"):
-                st.session_state.load_results = False
-                st.rerun()
-            
-            df = get_all_results()
-            
-            if not df.empty:
-                # Download button (always available when loaded)
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    get_text("download_csv"),
-                    csv,
-                    "quiz_results.csv",
-                    "text/csv",
-                    key='download-csv'
-                )
+            st.info("Ingen resultater funnet ennå.")
     
+    st.divider()
+
+    # --- 3. Login Logs Section ---
+    st.info("📋 **Innlogginger**")
+    
+    from storage import get_login_logs
+    logs_df = get_login_logs()
+    
+    if not logs_df.empty:
+        st.dataframe(logs_df, use_container_width=True)
+    else:
+        st.info("Ingen innlogginger registrert ennå.")
+
     st.divider()
 
     # --- 3. Content Update Section (Moved to Bottom) ---
