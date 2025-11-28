@@ -37,7 +37,8 @@ def _recursive_render(node, selected_articles, level, parent_key):
         articles = sorted(node["_articles"], key=lambda x: x['title'])
         for article in articles:
             # Unique key for checkbox
-            key = f"{parent_key}_{article['title']}"
+            # Use article ID to ensure uniqueness even if titles are same
+            key = f"{parent_key}_{article['title']}_{article.get('id', 'no_id')}"
             if st.checkbox(article['title'], key=key):
                 selected_articles.append(article)
                 
