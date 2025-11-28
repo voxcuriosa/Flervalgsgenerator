@@ -53,7 +53,13 @@ def generate_quiz(text, num_questions, num_options, multiple_correct):
         )
         
         content = response.choices[0].message.content
-        return json.loads(content)
+        data = json.loads(content)
+        
+        # Enforce exact number of questions
+        if "questions" in data:
+            data["questions"] = data["questions"][:num_questions]
+            
+        return data
         
     except Exception as e:
         return {"error": str(e)}
