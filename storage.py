@@ -102,6 +102,7 @@ def save_setting(key, value):
             print(f"Error saving setting {key}: {e}")
     return False
 
+@st.cache_data(ttl=3600)
 def get_content_hierarchy():
     """
     Fetches all learning materials and builds a nested dictionary hierarchy.
@@ -183,6 +184,7 @@ def save_result(user_email, user_name, score, total, percentage, topic):
     if engine:
         try:
             df_new.to_sql('quiz_results', engine, if_exists='append', index=False)
+            get_all_results.clear()
             return category
         except Exception as e:
             st.error(f"Error saving to database: {e}")
@@ -214,6 +216,7 @@ def delete_results(result_ids=None, user_email=None, topic=None):
                 query = f"DELETE FROM quiz_results WHERE id IN {ids_tuple}"
                 conn.execute(text(query))
                 conn.commit()
+                get_all_results.clear()
                 return True
                 
             elif user_email:
@@ -224,12 +227,14 @@ def delete_results(result_ids=None, user_email=None, topic=None):
                     conn.execute(text("DELETE FROM quiz_results WHERE user_email = :email"), 
                                 {"email": user_email})
                 conn.commit()
+                get_all_results.clear()
                 return True
                 
             elif topic:
                  conn.execute(text("DELETE FROM quiz_results WHERE topic = :topic"), 
                                 {"topic": topic})
                  conn.commit()
+                 get_all_results.clear()
                  return True
                  
     except Exception as e:
@@ -237,6 +242,7 @@ def delete_results(result_ids=None, user_email=None, topic=None):
         return False
     return False
 
+@st.cache_data(ttl=60)
 def get_all_results():
     """Retrieves all results from the database."""
     # Ensure table exists before querying

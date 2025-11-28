@@ -459,12 +459,6 @@ def apply_custom_css():
             direction: {direction};
         }}
         
-        /* Background - Dark */
-        .stApp {{
-            background-color: #0e1117;
-            color: #fafafa;
-        }}
-        
         /* Sidebar - Slightly lighter dark */
         [data-testid="stSidebar"] {{
             background-color: #262730;
@@ -744,10 +738,15 @@ def render_quiz_generator():
             update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3"], key="update_subject")
             
             # Fetch available topics for this subject
+            # Fetch available topics for this subject
             from scrape_ndla import get_subject_topics, update_topic
             
+            @st.cache_data(ttl=3600)
+            def get_cached_subject_topics(subject):
+                return get_subject_topics(subject)
+            
             with st.spinner(f"Henter emner for {update_subject}..."):
-                available_topics = get_subject_topics(update_subject)
+                available_topics = get_cached_subject_topics(update_subject)
                 
             if available_topics:
                 # Create a form/list for selection
