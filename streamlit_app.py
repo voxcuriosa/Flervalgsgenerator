@@ -582,10 +582,19 @@ def main():
         code = query_params.get("code")
         state = query_params.get("state")
         
+        # Handle list if necessary (though st.query_params usually returns string for single value)
+        if isinstance(state, list):
+            state = state[0]
+            
+        if state:
+            st.toast(f"Debug: Language State = {state}")
+        
         if code:
             # Restore language from state if valid
             if state and state in ["no", "en"]:
                 st.session_state.language = state
+                # Force update to ensure it sticks before rerun
+                st.session_state["lang_selector"] = "no" if state == "no" else "en"
                 
             try:
                 # Exchange code for token
