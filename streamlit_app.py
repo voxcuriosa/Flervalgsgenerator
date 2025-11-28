@@ -818,7 +818,22 @@ def render_admin_panel():
     
     st.write("---")
     
-    # Debug Button (REMOVED from here, moved to Admin Panel)
+    # --- Debug Button ---
+    st.divider()
+    if st.button("Nullstill app (Debug)", type="primary"):
+        for key in list(st.session_state.keys()):
+            # Keep language settings
+            if key not in ["language", "lang_selector", "lang_selector_login"]:
+                del st.session_state[key]
+        
+        # Also clear cookies if possible
+        try:
+            from streamlit_app import cookie_manager # Ensure access
+            cookie_manager.delete("user_email")
+        except:
+            pass
+            
+        st.rerun()
 
 def render_quiz_generator():
 
@@ -856,34 +871,28 @@ def render_quiz_generator():
         st.sidebar.info(get_text("ndla_info"))
         hierarchy = get_content_hierarchy()
         
-        # Layout: Left sidebar (navigation) vs Right content
-        # Make content wider (1:3 ratio)
-        col1, col2 = st.columns([1, 3])
+        st.subheader(get_text("navigation"))
+        selected_articles = render_ndla_selector(hierarchy)
         
-        with col1:
-            st.subheader(get_text("navigation"))
-            selected_articles = render_ndla_selector(hierarchy)
+        if selected_articles:
+            st.success(get_text("selected_articles", len(selected_articles)))
+            # Combine text
+            selected_text = "\n\n".join([art['content'] for art in selected_articles])
             
-        with col2:
-            if selected_articles:
-                st.success(get_text("selected_articles", len(selected_articles)))
-                # Combine text
-                selected_text = "\n\n".join([art['content'] for art in selected_articles])
-                
-                # Display content in a nice container
-                st.markdown(f"""
-                <div style="background-color: #262730; padding: 30px; border-radius: 10px; border: 1px solid #444;">
-                    {selected_text}
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Topic name? Maybe "NDLA Utvalg" or list topics?
-                if len(selected_articles) == 1:
-                    selected_topic_name = selected_articles[0]['title']
-                else:
-                    selected_topic_name = f"NDLA Utvalg ({len(selected_articles)} artikler)"
+            # Display content in a nice container
+            st.markdown(f"""
+            <div style="background-color: #262730; padding: 30px; border-radius: 10px; border: 1px solid #444;">
+                {selected_text}
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Topic name? Maybe "NDLA Utvalg" or list topics?
+            if len(selected_articles) == 1:
+                selected_topic_name = selected_articles[0]['title']
             else:
-                st.info(get_text("ndla_info"))
+                selected_topic_name = f"NDLA Utvalg ({len(selected_articles)} artikler)"
+        else:
+            st.info(get_text("ndla_info"))
     
     # Get configured max limit
     from storage import get_setting
