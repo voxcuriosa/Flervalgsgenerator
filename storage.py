@@ -268,3 +268,44 @@ def get_all_results():
             st.error(f"Error reading from database: {e}")
             return pd.DataFrame()
     return pd.DataFrame()
+
+def log_login(user_email, user_name):
+    """Logs a user login event."""
+    # Ensure table exists
+    init_db()
+    
+    import pytz
+    oslo_tz = pytz.timezone('Europe/Oslo')
+    timestamp_str = datetime.now(oslo_tz).strftime("%Y-%m-%d %H:%M:%S")
+    
+    engine = get_db_connection()
+    if engine:
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("""
+                    INSERT INTO login_logs (timestamp, user_email, user_name) 
+                    VALUES (:timestamp, :email, :name)
+                """), {
+                    "timestamp": timestamp_str,
+                    "email": user_email,
+                    "name": user_name
+                })
+                conn.commit()
+                return True
+        except Exception as e:
+            print(f"Error logging login: {e}")
+    return False
+
+def get_login_logs():
+    """Retrieves all login logs."""
+    init_db()
+    engine = get_db_connection()
+    if engine:
+        try:
+            query = "SELECT * FROM login_logs ORDER BY timestamp DESC"
+            df = pd.read_sql(query, engine)
+            return df
+        except Exception as e:
+            st.error(f"Error reading login logs: {e}")
+            return pd.DataFrame()
+    return pd.DataFrame()
