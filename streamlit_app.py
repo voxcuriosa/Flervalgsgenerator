@@ -1630,7 +1630,7 @@ def main():
     
 
 
-    st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')}!")
+    st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
     
     # --- Main Navigation ---
     # Using a sidebar radio to switch modes
