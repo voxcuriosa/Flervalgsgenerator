@@ -21,7 +21,7 @@ st.set_page_config(
 )
 
 # Constants
-PDF_PATH = "HPT.pdf"
+PDF_FILES = ["HPT.pdf", "HPTx.pdf"]
 HTML_VIEWER_PATH = "ndla_content_viewer.html"
 LOGO_URL = "logo.png"
 ADMINS = ["borchgrevink@gmail.com", "hanslaa@gmail.com", "nilsnaas@gmail.com"]
@@ -55,7 +55,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Analyserer PDF...",
         "fetching_text": "Henter tekst fra {}...",
         "error_ndla_select": "Du må velge minst én artikkel fra NDLA.",
-        "generating": "Generer spørsmål med AI (OpenAI GPT-4o)...",
+        "generating": "Generer spørsmål med AI (OpenAI GPT-5.1)...",
         "error_gen": "Feil ved generering: {}",
         "quiz_header": "Quiz: {}",
         "submit_btn": "Lever svar",
@@ -114,7 +114,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Analyzing PDF...",
         "fetching_text": "Fetching text from {}...",
         "error_ndla_select": "You must select at least one article from NDLA.",
-        "generating": "Generating questions with AI (OpenAI GPT-4o)...",
+        "generating": "Generating questions with AI (OpenAI GPT-5.1)...",
         "error_gen": "Generation error: {}",
         "quiz_header": "Quiz: {}",
         "submit_btn": "Submit Answers",
@@ -172,7 +172,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "جاري تحليل ملف PDF...",
         "fetching_text": "جاري جلب النص من {}...",
         "error_ndla_select": "يجب عليك اختيار مقال واحد على الأقل من NDLA.",
-        "generating": "جاري إنشاء الأسئلة باستخدام الذكاء الاصطناعي (OpenAI GPT-4o)...",
+        "generating": "جاري إنشاء الأسئلة باستخدام الذكاء الاصطناعي (OpenAI GPT-5.1)...",
         "error_gen": "خطأ في الإنشاء: {}",
         "quiz_header": "اختبار: {}",
         "submit_btn": "إرسال الإجابات",
@@ -230,7 +230,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Falanqaynta PDF...",
         "fetching_text": "Ka soo qaadashada qoraalka {}...",
         "error_ndla_select": "Waa inaad doorataa ugu yaraan hal maqaal NDLA.",
-        "generating": "Samaynta su'aalaha iyadoo la isticmaalayo AI (OpenAI GPT-4o)...",
+        "generating": "Samaynta su'aalaha iyadoo la isticmaalayo AI (OpenAI GPT-5.1)...",
         "error_gen": "Khalad samaynta: {}",
         "quiz_header": "Imtixaan: {}",
         "submit_btn": "Gudbi Jawaabaha",
@@ -288,7 +288,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "PDF ይምርምር ኣሎ...",
         "fetching_text": "ጽሑፍ ካብ {} የውጽእ ኣሎ...",
         "error_ndla_select": "ካብ NDLA እንተወሓደ ሓደ ዓንቀጽ ክትመርጽ ኣለካ።",
-        "generating": "ብ AI ሕቶታት ይፈጥር ኣሎ (OpenAI GPT-4o)...",
+        "generating": "ብ AI ሕቶታት ይፈጥር ኣሎ (OpenAI GPT-5.1)...",
         "error_gen": "ጌጋ ኣብ ምፍጣር: {}",
         "quiz_header": "ፈተና: {}",
         "submit_btn": "መልሲ ኣረክብ",
@@ -347,7 +347,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "กำลังวิเคราะห์ PDF...",
         "fetching_text": "กำลังดึงข้อความจาก {}...",
         "error_ndla_select": "คุณต้องเลือกบทความอย่างน้อยหนึ่งบทความจาก NDLA",
-        "generating": "กำลังสร้างคำถามด้วย AI (OpenAI GPT-4o)...",
+        "generating": "กำลังสร้างคำถามด้วย AI (OpenAI GPT-5.1)...",
         "error_gen": "เกิดข้อผิดพลาดในการสร้าง: {}",
         "quiz_header": "แบบทดสอบ: {}",
         "submit_btn": "ส่งคำตอบ",
@@ -405,7 +405,7 @@ TRANSLATIONS = {
         "analyzing_pdf": "Аналіз PDF...",
         "fetching_text": "Отримання тексту з {}...",
         "error_ndla_select": "Ви повинні обрати хоча б одну статтю з NDLA.",
-        "generating": "Генерація питань за допомогою ШІ (OpenAI GPT-4o)...",
+        "generating": "Генерація питань за допомогою ШІ (OpenAI GPT-5.1)...",
         "error_gen": "Помилка генерації: {}",
         "quiz_header": "Тест: {}",
         "submit_btn": "Надіслати відповіді",
@@ -912,9 +912,34 @@ def render_quiz_generator():
 
     elif source_type == get_text("source_pdf"):
         # Topics
+        # Topics
         if "topics" not in st.session_state or st.sidebar.button(get_text("update_topics")):
             with st.spinner(get_text("analyzing_pdf")):
-                st.session_state.topics = get_topics(PDF_PATH)
+                all_topics = {}
+                for pdf_file in PDF_FILES:
+                    # Check if file exists
+                    import os
+                    if os.path.exists(pdf_file):
+                        file_topics = get_topics(pdf_file)
+                        # Prefix topics with filename or just merge?
+                        # User wants "equal footing", but we need to avoid collisions.
+                        # Let's append (File) if collision, or just rely on unique names.
+                        # Actually, let's store the source file in the value.
+                        for topic, (start, end) in file_topics.items():
+                            # Create a unique key if needed, but hopefully topics are distinct.
+                            # If HPTx has "Tema 1", it might collide with HPT "Tema 1".
+                            # Let's prefix with file identifier if it's HPTx?
+                            # Or just show "Tema X (HPT)" vs "Tema Y (HPTx)"?
+                            # User said HPTx is a new topic not in HPT.
+                            # So names should be distinct.
+                            
+                            # We need to store the filename to know where to extract from.
+                            # Value format: (start, end, filename)
+                            all_topics[topic] = (start, end, pdf_file)
+                    else:
+                        st.sidebar.warning(f"Fant ikke filen: {pdf_file}")
+                
+                st.session_state.topics = all_topics
                 
         topic_names = list(st.session_state.topics.keys())
         st.sidebar.write(get_text("topics_found", len(topic_names))) # Debug info
@@ -924,9 +949,9 @@ def render_quiz_generator():
         selected_topic_name = selected_topic
         
         if st.sidebar.button(get_text("generate_btn")):
-             start_page, end_page = st.session_state.topics[selected_topic]
+             start_page, end_page, source_pdf = st.session_state.topics[selected_topic]
              with st.spinner(get_text("fetching_text", selected_topic)):
-                 final_text = extract_text_by_topic(PDF_PATH, start_page, end_page)
+                 final_text = extract_text_by_topic(source_pdf, start_page, end_page)
                  final_topic_name = selected_topic_name
                  trigger_generation = True
 
