@@ -839,11 +839,6 @@ def render_quiz_generator():
 
     # --- App Logic ---
     
-    # Check PDF
-    if not os.path.exists(PDF_PATH):
-        st.error(f"Fant ikke filen: {PDF_PATH}")
-        return
-
     # Sidebar
     st.sidebar.header(get_text("settings"))
     
