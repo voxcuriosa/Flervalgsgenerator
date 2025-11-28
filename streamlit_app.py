@@ -1317,9 +1317,12 @@ def main():
                     st.query_params.clear()
                     st.rerun()
                 else:
-                    st.error(f"Feil ved innlogging ({provider}): {token_data.get('error_description', token_data)}")
+                    error_desc = token_data.get('error_description', str(token_data))
+                    if "AADSTS70000" in error_desc:
+                        st.warning("Koblingen utløp. Vennligst klikk på knappen igjen.")
+                    else:
+                        st.error(f"Feil ved innlogging ({provider}): {error_desc}")
                     st.query_params.clear() # Clear params to prevent loop
-                    # st.stop() # Allow script to continue so user can try again
                     
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
@@ -1541,6 +1544,7 @@ def main():
                             <span>Logg inn med Microsoft</span>
                         </button>
                     </a>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px; text-align: center;">(Kun personlig Microsoft-konto, ikke jobb/skole)</p>
                 ''')
             else:
                 # Disabled state
