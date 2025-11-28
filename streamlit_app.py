@@ -865,9 +865,11 @@ def render_quiz_generator():
         st.sidebar.info("Lim inn en lenke til en nettside du vil lage quiz fra.")
         url_input = st.sidebar.text_input("URL til nettside", key="url_input")
         
-        if url_input:
-            # Combined button
-            if st.sidebar.button("Hent innhold og Generer Quiz", type="primary"):
+        # Combined button - always visible
+        if st.sidebar.button("Hent innhold og generer quiz", type="primary"):
+            if not url_input:
+                st.sidebar.warning("Du må lime inn en URL først.")
+            else:
                 with st.spinner("Henter innhold fra nettside..."):
                     try:
                         from scrape_url import scrape_url
