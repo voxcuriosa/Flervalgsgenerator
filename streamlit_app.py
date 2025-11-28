@@ -1461,7 +1461,7 @@ def main():
                 "scope": scope,
                 "access_type": "offline",
                 "prompt": "consent",
-                "state": f"google|{st.session_state.language}" # Pass provider|language as state
+                "state": st.session_state.language # Revert to just language for Google
             }
             # Use quote_via=urllib.parse.quote to get %20 instead of + for spaces
             auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
@@ -1484,32 +1484,34 @@ def main():
                 ms_auth_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
             # --- Render Buttons ---
-            st.markdown(f'''
-                <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
-                    <!-- Google Button -->
-                    <a href="{auth_url}" target="_self" style="text-decoration: none;">
-                        <button style="
-                            background-color: #4285F4; 
-                            color: white; 
-                            padding: 12px 24px; 
-                            border: none; 
-                            border-radius: 4px; 
-                            cursor: pointer; 
-                            font-size: 16px;
-                            font-family: Roboto, sans-serif;
-                            display: flex;
-                            align-items: center;
-                            gap: 12px;
-                            width: 250px;
-                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                        ">
-                            <img src="https://www.google.com/favicon.ico" width="20" style="background: white; border-radius: 50%; padding: 2px;">
-                            <span>{get_text("login_google")}</span>
-                        </button>
-                    </a>
-                    
-                    <!-- Microsoft Button -->
-                    {'<a href="' + ms_auth_url + '" target="_self" style="text-decoration: none;">' if ms_auth_url else ''}
+            # Google Button HTML
+            google_btn_html = f'''
+                <a href="{auth_url}" target="_self" style="text-decoration: none;">
+                    <button style="
+                        background-color: #4285F4; 
+                        color: white; 
+                        padding: 12px 24px; 
+                        border: none; 
+                        border-radius: 4px; 
+                        cursor: pointer; 
+                        font-size: 16px;
+                        font-family: Roboto, sans-serif;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        width: 250px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    ">
+                        <img src="https://www.google.com/favicon.ico" width="20" style="background: white; border-radius: 50%; padding: 2px;">
+                        <span>{get_text("login_google")}</span>
+                    </button>
+                </a>
+            '''
+
+            # Microsoft Button HTML
+            if ms_auth_url:
+                ms_btn_html = f'''
+                    <a href="{ms_auth_url}" target="_self" style="text-decoration: none;">
                         <button style="
                             background-color: #2F2F2F; 
                             color: white; 
@@ -1524,12 +1526,40 @@ def main():
                             gap: 12px;
                             width: 250px;
                             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                            opacity: {'1' if ms_auth_url else '0.5'};
                         ">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
                             <span>Logg inn med Microsoft</span>
                         </button>
-                    {'</a>' if ms_auth_url else ''}
+                    </a>
+                '''
+            else:
+                # Disabled state if secrets missing
+                ms_btn_html = f'''
+                    <button style="
+                        background-color: #2F2F2F; 
+                        color: white; 
+                        padding: 12px 24px; 
+                        border: 1px solid #555; 
+                        border-radius: 4px; 
+                        cursor: not-allowed; 
+                        font-size: 16px;
+                        font-family: Segoe UI, sans-serif;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        width: 250px;
+                        box-shadow: none;
+                        opacity: 0.5;
+                    ">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
+                        <span>Logg inn med Microsoft</span>
+                    </button>
+                '''
+
+            st.markdown(f'''
+                <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
+                    {google_btn_html}
+                    {ms_btn_html}
                 </div>
             ''', unsafe_allow_html=True)
             return
