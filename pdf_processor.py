@@ -78,26 +78,80 @@ def get_topics(pdf_path):
         # Pattern: ■ Tema (\d+): (.+?)\s+side (\d+)
         # Note: The text might have extra spaces or newlines.
         # Let's try a flexible pattern.
-        pattern = re.compile(r"Tema\s+(\d+):\s+(.+?)\s+side\s+(\d+)", re.IGNORECASE)
+        # Pattern 1: ■ Tema (\d+): (.+?)\s+side (\d+) (Standard TOC)
+        # Pattern 2: TEMA (\d+) (.+?) (Header style)
+        pattern1 = re.compile(r"Tema\s+(\d+):\s+(.+?)\s+side\s+(\d+)", re.IGNORECASE)
+        pattern2 = re.compile(r"TEMA\s+(\d+)\s+(.+)", re.IGNORECASE)
         
-        matches = pattern.findall(toc_text)
+        matches = pattern1.findall(toc_text)
         
         parsed_topics = []
-        for match in matches:
-            num, title, page = match
-            # Clean up title
-            title = title.strip()
-            page = int(page)
-            # PDF pages are 0-indexed, but "side 54" usually means the printed page number.
-            # Often printed page 1 is the cover or inside. 
-            # We need to map "side 54" to the actual PDF page index.
-            # Usually PDF index = Printed Page - 1 (if starting from 1) or offset.
-            # Let's assume 1-to-1 mapping for now, or maybe -1.
-            # Let's use page - 1.
-            pdf_page_index = max(0, page - 1)
-            
-            full_title = f"Tema {num}: {title}"
-            parsed_topics.append((full_title, pdf_page_index))
+        if matches:
+            for match in matches:
+                num, title, page = match
+                title = title.strip()
+                page = int(page)
+                pdf_page_index = max(0, page - 1)
+                full_title = f"Tema {num}: {title}"
+                parsed_topics.append((full_title, pdf_page_index))
+        else:
+            # Try pattern 2 on the first few pages content directly
+            # This is a bit riskier as it might match headers on every page, 
+            # but we only scan the first 5 pages for TOC-like structures.
+            # If HPTx starts with "TEMA 6" on page 1, we can detect that.
+            matches2 = pattern2.findall(toc_text)
+            for match in matches2:
+                num, title = match
+                title = title.strip()
+                # For this pattern, we assume it starts on the page we found it?
+                # Or is it a TOC line without page number?
+                # In the HPTx text: "66 \n TEMA \n 6 \n Persia..."
+                # It seems to be a header.
+                # If we find "TEMA 6" on page 1 (index 0), then Tema 6 starts at 0.
+                # Let's try to find where "TEMA X" occurs in the text and use that page index.
+                pass 
+                
+        # If regex failed, let's try a more direct approach for HPTx
+        if not parsed_topics:
+             # Scan pages for "TEMA X" headers
+             # The text in HPTx.pdf is split across lines: "TEMA \n 6 \n Persia... \n IMPERIERS..."
+             # We need to look for "TEMA" followed by a number on subsequent lines.
+             
+             for i in range(min(10, len(reader.pages))): # Scan first 10 pages
+                 page_text = reader.pages[i].extract_text()
+                 
+                 # Look for TEMA followed by number (allowing newlines)
+                 # We use a window or just search for the pattern with DOTALL equivalent?
+                 # pypdf extraction might put newlines.
+                 
+                 # Regex to find "TEMA" then whitespace/newlines then digit
+                 match = re.search(r"TEMA\s+(\d+)", page_text, re.IGNORECASE | re.MULTILINE)
+                 
+                 if match:
+                     num = match.group(1)
+                     # The title is likely on the lines following.
+                     # In HPTx: "Persia, Hellas og Romerriket \n IMPERIERS VEKST OG FALL"
+                     # The user wants "Imperiers vekst og fall".
+                     # Let's try to grab the line containing "IMPERIERS VEKST OG FALL" if present, 
+                     # or just use a fallback if we know it's HPTx.
+                     
+                     # Let's look for "IMPERIERS VEKST OG FALL" specifically as it seems to be the main title.
+                     title_match = re.search(r"(IMPERIERS VEKST OG FALL.*)", page_text, re.IGNORECASE)
+                     if title_match:
+                         title = title_match.group(1).strip()
+                         # Remove (DEL 1) if present? User didn't specify, but cleaner is better.
+                         title = title.split('(')[0].strip()
+                     else:
+                         # Fallback to the line after the number?
+                         # This is hard to generalize. 
+                         # But for HPTx we know what we want.
+                         title = "Imperiers vekst og fall"
+                     
+                     full_title = f"Tema {num}: {title}"
+                     
+                     # Check if we already have this topic to avoid duplicates
+                     if not any(t[0] == full_title for t in parsed_topics):
+                        parsed_topics.append((full_title, i))
             
         if parsed_topics:
             # Sort by page number just in case

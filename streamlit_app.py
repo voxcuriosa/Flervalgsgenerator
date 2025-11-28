@@ -845,7 +845,8 @@ def render_quiz_generator():
     # Source Selection
     source_type = st.sidebar.radio(
         get_text("choose_source"),
-        [get_text("source_pdf"), get_text("source_ndla"), "Nettside (URL)", "Filopplasting (PDF/Word/PPT)"]
+        [get_text("source_pdf"), get_text("source_ndla"), "Nettside (URL)", "Filopplasting (PDF/Word/PPT)"],
+        label_visibility="collapsed"
     )
     
     selected_text = ""
@@ -1321,13 +1322,17 @@ def main():
     if "user_email" in st.session_state:
         # Logout Button in Sidebar
         if st.sidebar.button(get_text("logout")):
-            # Delete cookie
-            cookie_manager.delete("user_email")
-            cookie_manager.delete("user_name")
+            try:
+                # Delete cookie
+                cookie_manager.delete("user_email")
+                cookie_manager.delete("user_name")
+                
+                # Clear session state
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+            except Exception as e:
+                print(f"Logout error: {e}")
             
-            # Clear session state
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
             st.rerun()
 
     else:
