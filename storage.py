@@ -47,18 +47,60 @@ def init_db():
                 conn.execute(text("""
                     CREATE TABLE IF NOT EXISTS learning_materials (
                         id SERIAL PRIMARY KEY,
-                        subject TEXT,
                         topic TEXT,
                         title TEXT,
                         content TEXT,
                         url TEXT,
                         source_id TEXT UNIQUE,
+                        path TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     );
                 """))
+                
+                # Create settings table
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS settings (
+                        key TEXT PRIMARY KEY,
+                        value TEXT
+                    );
+                """))
+                
                 conn.commit()
         except Exception as e:
-            st.error(f"Error initializing database: {e}")
+            print(f"DEBUG: Database init error: {e}")
+            st.error(f"Database init error: {e}")
+
+def get_setting(key, default_value=None):
+    """Retrieves a setting value from the database."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT value FROM settings WHERE key = :key"), {"key": key})
+                row = result.fetchone()
+                if row:
+                    return row[0]
+        except Exception as e:
+            print(f"Error getting setting {key}: {e}")
+    return default_value
+
+def save_setting(key, value):
+    """Saves a setting value to the database."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("""
+                    INSERT INTO settings (key, value) 
+                    VALUES (:key, :value) 
+                    ON CONFLICT (key) 
+                    DO UPDATE SET value = :value
+                """), {"key": key, "value": str(value)})
+                conn.commit()
+                return True
+        except Exception as e:
+            print(f"Error saving setting {key}: {e}")
+    return False
 
 def get_content_hierarchy():
     """

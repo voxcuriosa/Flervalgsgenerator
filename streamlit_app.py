@@ -600,65 +600,128 @@ def render_quiz_generator():
                 st.error("Kunne ikke hente emner fra NDLA. Sjekk internettforbindelsen.")
             
             st.divider()
+            
+            # --- General Settings ---
+            st.info("⚙️ **Innstillinger**")
+            
+            # Max Question Limit Setting
+            from storage import get_setting, save_setting
+            
+            current_max_limit = int(get_setting("max_question_limit", 20))
+            
+            new_max_limit = st.slider(
+                "Maksimalt antall spørsmål (standardverdi for nye quizer)",
+                min_value=20,
+                max_value=100,
+                value=current_max_limit,
+                step=5,
+                key="admin_max_limit"
+            )
+            
+            if new_max_limit != current_max_limit:
+                if save_setting("max_question_limit", new_max_limit):
+                    st.success(f"Lagret ny grense: {new_max_limit}")
+                    # Rerun to update the quiz generator slider immediately
+                    st.rerun()
+                else:
+                    st.error("Kunne ikke lagre innstillingen.")
+            
+            st.divider()
 
+            # --- Quiz Results Section ---
             st.markdown(get_text("admin_tools"))
             
             # Import the new function
-            from storage import get_all_results
+            from storage import get_all_results, delete_results
             
-            df = get_all_results()
-            
-            if not df.empty:
-                # --- User Selection ---
-                users = df['user_email'].unique()
-                selected_user = st.selectbox(get_text("select_user"), ["Alle"] + list(users))
+            # Lazy Loading
+            if "load_results" not in st.session_state:
+                st.session_state.load_results = False
                 
-                if selected_user != "Alle":
-                    st.subheader(get_text("results_for", selected_user))
-                    user_df = df[df['user_email'] == selected_user]
-                    
-                    # --- Summary Stats ---
-                    total_quizzes = len(user_df)
-                    total_questions = user_df['total'].sum()
-                    total_score = user_df['score'].sum()
-                    avg_score = user_df['percentage'].mean()
-                    
-                    col1, col2, col3, col4 = st.columns(4)
-                    col1.metric(get_text("total_quizzes"), total_quizzes)
-                    col2.metric(get_text("total_questions"), total_questions)
-                    col3.metric(get_text("total_score"), total_score)
-                    col4.metric(get_text("avg_score"), f"{avg_score:.1f}%")
-                    
-                    # --- Topic Breakdown ---
-                    st.write(f"### {get_text('results_per_topic')}")
-                    topic_stats = user_df.groupby('topic').agg({
-                        'score': 'sum',
-                        'total': 'sum',
-                        'percentage': 'mean',
-                        'timestamp': 'count' # Count quizzes per topic
-                    }).rename(columns={'timestamp': 'antall_quizer'}).reset_index()
-                    
-                    topic_stats['snitt_prosent'] = topic_stats['percentage'].map('{:.1f}%'.format)
-                    
-                    st.dataframe(topic_stats[['topic', 'antall_quizer', 'score', 'total', 'snitt_prosent']], hide_index=True)
-                    
-                    st.write(f"### {get_text('history')}")
-                    st.dataframe(user_df)
-                else:
-                    # Show all results
-                    st.dataframe(df)
-                
-                # Download button (always available)
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    get_text("download_csv"),
-                    csv,
-                    "quiz_results.csv",
-                    "text/csv",
-                    key='download-csv'
-                )
+            if not st.session_state.load_results:
+                if st.button("Last inn resultater"):
+                    st.session_state.load_results = True
+                    st.rerun()
             else:
-                st.info(get_text("no_results"))
+                if st.button("Skjul resultater"):
+                    st.session_state.load_results = False
+                    st.rerun()
+                    
+                df = get_all_results()
+                
+                if not df.empty:
+                    # Summary Metrics
+                    total_quizzes = len(df)
+                    unique_users = df['user_email'].nunique()
+                    avg_score_all = df['percentage'].mean()
+                    
+                    m1, m2, m3 = st.columns(3)
+                    m1.metric("Totalt antall quizer", total_quizzes)
+                    m2.metric("Unike brukere", unique_users)
+                    m3.metric("Snittscore (alle)", f"{avg_score_all:.1f}%")
+                    
+                    st.write("### Detaljerte resultater")
+                    
+                    # Filter by user
+                    users = ["Alle"] + list(df['user_email'].unique())
+                    selected_user = st.selectbox("Filtrer på bruker:", users)
+                    
+                    if selected_user != "Alle":
+                        user_df = df[df['user_email'] == selected_user]
+                        
+                        # User specific actions
+                        col_u1, col_u2 = st.columns([0.8, 0.2])
+                        with col_u1:
+                            st.write(f"Viser {len(user_df)} resultater for {selected_user}")
+                        with col_u2:
+                            if st.button("Slett alle for bruker", type="primary", key=f"del_user_{selected_user}"):
+                                if delete_results(user_email=selected_user):
+                                    st.success(f"Slettet alle resultater for {selected_user}")
+                                    st.rerun()
+                                else:
+                                    st.error("Kunne ikke slette resultater.")
+                        
+                        # Display user results with delete buttons per row
+                        # Streamlit dataframe doesn't support buttons inside easily.
+                        # We can use st.data_editor with a delete column in newer versions, or just list them.
+                        # Let's list them in a table-like structure with buttons.
+                        
+                        st.dataframe(user_df[['timestamp', 'topic', 'score', 'total', 'percentage', 'category']], hide_index=True)
+                        
+                        # Option to delete specific test?
+                        # Let's show a list of recent tests with delete buttons
+                        st.write("#### Siste tester (Slett enkelttester)")
+                        for index, row in user_df.iterrows():
+                            c1, c2, c3, c4, c5 = st.columns([2, 2, 1, 1, 1])
+                            c1.text(row['timestamp'])
+                            c2.text(row['topic'])
+                            c3.text(f"{row['score']}/{row['total']}")
+                            c4.text(f"{row['percentage']}%")
+                            if c5.button("Slett", key=f"del_res_{row['id']}"):
+                                if delete_results(result_ids=[row['id']]):
+                                    st.success("Slettet!")
+                                    st.rerun()
+                        
+                    else:
+                        # Show all results
+                        st.dataframe(df)
+                        
+                        # Delete all results option (Dangerous!)
+                        with st.expander("Faresone"):
+                            if st.button("Slett ALLE resultater i databasen", type="primary"):
+                                st.warning("Dette er ikke implementert for sikkerhets skyld. Kontakt utvikler.")
+                    
+                    # Download button (always available)
+                    csv = df.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        get_text("download_csv"),
+                        csv,
+                        "quiz_results.csv",
+                        "text/csv",
+                        key='download-csv'
+                    )
+                else:
+                    st.info(get_text("no_results"))
             
             st.write("---")
 
@@ -711,7 +774,11 @@ def render_quiz_generator():
         else:
             st.sidebar.warning(get_text("no_articles"))
     
-    num_questions = st.sidebar.slider(get_text("num_questions"), 1, 100, 5)
+    # Get configured max limit
+    from storage import get_setting
+    max_q_limit = int(get_setting("max_question_limit", 20))
+    
+    num_questions = st.sidebar.slider(get_text("num_questions"), 1, max_q_limit, min(20, max_q_limit))
     num_options = st.sidebar.slider(get_text("num_options"), 2, 6, 4)
     multiple_correct = st.sidebar.checkbox(get_text("multiple_correct"), value=False)
     
