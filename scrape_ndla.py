@@ -292,6 +292,43 @@ def update_topic(subject_name, topic_name, node_id):
         print(f"Error updating topic: {e}")
         return False
 
+def get_subject_topics(subject_name):
+    """
+    Returns a list of top-level topics for a subject.
+    Returns: [{'name': 'Topic Name', 'id': 'urn:topic:...'}]
+    """
+    root_node_id = None
+    if subject_name == "Historie vg3":
+        root_node_id = "urn:subject:cc109c51-a083-413b-b497-7f80a0569a92"
+    elif subject_name == "Historie vg2":
+        root_node_id = "urn:subject:d1fe9d0a-a54d-49db-a4c2-fd5463a7c9e7"
+    
+    if not root_node_id:
+        return []
+        
+    try:
+        # Get root node details
+        root_details = get_node_details(root_node_id)
+        if not root_details:
+            return []
+            
+        # Get children
+        children = get_children(root_node_id)
+        
+        topics = []
+        for child in children:
+            # We only want topics, not resources (though at this level they should be topics)
+            # Filter out "Diverse" if we want, or keep it.
+            topics.append({
+                'name': child.get('name', 'Ukjent emne'),
+                'id': child.get('id')
+            })
+            
+        return topics
+    except Exception as e:
+        print(f"Error fetching topics: {e}")
+        return []
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scrape NDLA subject content.")
     parser.add_argument("subject", help="Name of the subject (e.g., 'Historie vg3')")

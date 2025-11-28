@@ -493,72 +493,66 @@ def render_quiz_generator():
             st.header(get_text("admin_header"))
             
             # --- Content Update Section (Moved to Top) ---
-            st.error("⚠️ ADMIN MODE: Content Update Tools") # Use error box for high visibility
+            st.info("🛠️ **Verktøy for innholdsoppdatering**")
             
-            st.info("Her kan du sjekke etter oppdateringer på NDLA og laste ned nytt innhold.")
+            st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
             
             # Select Subject
             update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3"], key="update_subject")
+            
+            # Fetch available topics for this subject
+            from scrape_ndla import get_subject_topics, update_topic
+            
+            with st.spinner(f"Henter emner for {update_subject}..."):
+                available_topics = get_subject_topics(update_subject)
                 
-            # Fetch available topics for this subject to allow granular update
-            from storage import get_db_connection
-            conn = get_db_connection()
-            topics = []
-            if conn:
-                import pandas as pd
-                try:
-                    known_topics = {
-                        "Historie vg3": {
-                            "Hele faget": "urn:subject:cc109c51-a083-413b-b497-7f80a0569a92",
-                            "Historiske perioder": "urn:topic:138d9cdb-7246-4e72-804e-13235929248b",
-                            "Nyere historie": "urn:topic:467319626a", # From URL
-                            "Krig og konflikter": "urn:topic:306e6325-391d-488f-8968-781745423d2d" # Need to find these IDs...
-                        },
-                        "Historie vg2": {
-                            "Hele faget": "urn:subject:10", # Need real ID
-                        }
-                    }
-                    
-                    # Better approach: Just "Hele faget" for now, and maybe a text input for "Node ID / URL" for specific ones.
-                    update_option = st.radio("Omfang", ["Hele faget", "Spesifikt emne (URL/ID)"])
-                    
-                    node_to_scrape = None
-                    
-                    if update_option == "Hele faget":
-                        if update_subject == "Historie vg3":
-                            node_to_scrape = "urn:subject:cc109c51-a083-413b-b497-7f80a0569a92"
-                        elif update_subject == "Historie vg2":
-                            node_to_scrape = "urn:subject:d1fe9d0a-a54d-49db-a4c2-fd5463a7c9e7" # Verify this
-                    else:
-                        node_to_scrape = st.text_input("Lim inn URL eller Node ID for emnet")
+            if available_topics:
+                # Create a form/list for selection
+                st.write("Velg emner å oppdatere:")
+                
+                # "Select All" option
+                select_all = st.checkbox("Velg alle emner")
+                
+                selected_nodes = []
+                
+                # Create columns for better layout
+                cols = st.columns(2)
+                
+                for i, topic in enumerate(available_topics):
+                    col = cols[i % 2]
+                    is_checked = select_all # Default to select_all state
+                    if col.checkbox(topic['name'], value=is_checked, key=f"topic_{topic['id']}"):
+                        selected_nodes.append(topic)
+                
+                st.write("") # Spacing
+                
+                if st.button(f"Oppdater {len(selected_nodes)} valgte emner", type="primary"):
+                    if selected_nodes:
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
                         
-                    if st.button("Sjekk for oppdateringer"):
-                        if node_to_scrape:
-                            with st.spinner(f"Oppdaterer innhold for {update_subject}... Dette kan ta tid."):
-                                from scrape_ndla import update_topic, scrape_subject
-                                
-                                # If it's a full subject scrape, we might want to use scrape_subject logic
-                                # But update_topic can handle it if we pass the root ID.
-                                # Let's use update_topic as it is more generic now.
-                                
-                                # We need a topic name for logging/path reconstruction
-                                topic_label = "Hele faget" if update_option == "Hele faget" else "Valgt emne"
-                                
-                                success = update_topic(update_subject, topic_label, node_to_scrape)
-                                
-                                if success:
-                                    st.success("Oppdatering ferdig! Sjekk loggen for detaljer.")
-                                    # Optionally regenerate HTML viewer
-                                    import subprocess
-                                    subprocess.run(["python3", "generate_html_viewer.py"])
-                                    st.info("HTML-visning er også oppdatert.")
-                                else:
-                                    st.error("Noe gikk galt under oppdateringen.")
-                        else:
-                            st.warning("Vennligst angi en gyldig URL eller ID.")
+                        total = len(selected_nodes)
+                        success_count = 0
+                        
+                        for i, node in enumerate(selected_nodes):
+                            status_text.text(f"Oppdaterer: {node['name']}...")
+                            if update_topic(update_subject, node['name'], node['id']):
+                                success_count += 1
+                            progress_bar.progress((i + 1) / total)
                             
-                except Exception as e:
-                    st.error(f"Database error: {e}")
+                        status_text.text("Ferdig!")
+                        st.success(f"Oppdatering fullført! {success_count} av {total} emner ble oppdatert.")
+                        
+                        # Regenerate HTML
+                        with st.spinner("Oppdaterer visning..."):
+                            import subprocess
+                            subprocess.run(["python3", "generate_html_viewer.py"])
+                        st.info("HTML-visning er oppdatert.")
+                        
+                    else:
+                        st.warning("Ingen emner valgt.")
+            else:
+                st.error("Kunne ikke hente emner fra NDLA. Sjekk internettforbindelsen.")
             
             st.divider()
 
