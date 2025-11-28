@@ -537,9 +537,10 @@ def main():
         st.error("Google secrets not found in .streamlit/secrets.toml")
         st.stop()
         
-    client_id = st.secrets["google"]["client_id"]
-    client_secret = st.secrets["google"]["client_secret"]
-    redirect_uri = st.secrets["google"]["redirect_uri"]
+    # Read and clean secrets
+    client_id = st.secrets["google"]["client_id"].strip()
+    client_secret = st.secrets["google"]["client_secret"].strip()
+    redirect_uri = st.secrets["google"]["redirect_uri"].strip()
     
     # Initialize OAuth2 object
     oauth2 = oauth.OAuth2Component(
@@ -632,10 +633,6 @@ def main():
             
             import urllib.parse
             
-            # Ensure no whitespace in secrets
-            client_id = client_id.strip()
-            redirect_uri = redirect_uri.strip()
-            
             scope = "openid email profile"
             
             params = {
@@ -653,7 +650,7 @@ def main():
             
             st.markdown(f'''
                 <br>
-                <a href="{auth_url}" target="_self">
+                <a href="{auth_url}" target="_blank">
                     <button style="
                         background-color: #4285F4; 
                         color: white; 
