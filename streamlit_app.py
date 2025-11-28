@@ -559,7 +559,7 @@ def render_quiz_generator():
             st.divider()
 
             # --- 2. Quiz Results Section ---
-            st.markdown(get_text("admin_tools"))
+            st.info("📊 **Resultater**")
             
             # Import the new function
             from storage import get_all_results, delete_results
