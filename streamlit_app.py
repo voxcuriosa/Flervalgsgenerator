@@ -1215,6 +1215,8 @@ def main():
                     # FIX: Use st.session_state.user_email instead of undefined 'email'
                     if "user_email" in st.session_state:
                         cookie_manager.set("user_email", st.session_state.user_email, expires_at=expires)
+                        # Also save user name
+                        cookie_manager.set("user_name", st.session_state.user_name, expires_at=expires)
                     
                     # Wait a bit to ensure cookie is set before reload
                     import time
@@ -1243,7 +1245,13 @@ def main():
                 break
         
             st.session_state.user_email = cookie_email
-            st.session_state.user_name = "User" # We don't have the name in cookie, but that's fine
+            
+            # Try to get name from cookie too
+            if cookies and "user_name" in cookies:
+                st.session_state.user_name = cookies["user_name"]
+            else:
+                st.session_state.user_name = "User" 
+                
             st.rerun()
             
     # --- Language Selector (Top of Sidebar) ---
@@ -1295,6 +1303,7 @@ def main():
         if st.sidebar.button(get_text("logout")):
             # Delete cookie
             cookie_manager.delete("user_email")
+            cookie_manager.delete("user_name")
             
             # Clear session state
             for key in list(st.session_state.keys()):
