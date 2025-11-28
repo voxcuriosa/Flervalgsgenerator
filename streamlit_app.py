@@ -850,40 +850,65 @@ def render_quiz_generator():
     # Source Selection
     source_type = st.sidebar.radio(
         get_text("choose_source"),
-        [get_text("source_pdf"), get_text("source_ndla"), "Nettside (URL)"]
+        [get_text("source_pdf"), get_text("source_ndla"), "Nettside (URL)", "Filopplasting (PDF/Word/PPT)"]
     )
     
     selected_text = ""
     selected_topic_name = ""
+    
+    # Trigger variable
+    trigger_generation = False
+    final_text = ""
+    final_topic_name = ""
     
     if source_type == "Nettside (URL)":
         st.sidebar.info("Lim inn en lenke til en nettside du vil lage quiz fra.")
         url_input = st.sidebar.text_input("URL til nettside", key="url_input")
         
         if url_input:
-            if st.sidebar.button("Hent innhold"):
+            # Combined button
+            if st.sidebar.button("Hent innhold og Generer Quiz", type="primary"):
                 with st.spinner("Henter innhold fra nettside..."):
                     try:
                         from scrape_url import scrape_url
                         text = scrape_url(url_input)
                         if text:
+                            # Set session state for persistence (optional, but good for history)
                             st.session_state['url_text'] = text
                             st.session_state['url_source'] = url_input
-                            st.sidebar.success("Innhold hentet!")
+                            
+                            # Trigger generation immediately
+                            trigger_generation = True
+                            final_text = text
+                            final_topic_name = "Nettside: " + url_input
+                            
                         else:
                             st.sidebar.warning("Fant ingen tekst på siden.")
                     except Exception as e:
                         st.sidebar.error(f"Feil: {e}")
-        
-        if 'url_text' in st.session_state and st.session_state.get('url_source') == url_input:
-            selected_text = st.session_state['url_text']
-            selected_topic_name = "Nettside: " + url_input
-            
-            # Preview
-            with st.expander("Vis hentet tekst"):
-                st.write(selected_text[:1000] + "...")
     
-    if source_type == get_text("source_pdf"):
+                        st.sidebar.error(f"Feil: {e}")
+    
+    elif source_type == "Filopplasting (PDF/Word/PPT)":
+        st.sidebar.info("Last opp en fil (PDF, DOCX, PPTX) for å lage quiz.")
+        uploaded_file = st.sidebar.file_uploader("Velg fil", type=["pdf", "docx", "pptx"])
+        
+        if uploaded_file:
+            if st.sidebar.button("Generer Quiz fra fil", type="primary"):
+                with st.spinner("Leser fil..."):
+                    try:
+                        from file_processor import extract_text_from_file
+                        text = extract_text_from_file(uploaded_file)
+                        if text:
+                            trigger_generation = True
+                            final_text = text
+                            final_topic_name = f"Fil: {uploaded_file.name}"
+                        else:
+                            st.sidebar.warning("Fant ingen tekst i filen.")
+                    except Exception as e:
+                        st.sidebar.error(f"Feil ved lesing av fil: {e}")
+
+    elif source_type == get_text("source_pdf"):
         # Topics
         if "topics" not in st.session_state or st.sidebar.button(get_text("update_topics")):
             with st.spinner(get_text("analyzing_pdf")):
@@ -896,15 +921,13 @@ def render_quiz_generator():
         selected_topic = st.sidebar.selectbox(get_text("select_topic"), topic_names, key="topic_selector")
         selected_topic_name = selected_topic
         
-    elif source_type == "Nettside (URL)":
-        if not selected_text:
-            st.error("Du må hente innhold fra en URL først.")
-            st.stop()
-        
-        # Use the text directly
-        final_text = selected_text
-        topic_name = selected_topic_name
-        
+        if st.sidebar.button(get_text("generate_btn")):
+             start_page, end_page = st.session_state.topics[selected_topic]
+             with st.spinner(get_text("fetching_text", selected_topic)):
+                 final_text = extract_text_by_topic(PDF_PATH, start_page, end_page)
+                 final_topic_name = selected_topic_name
+                 trigger_generation = True
+
     else: # NDLA
         st.sidebar.info(get_text("ndla_info"))
         hierarchy = get_content_hierarchy()
@@ -929,6 +952,11 @@ def render_quiz_generator():
                 selected_topic_name = selected_articles[0]['title']
             else:
                 selected_topic_name = f"NDLA Utvalg ({len(selected_articles)} artikler)"
+                
+            if st.sidebar.button(get_text("generate_btn")):
+                final_text = selected_text
+                final_topic_name = selected_topic_name
+                trigger_generation = True
         else:
             st.info(get_text("ndla_info"))
     
@@ -941,31 +969,24 @@ def render_quiz_generator():
     num_options = st.sidebar.slider(get_text("num_options"), 2, 6, 4)
     multiple_correct = st.sidebar.checkbox(get_text("multiple_correct"), value=False)
     
-    if st.sidebar.button(get_text("generate_btn")):
-        if source_type == get_text("source_pdf"):
-            start_page, end_page = st.session_state.topics[selected_topic]
-            with st.spinner(get_text("fetching_text", selected_topic)):
-                text = extract_text_by_topic(PDF_PATH, start_page, end_page)
+    # Common Generation Logic
+    if trigger_generation:
+        if not final_text:
+             st.error("Ingen tekst å generere fra.")
         else:
-            # NDLA
-            if not selected_text:
-                st.error(get_text("error_ndla_select"))
-                st.stop()
-            text = selected_text
-            
-        with st.spinner(get_text("generating")):
-            # Pass language to generate_quiz
-            lang = st.session_state.get("language", "no")
-            quiz_data = generate_quiz(text, num_questions, num_options, multiple_correct, language=lang)
-            
-            if "error" in quiz_data:
-                st.error(get_text("error_gen", quiz_data['error']))
-            else:
-                st.session_state.quiz_data = quiz_data
-                st.session_state.current_answers = {}
-                st.session_state.quiz_submitted = False
-                st.session_state.selected_topic_name = selected_topic_name # Store for results
-                st.rerun()
+            with st.spinner(get_text("generating")):
+                # Pass language to generate_quiz
+                lang = st.session_state.get("language", "no")
+                quiz_data = generate_quiz(final_text, num_questions, num_options, multiple_correct, language=lang)
+                
+                if "error" in quiz_data:
+                    st.error(get_text("error_gen", quiz_data['error']))
+                else:
+                    st.session_state.quiz_data = quiz_data
+                    st.session_state.current_answers = {}
+                    st.session_state.quiz_submitted = False
+                    st.session_state.selected_topic_name = final_topic_name # Store for results
+                    st.rerun()
 
     # Display Quiz
     if "quiz_data" in st.session_state and not st.session_state.get("quiz_submitted", False):
@@ -1135,6 +1156,36 @@ def main():
             st.session_state.user_name = "User" # We don't have the name in cookie, but that's fine
             st.rerun()
             
+    # --- Language Selector (Top of Sidebar) ---
+    lang_options = {
+        "no": "🇳🇴 Norsk", 
+        "en": "🇬🇧 English", 
+        "ar": "🇸🇦 العربية", 
+        "so": "🇸🇴 Soomaali", 
+        "ti": "🇪🇷 ትግርኛ", 
+        "uk": "🇺🇦 Українська",
+        "th": "🇹🇭 ไทย"
+    }
+    
+    def update_lang():
+        st.session_state.language = st.session_state.lang_selector
+
+    lang_keys = list(lang_options.keys())
+    try:
+        current_index = lang_keys.index(st.session_state.language)
+    except ValueError:
+        current_index = 0
+
+    st.sidebar.selectbox(
+        get_text("language"),
+        options=lang_keys,
+        format_func=lambda x: lang_options[x],
+        index=current_index,
+        key="lang_selector",
+        label_visibility="collapsed",
+        on_change=update_lang
+    )
+    
     # --- Admin Button (Visible everywhere if admin) ---
     if "user_email" in st.session_state and st.session_state.user_email in ADMINS:
         is_admin_open = st.session_state.get("show_admin", False)
@@ -1237,6 +1288,10 @@ def main():
                     expires = datetime.datetime.now() + datetime.timedelta(days=30)
                     cookie_manager.set("user_email", email, expires_at=expires)
                     
+                    # Wait a bit to ensure cookie is set before reload
+                    import time
+                    time.sleep(1)
+                    
                     st.query_params.clear()
                     st.rerun()
                 else:
@@ -1322,38 +1377,6 @@ def main():
     st.sidebar.image(LOGO_URL, width=150)
     st.sidebar.title(get_text("title"))
     
-    # Language Selector in Sidebar
-    st.sidebar.markdown(f"**{get_text('language')}**")
-    lang_options = {
-        "no": "🇳🇴 Norsk", 
-        "en": "🇬🇧 English", 
-        "ar": "🇸🇦 العربية", 
-        "so": "🇸🇴 Soomaali", 
-        "ti": "🇪🇷 ትግርኛ", 
-        "uk": "🇺🇦 Українська",
-        "th": "🇹🇭 ไทย"
-    }
-    
-    # Use a callback to update state immediately
-    def update_lang():
-        st.session_state.language = st.session_state.lang_selector
-        
-    # Determine index safely
-    lang_keys = list(lang_options.keys())
-    try:
-        current_index = lang_keys.index(st.session_state.language)
-    except ValueError:
-        current_index = 0
-        
-    st.sidebar.radio(
-        get_text("language"),
-        options=lang_keys,
-        format_func=lambda x: lang_options[x],
-        index=current_index,
-        key="lang_selector",
-        label_visibility="collapsed",
-        on_change=update_lang
-    )
 
 
     st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')}!")
