@@ -1261,6 +1261,8 @@ def main():
                             payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode('utf-8'))
                             user_email = payload.get("email")
                             user_name = payload.get("name", "Unknown")
+                    elif "error" in token_data:
+                        st.error(f"Google Error: {token_data}")
 
                 elif provider == "microsoft":
                     if "microsoft" not in st.secrets:
@@ -1484,11 +1486,14 @@ def main():
                 ms_auth_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
             # --- Render Buttons ---
-            # Construct HTML string directly to avoid indentation issues
+            import textwrap
             
+            # Helper to clean HTML
+            def clean_html(html):
+                return textwrap.dedent(html).strip()
+
             # Google Button
-            html_content = f'''
-            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
+            google_btn = clean_html(f'''
                 <a href="{auth_url}" target="_blank" style="text-decoration: none;">
                     <button style="
                         background-color: #4285F4; 
@@ -1509,59 +1514,65 @@ def main():
                         <span>{get_text("login_google")}</span>
                     </button>
                 </a>
-            '''
+            ''')
 
             # Microsoft Button
             if ms_auth_url:
-                html_content += f'''
-                <a href="{ms_auth_url}" target="_blank" style="text-decoration: none;">
+                ms_btn = clean_html(f'''
+                    <a href="{ms_auth_url}" target="_blank" style="text-decoration: none;">
+                        <button style="
+                            background-color: #2F2F2F; 
+                            color: white; 
+                            padding: 12px 24px; 
+                            border: 1px solid #555; 
+                            border-radius: 4px; 
+                            cursor: pointer; 
+                            font-size: 16px;
+                            font-family: Segoe UI, sans-serif;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            width: 250px;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        ">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
+                            <span>Logg inn med Microsoft</span>
+                        </button>
+                    </a>
+                ''')
+            else:
+                # Disabled state
+                ms_btn = clean_html(f'''
                     <button style="
                         background-color: #2F2F2F; 
                         color: white; 
                         padding: 12px 24px; 
                         border: 1px solid #555; 
                         border-radius: 4px; 
-                        cursor: pointer; 
+                        cursor: not-allowed; 
                         font-size: 16px;
                         font-family: Segoe UI, sans-serif;
                         display: flex;
                         align-items: center;
                         gap: 12px;
                         width: 250px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        box-shadow: none;
+                        opacity: 0.5;
                     ">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
                         <span>Logg inn med Microsoft</span>
                     </button>
-                </a>
-                '''
-            else:
-                # Disabled state
-                html_content += f'''
-                <button style="
-                    background-color: #2F2F2F; 
-                    color: white; 
-                    padding: 12px 24px; 
-                    border: 1px solid #555; 
-                    border-radius: 4px; 
-                    cursor: not-allowed; 
-                    font-size: 16px;
-                    font-family: Segoe UI, sans-serif;
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    width: 250px;
-                    box-shadow: none;
-                    opacity: 0.5;
-                ">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
-                    <span>Logg inn med Microsoft</span>
-                </button>
-                '''
+                ''')
 
-            html_content += "</div>"
+            # Combine in a container
+            full_html = clean_html(f'''
+                <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
+                    {google_btn}
+                    {ms_btn}
+                </div>
+            ''')
 
-            st.markdown(html_content, unsafe_allow_html=True)
+            st.markdown(full_html, unsafe_allow_html=True)
             return
 
     # --- Main App (Only reached if logged in) ---
