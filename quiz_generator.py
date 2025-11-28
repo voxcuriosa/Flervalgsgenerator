@@ -12,33 +12,28 @@ def generate_quiz(text, num_questions, num_options, multiple_correct, language="
         return {"error": "OpenAI API Key not found in secrets."}
         
     client = openai.OpenAI(api_key=st.secrets["openai"]["api_key"])
-    
-    lang_instruction = "Language: Norwegian." if language == "no" else "Language: English."
-    
+    # Define language string
+    lang_str = "Norwegian"
+    if language == "en":
+        lang_str = "English"
+    elif language == "ar":
+        lang_str = "Arabic"
+    elif language == "so":
+        lang_str = "Somali"
+    elif language == "ti":
+        lang_str = "Tigrinya"
+        
     prompt = f"""
-    Generate {num_questions} multiple choice questions based on the following text.
+    Generate {num_questions} multiple choice questions based on the text provided below.
+    The questions should be in {lang_str}.
     
-    Constraints:
-    - {lang_instruction}
-    - Each question should have {num_options} options.
-    - {"If multiple options can be correct: Randomly vary between providing 1 or 2 correct answers per question. NEVER provide more than 2 correct answers." if multiple_correct else "Only one option should be correct."}
-    - Options should be plausible and similar in length/style.
-    - Provide a short justification for why the correct answer(s) is/are correct.
-    - Return the output strictly as a JSON object with the following structure:
+    For each question:
+    - Provide {num_options} options.
+    - If 'multiple_correct' is {multiple_correct}, allow up to 2 correct answers. Otherwise, exactly one correct answer.
+    - Provide a short justification for the correct answer(s).
+    - Ensure the output is valid JSON.
     
-    {{
-        "questions": [
-            {{
-                "question": "Question text here",
-                "options": ["Option 1", "Option 2", ...],
-                "correct_indices": [0] (List of indices of correct options, 0-indexed),
-                "justification": "Explanation here"
-            }},
-            ...
-        ]
-    }}
-    
-    Text content:
+    Text:
     {text[:15000]} 
     """
     # Truncating text to ~15k chars to avoid token limits for now. 
