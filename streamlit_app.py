@@ -20,6 +20,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Initialize Cookie Manager (Global)
+# This must be done after set_page_config
+cookie_manager = stx.CookieManager()
+
 # Constants
 PDF_FILES = ["HPT.pdf", "HPTx.pdf"]
 HTML_VIEWER_PATH = "ndla_content_viewer.html"
@@ -1175,7 +1179,7 @@ def main():
     )
     
     # Initialize Cookie Manager
-    cookie_manager = stx.CookieManager()
+    # cookie_manager = stx.CookieManager() # Now global
 
     # Check if we are already logged in
     if "token" not in st.session_state:
@@ -1257,13 +1261,11 @@ def main():
         # We need to wait a bit for the cookie manager to load
         import time
         # Retry mechanism for cookies
-        cookie_email = None
-        for _ in range(5): # Try 5 times
-            time.sleep(0.2)
-            cookies = cookie_manager.get_all()
-            if cookies and "user_email" in cookies:
-                cookie_email = cookies["user_email"]
-                break
+        # Retry mechanism for cookies is NOT safe with components (DuplicateKey error)
+        # Just check once. The rerun from login should have set it.
+        cookies = cookie_manager.get_all()
+        if cookies and "user_email" in cookies:
+            cookie_email = cookies["user_email"]
         
             if cookie_email:
                 st.session_state.user_email = cookie_email
