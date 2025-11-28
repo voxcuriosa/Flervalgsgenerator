@@ -926,19 +926,23 @@ def render_quiz_generator():
                         # Let's append (File) if collision, or just rely on unique names.
                         # Actually, let's store the source file in the value.
                         for topic, (start, end) in file_topics.items():
-                            # Create a unique key if needed, but hopefully topics are distinct.
-                            # If HPTx has "Tema 1", it might collide with HPT "Tema 1".
-                            # Let's prefix with file identifier if it's HPTx?
-                            # Or just show "Tema X (HPT)" vs "Tema Y (HPTx)"?
-                            # User said HPTx is a new topic not in HPT.
-                            # So names should be distinct.
+                            # Debug collision
+                            if topic in all_topics:
+                                print(f"DEBUG: Collision for '{topic}'. Existing: {all_topics[topic][2]}, New: {pdf_file}")
+                                # Prefer HPT.pdf for Tema 1-5? 
+                                # If HPT.pdf is first, and we want to keep it, we should NOT overwrite.
+                                # But let's just log for now to confirm.
                             
-                            # We need to store the filename to know where to extract from.
-                            # Value format: (start, end, filename)
+                            # Simple merge for now, but let's prevent HPTx from overwriting HPT if HPT is the main source
+                            if topic in all_topics and "HPT.pdf" in all_topics[topic][2] and "HPTx.pdf" in pdf_file:
+                                print(f"DEBUG: Ignoring {topic} from {pdf_file} because it exists in {all_topics[topic][2]}")
+                                continue
+                                
                             all_topics[topic] = (start, end, pdf_file)
                     else:
                         st.sidebar.warning(f"Fant ikke filen: {pdf_file}")
                 
+                print(f"DEBUG: Final topics: {list(all_topics.keys())}")
                 st.session_state.topics = all_topics
                 
         topic_names = list(st.session_state.topics.keys())
@@ -992,7 +996,7 @@ def render_quiz_generator():
     
     max_q_limit = int(get_setting("max_question_limit", 20))
     
-    num_questions = st.sidebar.slider(get_text("num_questions"), 1, max_q_limit, min(20, max_q_limit))
+    num_questions = st.sidebar.slider(get_text("num_questions"), 1, max_q_limit, min(5, max_q_limit))
     num_options = st.sidebar.slider(get_text("num_options"), 2, 6, 4)
     multiple_correct = st.sidebar.checkbox(get_text("multiple_correct"), value=False)
     
