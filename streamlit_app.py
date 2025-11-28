@@ -1299,7 +1299,7 @@ def main():
                 del st.session_state[key]
             st.rerun()
 
-        else:
+    else:
             # Show Login Button
             # We show this INSTEAD of the main app if not logged in
             
