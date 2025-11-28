@@ -266,7 +266,7 @@ def generate_html():
             }
             /* Sidebar */
             .sidebar {
-                width: 350px; /* Increased width */
+                width: 450px; /* Increased width again */
                 background-color: #2c3e50;
                 color: white;
                 padding: 20px;

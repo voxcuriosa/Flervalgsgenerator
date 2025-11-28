@@ -166,8 +166,8 @@ def apply_custom_css():
         [data-testid="stSidebar"] {
             background-color: #262730;
             border-right: 1px solid #333;
-            min-width: 400px; /* Widen sidebar */
-            max-width: 600px;
+            min-width: 500px; /* Widen sidebar even more */
+            max-width: 800px;
         }
         
         /* Headers */
