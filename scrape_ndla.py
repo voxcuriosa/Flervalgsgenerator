@@ -319,10 +319,24 @@ def get_subject_topics(subject_name):
         for child in children:
             # We only want topics, not resources (though at this level they should be topics)
             # Filter out "Diverse" if we want, or keep it.
-            topics.append({
+            topic_data = {
                 'name': child.get('name', 'Ukjent emne'),
-                'id': child.get('id')
-            })
+                'id': child.get('id'),
+                'children': []
+            }
+            
+            # Fetch subtopics (Level 2)
+            try:
+                sub_children = get_nodes(child.get('id'))
+                for sub in sub_children:
+                    topic_data['children'].append({
+                        'name': sub.get('name'),
+                        'id': sub.get('id')
+                    })
+            except:
+                pass # Ignore errors for subtopics
+                
+            topics.append(topic_data)
             
         return topics
     except Exception as e:

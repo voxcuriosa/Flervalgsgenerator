@@ -508,34 +508,79 @@ def render_quiz_generator():
                 
             if available_topics:
                 # Create a form/list for selection
-                st.write("Velg emner å oppdatere:")
-                
-                # "Select All" option
-                select_all = st.checkbox("Velg alle emner")
+                st.write("Velg emner å oppdaterte:")
                 
                 selected_nodes = []
                 
-                # Create columns for better layout
-                cols = st.columns(2)
+                # "Select All" option for everything
+                select_all_global = st.checkbox("Velg ALT innhold (alle emner og underemner)")
                 
-                for i, topic in enumerate(available_topics):
-                    col = cols[i % 2]
-                    is_checked = select_all # Default to select_all state
-                    if col.checkbox(topic['name'], value=is_checked, key=f"topic_{topic['id']}"):
-                        selected_nodes.append(topic)
+                for topic in available_topics:
+                    # Top level topic
+                    with st.expander(f"{topic['name']}", expanded=False):
+                        # Option to select the entire top-level topic
+                        col1, col2 = st.columns([0.05, 0.95])
+                        with col1:
+                            # If global select is on, this should be on. 
+                            # But Streamlit widgets don't update dynamically from other widgets easily without session state.
+                            # We'll use the value to determine selection logic.
+                            is_parent_selected = st.checkbox("", key=f"parent_{topic['id']}", value=select_all_global)
+                        with col2:
+                            st.markdown(f"**Oppdater hele '{topic['name']}'** (inkludert alle underemner)")
+                        
+                        # Subtopics
+                        if topic['children']:
+                            st.markdown("Eller velg spesifikke underemner:")
+                            for sub in topic['children']:
+                                # If parent is selected, subtopics are implicitly selected for update by the backend logic,
+                                # but visually we might want to show them checked? 
+                                # Actually, if parent is checked, we add parent ID.
+                                # If parent is NOT checked, we check if children are checked.
+                                is_sub_selected = st.checkbox(sub['name'], key=f"sub_{sub['id']}", value=is_parent_selected or select_all_global)
+                                
+                                if is_sub_selected:
+                                    # Logic: If parent is selected, we don't strictly need to add child, 
+                                    # BUT adding it doesn't hurt (deduplication happens later or we just process it).
+                                    # However, if we select Parent, scraping Parent covers children.
+                                    # If we select Child, scraping Child covers Child's children.
+                                    # To avoid double scraping, we should prefer the highest level selected node.
+                                    # But for simplicity, let's just add everything selected to the list
+                                    # and let the user be responsible, or do simple filtering.
+                                    selected_nodes.append(sub)
+                        
+                        # If parent was selected, we should add the PARENT node to the list.
+                        # But wait, if we add Parent, we don't need to add Children.
+                        # If we add Children, we don't need Parent.
+                        # Let's handle this:
+                        if is_parent_selected:
+                            # Add parent to list. 
+                            # We need to make sure we don't add it twice if we iterate.
+                            # Let's use a dictionary to track unique selected IDs to avoid duplicates in `selected_nodes` list display logic?
+                            # Actually, simpler: Just add it. The loop below will process it.
+                            selected_nodes.append(topic)
+
+                # Deduplicate selected nodes by ID to avoid processing same thing twice
+                # (e.g. if I selected Parent AND Child, Parent covers Child, but we might process both. 
+                # It's safer to just process what is asked. 
+                # But if Parent is in list, we should probably remove Children of that Parent from list to save time?
+                # That requires knowing the hierarchy. 
+                # Let's just run it. The scraper checks if content exists/updates it. It's fine.)
+                unique_nodes = {node['id']: node for node in selected_nodes}.values()
                 
                 st.write("") # Spacing
                 
-                if st.button(f"Oppdater {len(selected_nodes)} valgte emner", type="primary"):
-                    if selected_nodes:
+                if st.button(f"Oppdater {len(unique_nodes)} valgte emner", type="primary"):
+                    if unique_nodes:
                         progress_bar = st.progress(0)
                         status_text = st.empty()
                         
-                        total = len(selected_nodes)
+                        total = len(unique_nodes)
                         success_count = 0
                         
-                        for i, node in enumerate(selected_nodes):
+                        for i, node in enumerate(unique_nodes):
                             status_text.text(f"Oppdaterer: {node['name']}...")
+                            # We pass the node name and ID. 
+                            # If it's a subtopic, update_topic handles it.
                             if update_topic(update_subject, node['name'], node['id']):
                                 success_count += 1
                             progress_bar.progress((i + 1) / total)
