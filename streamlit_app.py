@@ -1488,7 +1488,7 @@ def main():
             # --- Render Buttons ---
             # Google Button HTML
             google_btn_html = textwrap.dedent(f'''
-                <a href="{auth_url}" target="_self" style="text-decoration: none;">
+                <a href="{auth_url}" target="_top" style="text-decoration: none;">
                     <button style="
                         background-color: #4285F4; 
                         color: white; 
@@ -1513,7 +1513,7 @@ def main():
             # Microsoft Button HTML
             if ms_auth_url:
                 ms_btn_html = textwrap.dedent(f'''
-                    <a href="{ms_auth_url}" target="_self" style="text-decoration: none;">
+                    <a href="{ms_auth_url}" target="_top" style="text-decoration: none;">
                         <button style="
                             background-color: #2F2F2F; 
                             color: white; 
@@ -1558,12 +1558,12 @@ def main():
                     </button>
                 ''')
 
-            st.markdown(f'''
+            st.markdown(textwrap.dedent(f'''
                 <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
                     {google_btn_html}
                     {ms_btn_html}
                 </div>
-            ''', unsafe_allow_html=True)
+            '''), unsafe_allow_html=True)
             return
 
     # --- Main App (Only reached if logged in) ---
