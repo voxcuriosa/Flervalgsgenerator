@@ -1317,11 +1317,6 @@ def main():
         on_change=update_lang
     )
 
-    if st.sidebar.button(get_text("reset_app")):
-        for key in list(st.session_state.keys()):
-            if key != "language": # Keep language
-                del st.session_state[key]
-        st.rerun()
 
     st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')}!")
     
