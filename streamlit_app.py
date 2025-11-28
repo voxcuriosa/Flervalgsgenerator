@@ -23,7 +23,8 @@ LOGO_URL = "logo.png"
 # Translations
 TRANSLATIONS = {
     "no": {
-        "title": "Flervalgsgenerator",
+        "title": "Generator for flervalgsoppgaver",
+        "language": "Språk",
         "login_google": "Logg inn med Google",
         "welcome": "Velkommen",
         "logout": "Logg ut",
@@ -82,6 +83,7 @@ TRANSLATIONS = {
     },
     "en": {
         "title": "Multiple Choice Generator",
+        "language": "Language",
         "login_google": "Login with Google",
         "welcome": "Welcome",
         "logout": "Log out",
@@ -1181,7 +1183,7 @@ def main():
         st.rerun()
         
     st.sidebar.radio(
-        "Language",
+        get_text("language"),
         options=list(lang_options.keys()),
         format_func=lambda x: lang_options[x],
         index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "en" else (2 if st.session_state.language == "ar" else (3 if st.session_state.language == "so" else (4 if st.session_state.language == "ti" else (5 if st.session_state.language == "uk" else 6))))),
