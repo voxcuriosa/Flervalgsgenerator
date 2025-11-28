@@ -1483,9 +1483,11 @@ def main():
                 }
                 ms_auth_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
+            import textwrap
+
             # --- Render Buttons ---
             # Google Button HTML
-            google_btn_html = f'''
+            google_btn_html = textwrap.dedent(f'''
                 <a href="{auth_url}" target="_self" style="text-decoration: none;">
                     <button style="
                         background-color: #4285F4; 
@@ -1506,11 +1508,11 @@ def main():
                         <span>{get_text("login_google")}</span>
                     </button>
                 </a>
-            '''
+            ''')
 
             # Microsoft Button HTML
             if ms_auth_url:
-                ms_btn_html = f'''
+                ms_btn_html = textwrap.dedent(f'''
                     <a href="{ms_auth_url}" target="_self" style="text-decoration: none;">
                         <button style="
                             background-color: #2F2F2F; 
@@ -1531,10 +1533,10 @@ def main():
                             <span>Logg inn med Microsoft</span>
                         </button>
                     </a>
-                '''
+                ''')
             else:
                 # Disabled state if secrets missing
-                ms_btn_html = f'''
+                ms_btn_html = textwrap.dedent(f'''
                     <button style="
                         background-color: #2F2F2F; 
                         color: white; 
@@ -1554,7 +1556,7 @@ def main():
                         <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
                         <span>Logg inn med Microsoft</span>
                     </button>
-                '''
+                ''')
 
             st.markdown(f'''
                 <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
