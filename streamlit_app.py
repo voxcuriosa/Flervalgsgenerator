@@ -469,21 +469,36 @@ def apply_custom_css():
         /* Sidebar Toggle Button (Mobile) */
         /* Sidebar Toggle Button (Mobile) */
         [data-testid="stSidebarCollapsedControl"] {{
-            background-color: #262730;
-            border: 1px solid #4c4cff;
-            border-radius: 5px;
-            padding: 5px;
+            background-color: #4c4cff; /* High contrast blue */
+            border: 2px solid white;
+            border-radius: 8px;
+            padding: 8px 12px;
             color: white;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 999999; /* Ensure it's on top */
+        }}
+        
+        /* Add "MENY" text */
+        [data-testid="stSidebarCollapsedControl"]::after {{
+            content: "MENY";
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: 1px;
         }}
         
         [data-testid="stSidebarCollapsedControl"] svg {{
-            height: 30px !important;
-            width: 30px !important;
+            height: 24px !important;
+            width: 24px !important;
+            fill: white !important;
         }}
         
         /* Make the header toolbar background visible on mobile to contrast the button */
         header[data-testid="stHeader"] {{
             background-color: #0e1117;
+            z-index: 99999;
         }}
         </style>
     """, unsafe_allow_html=True)
