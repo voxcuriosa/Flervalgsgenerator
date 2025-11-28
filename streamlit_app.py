@@ -39,6 +39,8 @@ def apply_custom_css():
         [data-testid="stSidebar"] {
             background-color: #262730;
             border-right: 1px solid #333;
+            min-width: 400px; /* Widen sidebar */
+            max-width: 600px;
         }
         
         /* Headers */
@@ -113,6 +115,7 @@ def render_ndla_viewer():
         st.error(f"Kunne ikke laste innholdsvisning: {e}")
 
 def render_quiz_generator():
+    # ... (rest of function)
     # --- Admin View ---
     if st.session_state.get("user_email") == "borchgrevink@gmail.com":
         if st.sidebar.checkbox("Vis Admin-panel", key="admin_panel"):
