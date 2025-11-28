@@ -197,7 +197,7 @@ def generate_html():
                         articles = sorted(value["_articles"], key=lambda x: x['title'])
                         for row in articles:
                             art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
-                            html += f'<li><a href="#{slug}">{row["title"]}</a></li>'
+                            html += f'<li><a href="#" onclick="document.getElementById(\'{slug}\').scrollIntoView({{behavior: \'smooth\'}}); return false;">{row["title"]}</a></li>'
                     
                     # 2. Recurse
                     html += generate_sidebar_recursive(value, level + 1, slug)
@@ -216,7 +216,7 @@ def generate_html():
                         articles = sorted(value["_articles"], key=lambda x: x['title'])
                         for row in articles:
                             art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
-                            html += f'<li><a href="#{slug}">{row["title"]}</a></li>'
+                            html += f'<li><a href="#" onclick="document.getElementById(\'{slug}\').scrollIntoView({{behavior: \'smooth\'}}); return false;">{row["title"]}</a></li>'
                     
                     # 2. Recurse for deeper levels
                     html += generate_sidebar_recursive(value, level + 1, slug)
@@ -233,7 +233,7 @@ def generate_html():
                     html += f"""
                     <li>
                         <details>
-                            <summary><a href="#{slug}" style="display:inline;">{key}</a></summary>
+                            <summary><a href="#" onclick="document.getElementById(\'{slug}\').scrollIntoView({{behavior: \'smooth\'}}); return false;" style="display:inline;">{key}</a></summary>
                             <ul>
                                 {generate_sidebar_recursive(value, level + 1, slug)}
                             </ul>
@@ -241,7 +241,7 @@ def generate_html():
                     </li>
                     """
                 else:
-                    html += f'<li><a href="#{slug}">{key}</a></li>'
+                    html += f'<li><a href="#" onclick="document.getElementById(\'{slug}\').scrollIntoView({{behavior: \'smooth\'}}); return false;">{key}</a></li>'
                      
         return html
 
