@@ -1207,67 +1207,117 @@ def main():
             state = state[0]
         
         if code:
-            # Restore language from state if valid
-            if state and state in ["no", "en", "ar", "so", "ti", "uk", "th"]:
-                st.session_state.language = state
-                # We can safely set this here because the widget hasn't been rendered yet!
-                st.session_state["lang_selector"] = state
+            # Parse state to get provider and language
+            # Format: "provider|language" (e.g., "google|no" or "microsoft|en")
+            provider = "google" # Default
+            language = "no"
+            
+            if state:
+                parts = state.split('|')
+                if len(parts) == 2:
+                    provider = parts[0]
+                    language = parts[1]
+                elif state in ["no", "en", "ar", "so", "ti", "uk", "th"]:
+                    # Legacy state (just language)
+                    language = state
+            
+            # Restore language
+            if language in ["no", "en", "ar", "so", "ti", "uk", "th"]:
+                st.session_state.language = language
+                st.session_state["lang_selector"] = language
                 if "lang_selector_login" in st.session_state:
-                    st.session_state["lang_selector_login"] = state
+                    st.session_state["lang_selector_login"] = language
                 
             try:
-                # Exchange code for token
                 import requests
+                import jwt # PyJWT
                 
-                token_url = "https://oauth2.googleapis.com/token"
-                data = {
-                    "code": code,
-                    "client_id": client_id,
-                    "client_secret": client_secret,
-                    "redirect_uri": redirect_uri,
-                    "grant_type": "authorization_code"
-                }
-                response = requests.post(token_url, data=data)
-                result = response.json()
+                token_data = None
+                user_email = None
+                user_name = None
                 
-                if "access_token" in result:
-                    st.session_state.token = result
+                if provider == "google":
+                    token_url = "https://oauth2.googleapis.com/token"
+                    data = {
+                        "code": code,
+                        "client_id": client_id,
+                        "client_secret": client_secret,
+                        "redirect_uri": redirect_uri,
+                        "grant_type": "authorization_code"
+                    }
+                    response = requests.post(token_url, data=data)
+                    token_data = response.json()
                     
-                    # Get user info
-                    id_token = result.get("id_token")
-                    if id_token:
+                    if "id_token" in token_data:
+                        # Decode Google ID Token
+                        # We use the same logic as before (simple decode)
                         import base64
                         import json
-                        # Decode without verify
+                        id_token = token_data["id_token"]
                         parts = id_token.split('.')
                         if len(parts) > 1:
                             payload_b64 = parts[1]
                             payload_b64 += '=' * (-len(payload_b64) % 4)
                             payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode('utf-8'))
-                            st.session_state.user_email = payload.get("email")
-                            st.session_state.user_name = payload.get("name", "Unknown")
-                            print(f"DEBUG: OAuth Login - Email: {st.session_state.user_email}, Name: {st.session_state.user_name}")
-                            print(f"DEBUG: Payload: {payload}")
+                            user_email = payload.get("email")
+                            user_name = payload.get("name", "Unknown")
+
+                elif provider == "microsoft":
+                    if "microsoft" not in st.secrets:
+                        st.error("Microsoft secrets missing!")
+                        st.stop()
+                        
+                    ms_client_id = st.secrets["microsoft"]["client_id"]
+                    ms_tenant_id = st.secrets["microsoft"]["tenant_id"]
+                    ms_client_secret = st.secrets["microsoft"]["client_secret"]
+                    ms_redirect_uri = st.secrets["microsoft"]["redirect_uri"]
                     
-                    # Clear query params to clean URL
-                    # Set persistent cookie (expires in 30 days)
+                    token_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/token"
+                    data = {
+                        "code": code,
+                        "client_id": ms_client_id,
+                        "client_secret": ms_client_secret,
+                        "redirect_uri": ms_redirect_uri,
+                        "grant_type": "authorization_code",
+                        "scope": "User.Read openid profile email"
+                    }
+                    response = requests.post(token_url, data=data)
+                    token_data = response.json()
+                    
+                    if "access_token" in token_data:
+                        # Get user info from Graph API
+                        access_token = token_data["access_token"]
+                        headers = {"Authorization": f"Bearer {access_token}"}
+                        graph_response = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers)
+                        if graph_response.status_code == 200:
+                            user_info = graph_response.json()
+                            user_email = user_info.get("mail") or user_info.get("userPrincipalName")
+                            user_name = user_info.get("displayName", "Unknown")
+                        else:
+                            st.error(f"Failed to fetch Microsoft user info: {graph_response.text}")
+
+                # Common Success Handling
+                if token_data and ("access_token" in token_data or "id_token" in token_data) and user_email:
+                    st.session_state.token = token_data
+                    st.session_state.user_email = user_email
+                    st.session_state.user_name = user_name
+                    
+                    print(f"DEBUG: Login Success ({provider}) - Email: {user_email}, Name: {user_name}")
+                    
+                    # Set persistent cookie
                     import datetime
                     expires = datetime.datetime.now() + datetime.timedelta(days=30)
-                    # FIX: Use st.session_state.user_email instead of undefined 'email'
-                    if "user_email" in st.session_state:
-                        cookie_manager.set("user_email", st.session_state.user_email, expires_at=expires, key="set_email")
-                        # Also save user name
-                        cookie_manager.set("user_name", st.session_state.user_name, expires_at=expires, key="set_name")
+                    cookie_manager.set("user_email", user_email, expires_at=expires, key="set_email")
+                    cookie_manager.set("user_name", user_name, expires_at=expires, key="set_name")
                     
-                    # Wait a bit to ensure cookie is set before reload
                     import time
                     time.sleep(1)
-                    
                     st.query_params.clear()
                     st.rerun()
                 else:
-                    st.error(f"Feil ved innlogging: {result.get('error_description', result)}")
+                    st.error(f"Feil ved innlogging ({provider}): {token_data.get('error_description', token_data)}")
                     st.query_params.clear()
+                    
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
                 st.query_params.clear()
@@ -1402,8 +1452,8 @@ def main():
             
             import urllib.parse
             
+            # --- Google Auth URL ---
             scope = "openid email profile"
-            
             params = {
                 "client_id": client_id,
                 "redirect_uri": redirect_uri,
@@ -1411,31 +1461,76 @@ def main():
                 "scope": scope,
                 "access_type": "offline",
                 "prompt": "consent",
-                "state": st.session_state.language # Pass language as state
+                "state": f"google|{st.session_state.language}" # Pass provider|language as state
             }
-            
             # Use quote_via=urllib.parse.quote to get %20 instead of + for spaces
             auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
             
+            # --- Microsoft Auth URL ---
+            ms_auth_url = None
+            if "microsoft" in st.secrets:
+                ms_client_id = st.secrets["microsoft"]["client_id"]
+                ms_tenant_id = st.secrets["microsoft"]["tenant_id"]
+                ms_redirect_uri = st.secrets["microsoft"]["redirect_uri"]
+                
+                ms_params = {
+                    "client_id": ms_client_id,
+                    "response_type": "code",
+                    "redirect_uri": ms_redirect_uri,
+                    "response_mode": "query",
+                    "scope": "User.Read openid profile email",
+                    "state": f"microsoft|{st.session_state.language}"
+                }
+                ms_auth_url = f"https://login.microsoftonline.com/{ms_tenant_id}/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
+
+            # --- Render Buttons ---
             st.markdown(f'''
-                <br>
-                <a href="{auth_url}" target="_blank">
-                    <button style="
-                        background-color: #4285F4; 
-                        color: white; 
-                        padding: 10px 20px; 
-                        border: none; 
-                        border-radius: 5px; 
-                        cursor: pointer; 
-                        font-size: 16px;
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                    ">
-                        <img src="https://www.google.com/favicon.ico" width="20" style="background: white; border-radius: 50%; padding: 2px;">
-                        {get_text("login_google")}
-                    </button>
-                </a>
+                <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
+                    <!-- Google Button -->
+                    <a href="{auth_url}" target="_self" style="text-decoration: none;">
+                        <button style="
+                            background-color: #4285F4; 
+                            color: white; 
+                            padding: 12px 24px; 
+                            border: none; 
+                            border-radius: 4px; 
+                            cursor: pointer; 
+                            font-size: 16px;
+                            font-family: Roboto, sans-serif;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            width: 250px;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        ">
+                            <img src="https://www.google.com/favicon.ico" width="20" style="background: white; border-radius: 50%; padding: 2px;">
+                            <span>{get_text("login_google")}</span>
+                        </button>
+                    </a>
+                    
+                    <!-- Microsoft Button -->
+                    {'<a href="' + ms_auth_url + '" target="_self" style="text-decoration: none;">' if ms_auth_url else ''}
+                        <button style="
+                            background-color: #2F2F2F; 
+                            color: white; 
+                            padding: 12px 24px; 
+                            border: 1px solid #555; 
+                            border-radius: 4px; 
+                            cursor: pointer; 
+                            font-size: 16px;
+                            font-family: Segoe UI, sans-serif;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            width: 250px;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                            opacity: {'1' if ms_auth_url else '0.5'};
+                        ">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
+                            <span>Logg inn med Microsoft</span>
+                        </button>
+                    {'</a>' if ms_auth_url else ''}
+                </div>
             ''', unsafe_allow_html=True)
             return
 
