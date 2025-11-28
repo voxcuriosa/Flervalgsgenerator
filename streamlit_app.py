@@ -24,6 +24,7 @@ st.set_page_config(
 PDF_PATH = "HPT.pdf"
 HTML_VIEWER_PATH = "ndla_content_viewer.html"
 LOGO_URL = "logo.png"
+ADMINS = ["borchgrevink@gmail.com", "hanslaa@gmail.com", "nilsnaas@gmail.com"]
 
 # Translations
 TRANSLATIONS = {
@@ -592,7 +593,6 @@ def render_ndla_viewer():
 
 def render_quiz_generator():
     # --- Admin View ---
-    ADMINS = ["borchgrevink@gmail.com", "hanslaa@gmail.com", "nilsnaas@gmail.com"]
     if st.session_state.get("user_email") in ADMINS:
         if st.sidebar.checkbox(get_text("admin_panel"), key="admin_panel"):
             
