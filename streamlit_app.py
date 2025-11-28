@@ -1318,11 +1318,13 @@ def main():
                     st.rerun()
                 else:
                     st.error(f"Feil ved innlogging ({provider}): {token_data.get('error_description', token_data)}")
-                    st.query_params.clear()
+                    # st.query_params.clear() # Commented out to debug
+                    st.stop() # Stop to show error
                     
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
-                st.query_params.clear()
+                # st.query_params.clear() # Commented out to debug
+                st.stop() # Stop to show error
     
     # Check for existing login cookie if not in session state
     if "user_email" not in st.session_state:
