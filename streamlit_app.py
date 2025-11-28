@@ -1330,6 +1330,9 @@ def main():
                 # Clear session state
                 for key in list(st.session_state.keys()):
                     del st.session_state[key]
+                    
+                import time
+                time.sleep(1)
             except Exception as e:
                 print(f"Logout error: {e}")
             
