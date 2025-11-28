@@ -592,232 +592,235 @@ def render_ndla_viewer():
         st.error(get_text("ndla_viewer_error", e))
 
 def render_quiz_generator():
-    # --- Admin View ---
-    if st.session_state.get("user_email") in ADMINS:
-        if st.sidebar.checkbox(get_text("admin_panel"), key="admin_panel"):
-            
-            # --- 1. Settings (Max Questions) ---
-            st.info("⚙️ **Innstillinger**")
-            
-            # Max Question Limit Setting
-            from storage import get_setting, save_setting
-            
-            current_max_limit = int(get_setting("max_question_limit", 20))
-            
-            new_max_limit = st.slider(
-                "Maksimalt antall spørsmål (standardverdi for nye quizer)",
-                min_value=20,
-                max_value=100,
-                value=current_max_limit,
-                step=5,
-                key="admin_max_limit"
-            )
-            
-            if new_max_limit != current_max_limit:
-                if save_setting("max_question_limit", new_max_limit):
-                    st.success(f"Lagret ny grense: {new_max_limit}")
-                    # Rerun to update the quiz generator slider immediately
-                    st.rerun()
-                else:
-                    st.error("Kunne ikke lagre innstillingen.")
-            
-            st.divider()
-
-            # --- 2. Quiz Results Section ---
-            st.info("📊 **Resultater**")
-            
-            # Import the new function
-            from storage import get_all_results, delete_results
-            
-            # Lazy Loading
-            if "load_results" not in st.session_state:
-                st.session_state.load_results = False
-                
-            if not st.session_state.load_results:
-                if st.button("Last inn resultater"):
-                    st.session_state.load_results = True
-                    st.rerun()
-            else:
-                if st.button("Skjul resultater"):
-                    st.session_state.load_results = False
-                    st.rerun()
-                    
-                df = get_all_results()
-                
-                if not df.empty:
-                    # Summary Metrics
-                    total_quizzes = len(df)
-                    unique_users = df['user_email'].nunique()
-                    avg_score_all = df['percentage'].mean()
-                    
-                    m1, m2, m3 = st.columns(3)
-                    m1.metric("Totalt antall quizer", total_quizzes)
-                    m2.metric("Unike brukere", unique_users)
-                    m3.metric("Snittscore (alle)", f"{avg_score_all:.1f}%")
-                    
-                    st.write("### Detaljerte resultater")
-                    
-                    # Filter by user
-                    users = ["Alle"] + list(df['user_email'].unique())
-                    selected_user = st.selectbox("Filtrer på bruker:", users)
-                    
-                    if selected_user != "Alle":
-                        user_df = df[df['user_email'] == selected_user]
-                        
-                        # User specific actions
-                        col_u1, col_u2 = st.columns([0.8, 0.2])
-                        with col_u1:
-                            st.write(f"Viser {len(user_df)} resultater for {selected_user}")
-                        with col_u2:
-                            if st.button("Slett alle for bruker", type="primary", key=f"del_user_{selected_user}"):
-                                if delete_results(user_email=selected_user):
-                                    st.success(f"Slettet alle resultater for {selected_user}")
-                                    st.rerun()
-                                else:
-                                    st.error("Kunne ikke slette resultater.")
-                        
-                        # Display user results with delete buttons per row
-                        st.dataframe(user_df[['timestamp', 'topic', 'score', 'total', 'percentage', 'category']], hide_index=True)
-                        
-                        # Option to delete specific test?
-                        # Let's show a list of recent tests with delete buttons
-                        st.write("#### Siste tester (Slett enkelttester)")
-                        
-                        # Collect IDs to delete
-                        delete_ids = []
-                        
-                        # Header
-                        h1, h2, h3, h4, h5 = st.columns([0.5, 2, 2, 1, 1])
-                        h1.write("**Velg**")
-                        h2.write("**Dato**")
-                        h3.write("**Emne**")
-                        h4.write("**Score**")
-                        h5.write("**Prosent**")
-                        
-                        for index, row in user_df.iterrows():
-                            c1, c2, c3, c4, c5 = st.columns([0.5, 2, 2, 1, 1])
-                            # Use a unique key for each checkbox
-                            if c1.checkbox("", key=f"sel_res_{row['id']}"):
-                                delete_ids.append(row['id'])
-                            c2.text(row['timestamp'])
-                            c3.text(row['topic'])
-                            c4.text(f"{row['score']}/{row['total']}")
-                            c5.text(f"{row['percentage']}%")
-                            
-                        if delete_ids:
-                            st.write("")
-                            if st.button(f"Slett {len(delete_ids)} valgte tester", type="primary", key="bulk_delete_btn"):
-                                if delete_results(result_ids=delete_ids):
-                                    st.success(f"Slettet {len(delete_ids)} tester!")
-                                    st.rerun()
-                        
-                    else:
-                        # Show all results
-                        st.dataframe(df)
-                        
-                        # Delete all results option (Dangerous!)
-                        with st.expander("Faresone"):
-                            if st.button("Slett ALLE resultater i databasen", type="primary"):
-                                st.warning("Dette er ikke implementert for sikkerhets skyld. Kontakt utvikler.")
-                    
-                    # Download button (always available)
-                    csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        get_text("download_csv"),
-                        csv,
-                        "quiz_results.csv",
-                        "text/csv",
-                        key='download-csv'
-                    )
-                else:
-                    st.info(get_text("no_results"))
-            
-            st.divider()
-
-            # --- 3. Content Update Section (Moved to Bottom) ---
-            st.info("🛠️ **Verktøy for innholdsoppdatering**")
-            
-            st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
-            
-            # Select Subject
-            update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3"], key="update_subject")
-            
-            # Fetch available topics for this subject
-            # Fetch available topics for this subject
-            from scrape_ndla import get_subject_topics, update_topic
-            
-            @st.cache_data(ttl=3600)
-            def get_cached_subject_topics(subject):
-                return get_subject_topics(subject)
-            
-            with st.spinner(f"Henter emner for {update_subject}..."):
-                available_topics = get_cached_subject_topics(update_subject)
-                
-            if available_topics:
-                # Create a form/list for selection
-                st.write("Velg emner å oppdaterte:")
-                
-                selected_nodes = []
-                
-                # "Select All" option for everything
-                select_all_global = st.checkbox("Velg ALT innhold (alle emner og underemner)")
-                
-                for topic in available_topics:
-                    # Top level topic
-                    with st.expander(f"{topic['name']}", expanded=False):
-                        # Option to select the entire top-level topic
-                        col1, col2 = st.columns([0.05, 0.95])
-                        with col1:
-                            is_parent_selected = st.checkbox("", key=f"parent_{topic['id']}", value=select_all_global)
-                        with col2:
-                            st.markdown(f"**Oppdater hele '{topic['name']}'** (inkludert alle underemner)")
-                        
-                        # Subtopics
-                        if topic['children']:
-                            st.markdown("Eller velg spesifikke underemner:")
-                            for sub in topic['children']:
-                                is_sub_selected = st.checkbox(sub['name'], key=f"sub_{sub['id']}", value=is_parent_selected or select_all_global)
-                                
-                                if is_sub_selected:
-                                    selected_nodes.append(sub)
-                        
-                        if is_parent_selected:
-                            selected_nodes.append(topic)
-
-                # Deduplicate selected nodes by ID
-                unique_nodes = {node['id']: node for node in selected_nodes}.values()
-                
-                st.write("") # Spacing
-                
-                if st.button(f"Oppdater {len(unique_nodes)} valgte emner", type="primary"):
-                    if unique_nodes:
-                        progress_bar = st.progress(0)
-                        status_text = st.empty()
-                        
-                        total = len(unique_nodes)
-                        success_count = 0
-                        
-                        for i, node in enumerate(unique_nodes):
-                            status_text.text(f"Oppdaterer: {node['name']}...")
-                            if update_topic(update_subject, node['name'], node['id']):
-                                success_count += 1
-                            progress_bar.progress((i + 1) / total)
-                            
-                        status_text.text("Ferdig!")
-                        st.success(f"Oppdatering fullført! {success_count} av {total} emner ble oppdatert.")
-                        
-                        # Regenerate HTML
-                        with st.spinner("Oppdaterer visning..."):
-                            import subprocess
-                            subprocess.run(["python3", "generate_html_viewer.py"])
-                        st.info("HTML-visning er oppdatert.")
-                        
-                    else:
-                        st.warning("Ingen emner valgt.")
-            else:
-                st.error("Kunne ikke hente emner fra NDLA. Sjekk internettforbindelsen.")
-            
             st.write("---")
+
+def render_admin_panel():
+    # --- 1. Settings (Max Questions) ---
+    st.info("⚙️ **Innstillinger**")
+    
+    # Max Question Limit Setting
+    from storage import get_setting, save_setting
+    
+    current_max_limit = int(get_setting("max_question_limit", 20))
+    
+    new_max_limit = st.slider(
+        "Maksimalt antall spørsmål (standardverdi for nye quizer)",
+        min_value=20,
+        max_value=100,
+        value=current_max_limit,
+        step=5,
+        key="admin_max_limit"
+    )
+    
+    if new_max_limit != current_max_limit:
+        if save_setting("max_question_limit", new_max_limit):
+            st.success(f"Lagret ny grense: {new_max_limit}")
+            # Rerun to update the quiz generator slider immediately
+            st.rerun()
+        else:
+            st.error("Kunne ikke lagre innstillingen.")
+    
+    st.divider()
+
+    # --- 2. Quiz Results Section ---
+    st.info("📊 **Resultater**")
+    
+    # Import the new function
+    from storage import get_all_results, delete_results
+    
+    # Lazy Loading
+    if "load_results" not in st.session_state:
+        st.session_state.load_results = False
+        
+    if not st.session_state.load_results:
+        if st.button("Last inn resultater"):
+            st.session_state.load_results = True
+            st.rerun()
+    else:
+        if st.button("Skjul resultater"):
+            st.session_state.load_results = False
+            st.rerun()
+            
+        df = get_all_results()
+        
+        if not df.empty:
+            # Summary Metrics
+            total_quizzes = len(df)
+            unique_users = df['user_email'].nunique()
+            avg_score_all = df['percentage'].mean()
+            
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Totalt antall quizer", total_quizzes)
+            m2.metric("Unike brukere", unique_users)
+            m3.metric("Snittscore (alle)", f"{avg_score_all:.1f}%")
+            
+            st.write("### Detaljerte resultater")
+            
+            # Filter by user
+            users = ["Alle"] + list(df['user_email'].unique())
+            selected_user = st.selectbox("Filtrer på bruker:", users)
+            
+            if selected_user != "Alle":
+                user_df = df[df['user_email'] == selected_user]
+                
+                # User specific actions
+                col_u1, col_u2 = st.columns([0.8, 0.2])
+                with col_u1:
+                    st.write(f"Viser {len(user_df)} resultater for {selected_user}")
+                with col_u2:
+                    if st.button("Slett alle for bruker", type="primary", key=f"del_user_{selected_user}"):
+                        if delete_results(user_email=selected_user):
+                            st.success(f"Slettet alle resultater for {selected_user}")
+                            st.rerun()
+                        else:
+                            st.error("Kunne ikke slette resultater.")
+                
+                # Display user results with delete buttons per row
+                st.dataframe(user_df[['timestamp', 'topic', 'score', 'total', 'percentage', 'category']], hide_index=True)
+                
+                # Option to delete specific test?
+                # Let's show a list of recent tests with delete buttons
+                st.write("#### Siste tester (Slett enkelttester)")
+                
+                # Collect IDs to delete
+                delete_ids = []
+                
+                # Header
+                h1, h2, h3, h4, h5 = st.columns([0.5, 2, 2, 1, 1])
+                h1.write("**Velg**")
+                h2.write("**Dato**")
+                h3.write("**Emne**")
+                h4.write("**Score**")
+                h5.write("**Prosent**")
+                
+                for index, row in user_df.iterrows():
+                    c1, c2, c3, c4, c5 = st.columns([0.5, 2, 2, 1, 1])
+                    # Use a unique key for each checkbox
+                    if c1.checkbox("", key=f"sel_res_{row['id']}"):
+                        delete_ids.append(row['id'])
+                    c2.text(row['timestamp'])
+                    c3.text(row['topic'])
+                    c4.text(f"{row['score']}/{row['total']}")
+                    c5.text(f"{row['percentage']}%")
+                    
+                if delete_ids:
+                    st.write("")
+                    if st.button(f"Slett {len(delete_ids)} valgte tester", type="primary", key="bulk_delete_btn"):
+                        if delete_results(result_ids=delete_ids):
+                            st.success(f"Slettet {len(delete_ids)} tester!")
+                            st.rerun()
+                
+            else:
+                # Show all results
+                st.dataframe(df)
+                
+                # Delete all results option (Dangerous!)
+                with st.expander("Faresone"):
+                    if st.button("Slett ALLE resultater i databasen", type="primary"):
+                        st.warning("Dette er ikke implementert for sikkerhets skyld. Kontakt utvikler.")
+            
+            # Download button (always available)
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                get_text("download_csv"),
+                csv,
+                "quiz_results.csv",
+                "text/csv",
+                key='download-csv'
+            )
+        else:
+            st.info(get_text("no_results"))
+    
+    st.divider()
+
+    # --- 3. Content Update Section (Moved to Bottom) ---
+    st.info("🛠️ **Verktøy for innholdsoppdatering**")
+    
+    st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
+    
+    # Select Subject
+    update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3"], key="update_subject")
+    
+    # Fetch available topics for this subject
+    # Fetch available topics for this subject
+    from scrape_ndla import get_subject_topics, update_topic
+    
+    @st.cache_data(ttl=3600)
+    def get_cached_subject_topics(subject):
+        return get_subject_topics(subject)
+    
+    with st.spinner(f"Henter emner for {update_subject}..."):
+        available_topics = get_cached_subject_topics(update_subject)
+        
+    if available_topics:
+        # Create a form/list for selection
+        st.write("Velg emner å oppdaterte:")
+        
+        selected_nodes = []
+        
+        # "Select All" option for everything
+        select_all_global = st.checkbox("Velg ALT innhold (alle emner og underemner)")
+        
+        for topic in available_topics:
+            # Top level topic
+            with st.expander(f"{topic['name']}", expanded=False):
+                # Option to select the entire top-level topic
+                col1, col2 = st.columns([0.05, 0.95])
+                with col1:
+                    is_parent_selected = st.checkbox("", key=f"parent_{topic['id']}", value=select_all_global)
+                with col2:
+                    st.markdown(f"**Oppdater hele '{topic['name']}'** (inkludert alle underemner)")
+                
+                # Subtopics
+                if topic['children']:
+                    st.markdown("Eller velg spesifikke underemner:")
+                    for sub in topic['children']:
+                        is_sub_selected = st.checkbox(sub['name'], key=f"sub_{sub['id']}", value=is_parent_selected or select_all_global)
+                        
+                        if is_sub_selected:
+                            selected_nodes.append(sub)
+                
+                if is_parent_selected:
+                    selected_nodes.append(topic)
+
+        # Deduplicate selected nodes by ID
+        unique_nodes = {node['id']: node for node in selected_nodes}.values()
+        
+        st.write("") # Spacing
+        
+        if st.button(f"Oppdater {len(unique_nodes)} valgte emner", type="primary"):
+            if unique_nodes:
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                total = len(unique_nodes)
+                success_count = 0
+                
+                for i, node in enumerate(unique_nodes):
+                    status_text.text(f"Oppdaterer: {node['name']}...")
+                    if update_topic(update_subject, node['name'], node['id']):
+                        success_count += 1
+                    progress_bar.progress((i + 1) / total)
+                    
+                status_text.text("Ferdig!")
+                st.success(f"Oppdatering fullført! {success_count} av {total} emner ble oppdatert.")
+                
+                # Regenerate HTML
+                with st.spinner("Oppdaterer visning..."):
+                    import subprocess
+                    subprocess.run(["python3", "generate_html_viewer.py"])
+                st.info("HTML-visning er oppdatert.")
+                
+            else:
+                st.warning("Ingen emner valgt.")
+    else:
+        st.error("Kunne ikke hente emner fra NDLA. Sjekk internettforbindelsen.")
+    
+    st.write("---")
+    
+    # Debug Button (REMOVED from here, moved to Admin Panel)
+
+def render_quiz_generator():
 
     # --- App Logic ---
     
@@ -873,11 +876,18 @@ def render_quiz_generator():
                     {selected_text}
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # Topic name? Maybe "NDLA Utvalg" or list topics?
+                if len(selected_articles) == 1:
+                    selected_topic_name = selected_articles[0]['title']
+                else:
+                    selected_topic_name = f"NDLA Utvalg ({len(selected_articles)} artikler)"
             else:
                 st.info(get_text("ndla_info"))
     
     # Get configured max limit
     from storage import get_setting
+    
     max_q_limit = int(get_setting("max_question_limit", 20))
     
     num_questions = st.sidebar.slider(get_text("num_questions"), 1, max_q_limit, min(20, max_q_limit))
