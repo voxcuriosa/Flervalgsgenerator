@@ -1132,12 +1132,100 @@ def main():
     if "language" not in st.session_state:
         st.session_state.language = "no"
 
-    apply_custom_css()
-
-    # --- Auth & Persistence ---
+    # --- Authentication Logic (Must run before widgets) ---
+    if "google" not in st.secrets:
+        st.error("Google secrets not found in .streamlit/secrets.toml")
+        st.stop()
+        
+    # Read and clean secrets
+    client_id = st.secrets["google"]["client_id"].strip()
+    client_secret = st.secrets["google"]["client_secret"].strip()
+    redirect_uri = st.secrets["google"]["redirect_uri"].strip()
+    
+    # Initialize OAuth2 object
+    oauth2 = oauth.OAuth2Component(
+        client_id, client_secret, 
+        "https://accounts.google.com/o/oauth2/v2/auth", 
+        "https://oauth2.googleapis.com/token", 
+        None, 
+        None
+    )
     
     # Initialize Cookie Manager
     cookie_manager = stx.CookieManager()
+
+    # Check if we are already logged in
+    if "token" not in st.session_state:
+        # Check if we have a code from the redirect
+        query_params = st.query_params
+        code = query_params.get("code")
+        state = query_params.get("state")
+        
+        # Handle list if necessary
+        if isinstance(state, list):
+            state = state[0]
+        
+        if code:
+            # Restore language from state if valid
+            if state and state in ["no", "en", "ar", "so", "ti", "uk", "th"]:
+                st.session_state.language = state
+                # We can safely set this here because the widget hasn't been rendered yet!
+                st.session_state["lang_selector"] = state
+                if "lang_selector_login" in st.session_state:
+                    st.session_state["lang_selector_login"] = state
+                
+            try:
+                # Exchange code for token
+                import requests
+                
+                token_url = "https://oauth2.googleapis.com/token"
+                data = {
+                    "code": code,
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "redirect_uri": redirect_uri,
+                    "grant_type": "authorization_code"
+                }
+                response = requests.post(token_url, data=data)
+                result = response.json()
+                
+                if "access_token" in result:
+                    st.session_state.token = result
+                    
+                    # Get user info
+                    id_token = result.get("id_token")
+                    if id_token:
+                        import base64
+                        import json
+                        # Decode without verify
+                        parts = id_token.split('.')
+                        if len(parts) > 1:
+                            payload_b64 = parts[1]
+                            payload_b64 += '=' * (-len(payload_b64) % 4)
+                            payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode('utf-8'))
+                            st.session_state.user_email = payload.get("email")
+                            st.session_state.user_name = payload.get("name", "Unknown")
+                    
+                    # Clear query params to clean URL
+                    # Set persistent cookie (expires in 30 days)
+                    import datetime
+                    expires = datetime.datetime.now() + datetime.timedelta(days=30)
+                    # FIX: Use st.session_state.user_email instead of undefined 'email'
+                    if "user_email" in st.session_state:
+                        cookie_manager.set("user_email", st.session_state.user_email, expires_at=expires)
+                    
+                    # Wait a bit to ensure cookie is set before reload
+                    import time
+                    time.sleep(1)
+                    
+                    st.query_params.clear()
+                    st.rerun()
+                else:
+                    st.error(f"Feil ved innlogging: {result.get('error_description', result)}")
+                    st.query_params.clear()
+            except Exception as e:
+                st.error(f"Feil under token-utveksling: {e}")
+                st.query_params.clear()
     
     # Check for existing login cookie if not in session state
     if "user_email" not in st.session_state:
@@ -1211,97 +1299,6 @@ def main():
                 del st.session_state[key]
             st.rerun()
 
-    # --- Authentication (MOVED TO TOP) ---
-    if "google" not in st.secrets:
-        st.error("Google secrets not found in .streamlit/secrets.toml")
-        st.stop()
-        
-    # Read and clean secrets
-    client_id = st.secrets["google"]["client_id"].strip()
-    client_secret = st.secrets["google"]["client_secret"].strip()
-    redirect_uri = st.secrets["google"]["redirect_uri"].strip()
-    
-    # Initialize OAuth2 object
-    oauth2 = oauth.OAuth2Component(
-        client_id, client_secret, 
-        "https://accounts.google.com/o/oauth2/v2/auth", 
-        "https://oauth2.googleapis.com/token", 
-        None, 
-        None
-    )
-    
-    # Check if we are already logged in
-    if "token" not in st.session_state:
-        # Check if we have a code from the redirect
-        # st.query_params is the new way in recent Streamlit versions
-        query_params = st.query_params
-        code = query_params.get("code")
-        state = query_params.get("state")
-        
-        # Handle list if necessary
-        if isinstance(state, list):
-            state = state[0]
-        
-        if code:
-            # Restore language from state if valid
-            if state and state in ["no", "en", "ar", "so", "ti", "uk"]:
-                st.session_state.language = state
-                # We can safely set this here because the widget hasn't been rendered yet!
-                st.session_state["lang_selector"] = state
-                st.session_state["lang_selector_login"] = state
-                
-            try:
-                # Exchange code for token
-                import requests
-                
-                token_url = "https://oauth2.googleapis.com/token"
-                data = {
-                    "code": code,
-                    "client_id": client_id,
-                    "client_secret": client_secret,
-                    "redirect_uri": redirect_uri,
-                    "grant_type": "authorization_code"
-                }
-                response = requests.post(token_url, data=data)
-                result = response.json()
-                
-                if "access_token" in result:
-                    st.session_state.token = result
-                    
-                    # Get user info
-                    id_token = result.get("id_token")
-                    if id_token:
-                        import base64
-                        import json
-                        # Decode without verify
-                        parts = id_token.split('.')
-                        if len(parts) > 1:
-                            payload_b64 = parts[1]
-                            payload_b64 += '=' * (-len(payload_b64) % 4)
-                            payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode('utf-8'))
-                            st.session_state.user_email = payload.get("email")
-                            st.session_state.user_name = payload.get("name", "Unknown")
-                    
-                    # Clear query params to clean URL
-                    # Set persistent cookie (expires in 30 days)
-                    import datetime
-                    expires = datetime.datetime.now() + datetime.timedelta(days=30)
-                    cookie_manager.set("user_email", email, expires_at=expires)
-                    
-                    # Wait a bit to ensure cookie is set before reload
-                    import time
-                    time.sleep(1)
-                    
-                    st.query_params.clear()
-                    st.rerun()
-                else:
-                    st.error(f"Feil ved innlogging: {result.get('error_description', result)}")
-                    # Clear params to avoid infinite loop of bad requests
-                    st.query_params.clear()
-            except Exception as e:
-                st.error(f"Feil under token-utveksling: {e}")
-                # Clear params to avoid infinite loop of bad requests
-                st.query_params.clear()
         else:
             # Show Login Button
             # We show this INSTEAD of the main app if not logged in
