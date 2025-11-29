@@ -621,8 +621,6 @@ def render_ndla_viewer():
     except Exception as e:
         st.error(get_text("ndla_viewer_error", e))
 
-def render_quiz_generator():
-            st.write("---")
 
 def render_admin_panel():
     # --- 1. Settings (Max Questions) ---
@@ -868,7 +866,7 @@ def render_admin_panel():
             pass
         st.rerun()
 
-def render_quiz_generator():
+def render_quiz_generator(cookie_manager):
 
     # --- App Logic ---
     
@@ -1557,7 +1555,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.26")
+    st.sidebar.caption("v1.8.27")
     
     # Debug Info moved to top of main()
     
