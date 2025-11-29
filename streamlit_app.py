@@ -1207,6 +1207,22 @@ def render_quiz_generator(cookie_manager):
             st.rerun()
 
 def main():
+    # --- Cookie Manager Strategy (v1.8.28) ---
+    # We MUST delay cookie_manager init if we are performing an auth code exchange.
+    # Initializing it triggers a reload, which kills the auth request -> "Expired Code".
+    
+    cookie_manager = None
+    
+    # Check if we have an auth code to process
+    has_auth_code = "code" in st.query_params
+    
+    if has_auth_code and "user_email" not in st.session_state:
+        st.session_state["auth_status"] = "Auth Code Detected - Delaying Cookie Manager..."
+        # Do NOT init cookie_manager yet!
+    else:
+        # Safe to init
+        cookie_manager = stx.CookieManager(key="cm_main")
+
     # Initialize Language FIRST
     if "language" not in st.session_state:
         st.session_state.language = "no"
@@ -1488,57 +1504,6 @@ def main():
                 st.error(f"Feil under token-utveksling: {e}")
                 st.session_state["auth_error"] = f"Exception: {str(e)}"
                 st.query_params.clear() # Clear params to prevent loop
-                # st.stop() # Allow script to contdef main():
-    # --- Cookie Manager Strategy (v1.8.26) ---
-    # We MUST delay cookie_manager init if we are performing an auth code exchange.
-    # Initializing it triggers a reload, which kills the auth request -> "Expired Code".
-    
-    cookie_manager = None
-    
-    # Check if we have an auth code to process
-    has_auth_code = "code" in st.query_params
-    
-    if has_auth_code and "user_email" not in st.session_state:
-        st.session_state["auth_status"] = "Auth Code Detected - Delaying Cookie Manager..."
-        # Do NOT init cookie_manager yet!
-    else:
-        # Safe to init
-        cookie_manager = stx.CookieManager(key="cm_main")
-    
-    # --- Auth Logic ---
-    
-    # 1. Check for existing session (only if safe)
-    if cookie_manager and "user_email" not in st.session_state:
-        # We need to wait a bit for the cookie manager to load
-        import time
-        # Just check once. The rerun from login should have set it.
-        cookies = cookie_manager.get_all(key="cm_check")
-        if cookies and "user_email" in cookies:
-            cookie_email = cookies["user_email"]
-        
-            if cookie_email:
-                # Only auto-login if we also have the name!
-                if "user_name" in cookies:
-                    st.session_state.user_email = cookie_email
-                    st.session_state.user_name = cookies["user_name"]
-                    st.rerun()
-                else:
-                    pass
-
-    # 2. Handle Auth Code (Microsoft)
-    if "code" in st.query_params:
-        code = st.query_params["code"]
-        state = st.query_params.get("state", "")
-        
-        # ... (Reuse check logic) ...
-        # We can keep reuse check, but now it shouldn't trigger falsely
-        
-        if "microsoft" in state:
-            provider = "Microsoft"
-            # ...
-            
-            # Perform Token Exchange (WITHOUT Cookie Manager interruption)
-            # ... (Logic continues below, we just ensured cookie_manager isn't reloading us)
 
             
     # --- Language Selector (Top of Sidebar) ---
@@ -1555,7 +1520,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.27")
+    st.sidebar.caption("v1.8.29")
     
     # Debug Info moved to top of main()
     
