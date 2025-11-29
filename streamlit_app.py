@@ -1374,6 +1374,8 @@ def main():
                             st.session_state["auth_status"] = f"HTTP Error {response.status_code}: {response.reason}"
                             st.session_state["auth_error"] = f"Details: {response.text}"
                             st.error(f"Autentiseringsfeil: {response.reason}")
+                            st.warning("Her er detaljene fra Microsoft:")
+                            st.code(response.text, language="json") # SHOW ME THE ERROR!
                             st.query_params.clear()
                             return
 
@@ -1491,7 +1493,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.21")
+    st.sidebar.caption("v1.8.22")
     
     # Debug Info moved to top of main()
     
