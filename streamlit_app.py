@@ -1477,12 +1477,6 @@ def main():
                 time.sleep(1)
                 
                 # Just rerun to show login screen
-                st.markdown("""
-                    <script>
-                        window.history.replaceState(null, "", window.location.pathname);
-                        window.location.reload();
-                    </script>
-                """, unsafe_allow_html=True)
                 st.query_params.clear()
                 st.rerun()
                 
