@@ -1320,6 +1320,7 @@ def main():
                     }
                     response = requests.post(token_url, data=data)
                     token_data = response.json()
+                    print(f"DEBUG: Microsoft Token Response: {token_data}")
                     
                     if "access_token" in token_data:
                         # Get user info from Graph API
