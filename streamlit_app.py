@@ -1370,22 +1370,7 @@ def main():
                         return # Stop, do not raise
                         
                     st.session_state["auth_status"] = "Token received. Checking access..."
-                            
-                    except urllib.error.HTTPError as e:
-                        error_body = e.read().decode('utf-8')
-                        st.session_state["auth_status"] = f"HTTP Error {e.code}: {e.reason}"
-                        st.session_state["auth_error"] = f"Details: {error_body}"
-                        st.error(f"Autentiseringsfeil: {e.reason}")
-                        # Stop execution here to prevent further errors
-                        st.query_params.clear()
-                        return
 
-                    except Exception as req_err:
-                        st.session_state["auth_status"] = f"Request failed: {req_err}"
-                        st.session_state["auth_error"] = f"Exception: {str(req_err)}"
-                        st.error(f"Feil under token-utveksling: {req_err}")
-                        return # Stop, do not raise
-                        
                     st.session_state["auth_status"] = "Token received. Checking access..."
                     
                     if "access_token" in token_data:
@@ -1492,7 +1477,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.13")
+    st.sidebar.caption("v1.8.14")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1592,8 +1577,8 @@ def main():
                     except Exception as e:
                         st.error(f"Nettverksfeil: {e}")
             
-            # Debug Info (v1.8.13)
-            with st.expander("Debug Info (v1.8.13)"):
+            # Debug Info (v1.8.14)
+            with st.expander("Debug Info (v1.8.14)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1602,7 +1587,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.13")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.14")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
