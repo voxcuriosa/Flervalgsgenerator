@@ -1242,6 +1242,14 @@ def main():
             state = state[0]
         
         if code:
+            # Check if we already tried this code
+            if code == st.session_state.get("last_auth_code"):
+                # Silently ignore and clear params to prevent "Link expired" error
+                st.query_params.clear()
+                st.rerun()
+            
+            st.session_state.last_auth_code = code
+            
             # Parse state to get provider and language
             # Format: "provider|language" (e.g., "google|no" or "microsoft|en")
             provider = "google" # Default
@@ -1542,7 +1550,8 @@ def main():
                     "redirect_uri": ms_redirect_uri,
                     "response_mode": "query",
                     "scope": "User.Read openid profile email",
-                    "state": f"microsoft|{st.session_state.language}"
+                    "state": f"microsoft|{st.session_state.language}",
+                    "prompt": "select_account"
                 }
                 ms_auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
