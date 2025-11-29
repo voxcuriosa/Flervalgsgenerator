@@ -1252,7 +1252,7 @@ def main():
                 st.rerun()
             
             st.session_state["auth_status"] = "New code. Starting exchange..."
-            st.session_state.last_auth_code = code
+            st.session_state.last_auth_code = code # Set IMMEDIATELY to catch reloads
             
             # Parse state to get provider and language
             # Format: "provider|language" (e.g., "google|no" or "microsoft|en")
@@ -1430,7 +1430,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8")
+    st.sidebar.caption("v1.8.1")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1516,8 +1516,8 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.8)
-            with st.expander("Debug Info (v1.8)"):
+            # Debug Info (v1.8.1)
+            with st.expander("Debug Info (v1.8.1)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
@@ -1525,7 +1525,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.1")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
