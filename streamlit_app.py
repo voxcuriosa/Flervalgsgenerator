@@ -2,8 +2,8 @@ import streamlit as st
 print("DEBUG: Top level execution started")
 import pandas as pd
 import os
-from pdf_processor import get_topics, extract_text_by_topic
 from quiz_generator import generate_quiz
+from pdf_processor import get_topics, extract_text_by_topic
 from storage import save_result, get_content_hierarchy
 from pdf_generator import generate_quiz_pdf
 from ndla_selector import render_ndla_selector
