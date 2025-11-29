@@ -1255,15 +1255,15 @@ def main():
                 st.session_state["reuse_trace"] = reuse_msg
                 
                 st.error(reuse_msg) # Show the error!
-                st.warning("Innloggingen ble avbrutt. Vennligst prøv igjen.")
+                st.warning("Vi prøver likevel... (Debugging)")
                 
-                if st.button("🔄 Nullstill app (hvis du står fast)"):
-                    st.session_state.clear()
-                    st.query_params.clear()
-                    st.rerun()
+                # if st.button("🔄 Nullstill app (hvis du står fast)"):
+                #     st.session_state.clear()
+                #     st.query_params.clear()
+                #     st.rerun()
                     
-                st.query_params.clear()
-                return # STOP THE EXECUTION HERE
+                # st.query_params.clear()
+                # return # STOP THE EXECUTION HERE - DISABLED FOR DEBUGGING
             
             st.session_state["auth_status"] = "New code. Starting exchange..."
             st.session_state.last_auth_code = code # Set IMMEDIATELY to catch reloads
@@ -1477,7 +1477,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.17")
+    st.sidebar.caption("v1.8.18")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1577,8 +1577,8 @@ def main():
                     except Exception as e:
                         st.error(f"Nettverksfeil: {e}")
             
-            # Debug Info (v1.8.17)
-            with st.expander("Debug Info (v1.8.17)"):
+            # Debug Info (v1.8.18)
+            with st.expander("Debug Info (v1.8.18)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1587,7 +1587,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.17")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.18")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
