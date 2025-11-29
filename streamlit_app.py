@@ -1242,11 +1242,13 @@ def main():
             state = state[0]
         
         if code:
+            st.session_state["pre_check_trace"] = f"Code: {code}, Last: {st.session_state.get('last_auth_code')}"
+            
             # Check if we already tried this code
-            if code == st.session_state.get("last_auth_code"):
-                # Silently ignore and clear params to prevent "Link expired" error
-                st.query_params.clear()
-                st.rerun()
+            # if code == st.session_state.get("last_auth_code"):
+            #     # Silently ignore and clear params to prevent "Link expired" error
+            #     st.query_params.clear()
+            #     st.rerun()
             
             st.session_state.last_auth_code = code
             
@@ -1503,15 +1505,16 @@ def main():
             
             # Show Language Selector on Login Screen too!
             st.image(LOGO_URL, width=150)
-            st.title(f"{get_text('title')} v1.5")
+            st.title(f"{get_text('title')} v1.6")
             
-            # Debug Info (v1.5)
-            with st.expander("Debug Info (v1.5)"):
+            # Debug Info (v1.6)
+            with st.expander("Debug Info (v1.6)"):
                 st.write(f"Session State: {st.session_state.keys()}")
+                st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.5")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.6")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
