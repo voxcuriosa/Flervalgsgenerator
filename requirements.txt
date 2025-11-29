@@ -11,6 +11,7 @@ pytz
 beautifulsoup4
 fpdf
 extra-streamlit-components
+# Force rebuild v1.1
 python-docx
 python-pptx
 pyjwt
