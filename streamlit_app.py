@@ -1417,8 +1417,8 @@ def main():
                     
                     import time
                     time.sleep(0.5)
-                    # Do NOT clear params here, it might cause state loss. 
-                    # We clean it up in the main block if logged in.
+                    # Clear params to prevent "Reuse detected" on rerun
+                    st.query_params.clear()
                     st.rerun()
                 else:
                     error_desc = token_data.get('error_description', str(token_data))
@@ -1474,7 +1474,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.5")
+    st.sidebar.caption("v1.8.6")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1560,8 +1560,8 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.8.5)
-            with st.expander("Debug Info (v1.8.5)"):
+            # Debug Info (v1.8.6)
+            with st.expander("Debug Info (v1.8.6)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1570,7 +1570,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.5")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.6")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
