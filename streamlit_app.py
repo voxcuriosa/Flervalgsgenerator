@@ -1376,10 +1376,13 @@ def main():
                         st.warning("Koblingen utløp. Vennligst klikk på knappen igjen.")
                     else:
                         st.error(f"Feil ved innlogging ({provider}): {error_desc}")
+                    
+                    st.session_state["auth_error"] = f"Token Error: {error_desc}"
                     st.query_params.clear() # Clear params to prevent loop
                     
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
+                st.session_state["auth_error"] = f"Exception: {str(e)}"
                 st.query_params.clear() # Clear params to prevent loop
                 # st.stop() # Allow script to continue so user can try again
     
@@ -1505,16 +1508,17 @@ def main():
             
             # Show Language Selector on Login Screen too!
             st.image(LOGO_URL, width=150)
-            st.title(f"{get_text('title')} v1.6")
+            st.title(f"{get_text('title')} v1.7")
             
-            # Debug Info (v1.6)
-            with st.expander("Debug Info (v1.6)"):
+            # Debug Info (v1.7)
+            with st.expander("Debug Info (v1.7)"):
                 st.write(f"Session State: {st.session_state.keys()}")
+                st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
                 st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.6")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
