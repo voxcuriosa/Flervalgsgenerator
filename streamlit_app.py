@@ -1364,12 +1364,12 @@ def main():
                         log_login(user_email, user_name)
                     
                     # Set persistent cookie
-                    # import datetime
-                    # expires = datetime.datetime.now() + datetime.timedelta(days=30)
-                    # cookie_manager.set("user_email", user_email, expires_at=expires, key="set_email")
-                    # cookie_manager.set("user_name", user_name, expires_at=expires, key="set_name")
+                    import datetime
+                    expires = datetime.datetime.now() + datetime.timedelta(days=30)
+                    cookie_manager.set("user_email", user_email, expires_at=expires, key="set_email")
+                    cookie_manager.set("user_name", user_name, expires_at=expires, key="set_name")
                     
-                    st.session_state["login_trace"] = "Success block reached. Rerunning..."
+                    # st.session_state["login_trace"] = "Success block reached. Rerunning..."
                     
                     import time
                     time.sleep(0.5)
@@ -1513,20 +1513,13 @@ def main():
                  return
             
             # Show Language Selector on Login Screen too!
+            st.sidebar.caption("v1.7.2")
             st.image(LOGO_URL, width=150)
-            st.title(f"{get_text('title')} v1.7.1")
+            st.title(get_text("title"))
             
-            # Debug Info (v1.7.1)
-            with st.expander("Debug Info (v1.7.1)"):
-                st.write(f"Session State: {st.session_state.keys()}")
-                st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
-                st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
-                st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
-                st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
-                st.write(f"Query Params: {st.query_params}")
-                # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7.1")
-                st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
+            # Debug Info (Removed)
+            # with st.expander("Debug Info (v1.7.1)"):
+            #    ...
             
             lang_options = {
                 "no": "🇳🇴 Norsk", 
@@ -1679,8 +1672,9 @@ def main():
     # --- Main App (Only reached if logged in) ---
     
     # Logo in Sidebar
+    st.sidebar.caption("v1.7.2")
     st.sidebar.image(LOGO_URL, width=150)
-    st.sidebar.title(get_text("title") + " v1.1")
+    st.sidebar.title(get_text("title"))
     
 
 
