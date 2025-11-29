@@ -12,7 +12,7 @@ import asyncio
 import streamlit.components.v1 as components
 import streamlit.components.v1 as components
 import extra_streamlit_components as stx
-import requests # Ensure requests is imported
+# import requests # Removed in favor of urllib
 
 # Page Config
 st.set_page_config(
@@ -1348,8 +1348,18 @@ def main():
                             response_body = response.read().decode('utf-8')
                             token_data = json.loads(response_body)
                             
+                    except urllib.error.HTTPError as e:
+                        error_body = e.read().decode('utf-8')
+                        st.session_state["auth_status"] = f"HTTP Error {e.code}: {e.reason}"
+                        st.session_state["auth_error"] = f"Details: {error_body}"
+                        st.error(f"Autentiseringsfeil: {e.reason}")
+                        # Stop execution here to prevent further errors
+                        st.query_params.clear()
+                        return
+
                     except Exception as req_err:
                         st.session_state["auth_status"] = f"Request failed: {req_err}"
+                        st.session_state["auth_error"] = f"Exception: {str(req_err)}"
                         raise req_err
                         
                     st.session_state["auth_status"] = "Token received. Checking access..."
@@ -1450,7 +1460,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.1")
+    st.sidebar.caption("v1.8.3")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1536,8 +1546,8 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.9.1)
-            with st.expander("Debug Info (v1.9.1)"):
+            # Debug Info (v1.8.3)
+            with st.expander("Debug Info (v1.8.3)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1546,7 +1556,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.9.1")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.3")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
