@@ -1431,6 +1431,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
+    st.sidebar.caption("v1.7.3")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1513,13 +1514,21 @@ def main():
                  return
             
             # Show Language Selector on Login Screen too!
-            st.sidebar.caption("v1.7.2")
+            st.sidebar.caption("v1.7.3")
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (Removed)
-            # with st.expander("Debug Info (v1.7.1)"):
-            #    ...
+            # Debug Info (v1.7.3)
+            with st.expander("Debug Info (v1.7.3)"):
+                st.write(f"Session State: {st.session_state.keys()}")
+                st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
+                st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
+                st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
+                st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
+                st.write(f"Query Params: {st.query_params}")
+                # Use unique key to avoid StreamlitDuplicateElementKey
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7.3")
+                st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
                 "no": "🇳🇴 Norsk", 
@@ -1672,7 +1681,7 @@ def main():
     # --- Main App (Only reached if logged in) ---
     
     # Logo in Sidebar
-    st.sidebar.caption("v1.7.2")
+    # st.sidebar.caption("v1.7.2") # Moved to top
     st.sidebar.image(LOGO_URL, width=150)
     st.sidebar.title(get_text("title"))
     
