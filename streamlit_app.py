@@ -1501,13 +1501,15 @@ def main():
             
             # Show Language Selector on Login Screen too!
             st.image(LOGO_URL, width=150)
-            st.title(f"{get_text('title')} v1.3")
+            st.title(f"{get_text('title')} v1.4")
             
-            # Debug Info (v1.3)
-            with st.expander("Debug Info (v1.3)"):
+            # Debug Info (v1.4)
+            with st.expander("Debug Info (v1.4)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Query Params: {st.query_params}")
-                st.write(f"Cookies: {cookie_manager.get_all().keys() if cookie_manager.get_all() else 'None'}")
+                # Use unique key to avoid StreamlitDuplicateElementKey
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.4")
+                st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
                 "no": "🇳🇴 Norsk", 
