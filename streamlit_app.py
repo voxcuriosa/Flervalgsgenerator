@@ -1356,10 +1356,12 @@ def main():
                         log_login(user_email, user_name)
                     
                     # Set persistent cookie
-                    import datetime
-                    expires = datetime.datetime.now() + datetime.timedelta(days=30)
-                    cookie_manager.set("user_email", user_email, expires_at=expires, key="set_email")
-                    cookie_manager.set("user_name", user_name, expires_at=expires, key="set_name")
+                    # import datetime
+                    # expires = datetime.datetime.now() + datetime.timedelta(days=30)
+                    # cookie_manager.set("user_email", user_email, expires_at=expires, key="set_email")
+                    # cookie_manager.set("user_name", user_name, expires_at=expires, key="set_name")
+                    
+                    st.session_state["login_trace"] = "Success block reached. Rerunning..."
                     
                     import time
                     time.sleep(0.5)
@@ -1501,14 +1503,15 @@ def main():
             
             # Show Language Selector on Login Screen too!
             st.image(LOGO_URL, width=150)
-            st.title(f"{get_text('title')} v1.4")
+            st.title(f"{get_text('title')} v1.5")
             
-            # Debug Info (v1.4)
-            with st.expander("Debug Info (v1.4)"):
+            # Debug Info (v1.5)
+            with st.expander("Debug Info (v1.5)"):
                 st.write(f"Session State: {st.session_state.keys()}")
+                st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.4")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.5")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
