@@ -1374,17 +1374,25 @@ def main():
                         st.session_state["auth_status"] = "Access token found. Fetching Graph..."
                         # Get user info from Graph API
                         access_token = token_data["access_token"]
-                        headers = {"Authorization": f"Bearer {access_token}"}
-                        graph_response = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers)
-                        graph_response = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers)
-                        if graph_response.status_code == 200:
-                            user_info = graph_response.json()
-                            user_email = user_info.get("mail") or user_info.get("userPrincipalName")
-                            user_name = user_info.get("displayName", "Unknown")
-                            st.session_state["auth_status"] = "Graph success. Email found."
-                        else:
-                            st.error(f"Failed to fetch Microsoft user info: {graph_response.text}")
-                            st.session_state["auth_status"] = f"Graph fail: {graph_response.status_code}"
+                        
+                        # Use urllib instead of requests
+                        req = urllib.request.Request("https://graph.microsoft.com/v1.0/me")
+                        req.add_header("Authorization", f"Bearer {access_token}")
+                        
+                        try:
+                            with urllib.request.urlopen(req, timeout=10) as graph_response:
+                                if graph_response.status == 200:
+                                    response_body = graph_response.read().decode('utf-8')
+                                    user_info = json.loads(response_body)
+                                    user_email = user_info.get("mail") or user_info.get("userPrincipalName")
+                                    user_name = user_info.get("displayName", "Unknown")
+                                    st.session_state["auth_status"] = "Graph success. Email found."
+                                else:
+                                    st.error(f"Failed to fetch Microsoft user info: {graph_response.status}")
+                                    st.session_state["auth_status"] = f"Graph fail: {graph_response.status}"
+                        except Exception as graph_err:
+                             st.session_state["auth_status"] = f"Graph request failed: {graph_err}"
+                             raise graph_err
 
                 # Common Success Handling
                 if token_data and ("access_token" in token_data or "id_token" in token_data) and user_email:
@@ -1466,7 +1474,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.4")
+    st.sidebar.caption("v1.8.5")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1552,8 +1560,8 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.8.4)
-            with st.expander("Debug Info (v1.8.4)"):
+            # Debug Info (v1.8.5)
+            with st.expander("Debug Info (v1.8.5)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1562,7 +1570,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.4")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.5")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
