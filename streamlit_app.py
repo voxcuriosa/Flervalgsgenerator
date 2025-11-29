@@ -1188,6 +1188,57 @@ def main():
     if "language" not in st.session_state:
         st.session_state.language = "no"
 
+    # --- CSS for Mobile/Sidebar ---
+    st.markdown("""
+        <style>
+            [data-testid="stSidebarCollapseButton"] {
+                font-size: 2rem;
+                color: #4285F4;
+            }
+            [data-testid="stSidebarCollapseButton"] button {
+                border: 2px solid #4285F4;
+                border-radius: 10px;
+                width: 40px;
+                height: 40px;
+                background-color: rgba(66, 133, 244, 0.1);
+            }
+            [data-testid="stSidebarCollapseButton"] button:hover {
+                background-color: rgba(66, 133, 244, 0.3);
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # --- Cookie Logic (Run BEFORE Auth to prevent flash) ---
+    # Check for existing login cookie if not in session state
+    if "user_email" not in st.session_state:
+        # We need to wait a bit for the cookie manager to load
+        # Retry mechanism for cookies is NOT safe with components (DuplicateKey error)
+        # Just check once. The rerun from login should have set it.
+        cookies = cookie_manager.get_all()
+        
+        # If cookies are not loaded yet (empty dict on first run), we might want to wait?
+        # But stx.CookieManager is async.
+        
+        if cookies and "user_email" in cookies:
+            cookie_email = cookies["user_email"]
+        
+            if cookie_email:
+                # Only auto-login if we also have the name!
+                if "user_name" in cookies:
+                    st.session_state.user_email = cookie_email
+                    st.session_state.user_name = cookies["user_name"]
+                    st.rerun()
+                else:
+                    pass
+        else:
+            # If no cookies found, but we haven't checked before, maybe force a rerun once to be sure?
+            # This helps if cookie manager is slow to load.
+            if "cookies_checked" not in st.session_state:
+                st.session_state.cookies_checked = True
+                import time
+                time.sleep(0.1) # Brief pause
+                st.rerun()
+
     # --- Authentication Logic (Must run before widgets) ---
     if "google" not in st.secrets:
         st.error("Google secrets not found in .streamlit/secrets.toml")
@@ -1371,31 +1422,8 @@ def main():
                 st.query_params.clear() # Clear params to prevent loop
                 # st.stop() # Allow script to continue so user can try again
     
-    # Check for existing login cookie if not in session state
-    if "user_email" not in st.session_state:
-        # We need to wait a bit for the cookie manager to load
-        import time
-        # Retry mechanism for cookies
-        # Retry mechanism for cookies is NOT safe with components (DuplicateKey error)
-        # Just check once. The rerun from login should have set it.
-        cookies = cookie_manager.get_all()
-        print(f"DEBUG: Cookies loaded: {cookies.keys() if cookies else 'None'}")
-        if cookies and "user_email" in cookies:
-            cookie_email = cookies["user_email"]
-        
-            if cookie_email:
-                # Only auto-login if we also have the name!
-                # This forces a re-login for users with old cookies (missing name)
-                if "user_name" in cookies:
-                    st.session_state.user_email = cookie_email
-                    st.session_state.user_name = cookies["user_name"]
-                    st.rerun()
-                else:
-                    # Cookie exists but no name. Clear it and force login.
-                    print("DEBUG: Found email cookie but no name. Forcing re-login.")
-                    # We can't easily delete here without a rerun loop, 
-                    # but we can just ignore it and let the login button appear.
-                    pass
+    # Check for existing login cookie if not in session state - MOVED TO TOP
+    # if "user_email" not in st.session_state: ...
             
     # --- Language Selector (Top of Sidebar) ---
     lang_options = {
@@ -1660,6 +1688,8 @@ def main():
 
 
     st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
+    
+    st.info("Her kan du generere flervalgsoppgaver fra læreboka 'Historie på tvers' eller fra NDLA. Du kan også se gjennom NDLA-fagstoffet direkte i appen.")
     
     # --- Main Navigation ---
     # Using a sidebar radio to switch modes
