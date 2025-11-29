@@ -12,7 +12,10 @@ import asyncio
 import streamlit.components.v1 as components
 import streamlit.components.v1 as components
 import extra_streamlit_components as stx
-# import requests # Removed in favor of urllib
+import urllib.request
+import urllib.parse
+import urllib.error
+import json
 
 # Page Config
 st.set_page_config(
@@ -1249,9 +1252,10 @@ def main():
             # Check if we already tried this code
             if code == st.session_state.get("last_auth_code"):
                 # Do NOT overwrite auth_status, so we can see what happened in the first run
-                st.session_state["reuse_trace"] = f"Reuse detected. Previous status: {st.session_state.get('auth_status')}"
-                # Silently ignore and clear params to prevent "Link expired" error
-                st.query_params.clear()
+                reuse_msg = f"Gjenbruk oppdaget. Forrige status: {st.session_state.get('auth_status')}"
+                st.session_state["reuse_trace"] = reuse_msg
+                
+                st.error(reuse_msg) # Show the error!
                 st.warning("Innloggingen ble avbrutt. Vennligst prøv igjen.")
                 st.query_params.clear()
                 return # STOP THE EXECUTION HERE
@@ -1342,10 +1346,6 @@ def main():
 
                     st.session_state["auth_status"] = "Posting to token endpoint (urllib)..."
                     try:
-                        import urllib.request
-                        import urllib.parse
-                        import json
-                        
                         data_encoded = urllib.parse.urlencode(data).encode('utf-8')
                         req = urllib.request.Request(token_url, data=data_encoded, method='POST')
                         
@@ -1476,7 +1476,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.7")
+    st.sidebar.caption("v1.8.8")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1567,8 +1567,8 @@ def main():
                 st.query_params.clear()
                 st.rerun()
             
-            # Debug Info (v1.8.7)
-            with st.expander("Debug Info (v1.8.7)"):
+            # Debug Info (v1.8.8)
+            with st.expander("Debug Info (v1.8.8)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1577,7 +1577,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.7")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.8")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
