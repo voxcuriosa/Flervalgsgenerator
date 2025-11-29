@@ -24,9 +24,9 @@ st.set_page_config(page_title="Flervalgsgenerator", page_icon="📝", layout="wi
 # This must be done after set_page_config
 cookie_manager = stx.CookieManager()
 
-# --- Debug Info (v1.8.24) - ALWAYS VISIBLE AT TOP OF MAIN ---
-debug_cookies = cookie_manager.get_all()
-with st.sidebar.expander("Debug Info (v1.8.24)"):
+# --- Debug Info (v1.8.25) - ALWAYS VISIBLE AT TOP OF MAIN ---
+debug_cookies = cookie_manager.get_all(key="debug_cookies_top")
+with st.sidebar.expander("Debug Info (v1.8.25)"):
     st.write(f"Session State: {st.session_state.keys()}")
     st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
     st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1490,7 +1490,7 @@ def main():
         # Retry mechanism for cookies is NOT safe with components (DuplicateKey error)
         # Just check once. The rerun from login should have set it.
         # Just check once. The rerun from login should have set it.
-        cookies = cookie_manager.get_all()
+        cookies = cookie_manager.get_all(key="main_cookies_check")
         if cookies and "user_email" in cookies:
             cookie_email = cookies["user_email"]
         
@@ -1521,7 +1521,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.24")
+    st.sidebar.caption("v1.8.25")
     
     # Debug Info moved to top of main()
     
