@@ -1335,14 +1335,18 @@ def main():
                         access_token = token_data["access_token"]
                         headers = {"Authorization": f"Bearer {access_token}"}
                         graph_response = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers)
+                        print(f"DEBUG: Graph API Status: {graph_response.status_code}")
                         if graph_response.status_code == 200:
                             user_info = graph_response.json()
+                            print(f"DEBUG: Graph API Response: {user_info}")
                             user_email = user_info.get("mail") or user_info.get("userPrincipalName")
                             user_name = user_info.get("displayName", "Unknown")
                         else:
+                            print(f"DEBUG: Graph API Error: {graph_response.text}")
                             st.error(f"Failed to fetch Microsoft user info: {graph_response.text}")
 
                 # Common Success Handling
+                print(f"DEBUG: Checking success. Email: {user_email}, Token keys: {token_data.keys() if token_data else 'None'}")
                 if token_data and ("access_token" in token_data or "id_token" in token_data) and user_email:
                     st.session_state.token = token_data
                     st.session_state.user_email = user_email
