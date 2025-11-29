@@ -11,10 +11,9 @@ import streamlit_oauth as oauth
 import asyncio
 import streamlit.components.v1 as components
 import streamlit.components.v1 as components
+import streamlit.components.v1 as components
 import extra_streamlit_components as stx
-import urllib.request
-import urllib.parse
-import urllib.error
+import requests
 import json
 
 # Page Config
@@ -1350,15 +1349,27 @@ def main():
                         st.error("Mangler client_secret i secrets.toml!")
                         return
 
-                    st.session_state["auth_status"] = "Posting to token endpoint (urllib)..."
+                    st.session_state["auth_status"] = "Posting to token endpoint (requests)..."
                     try:
-                        data_encoded = urllib.parse.urlencode(data).encode('utf-8')
-                        req = urllib.request.Request(token_url, data=data_encoded, method='POST')
+                        response = requests.post(token_url, data=data, timeout=10)
+                        st.session_state["auth_status"] = f"Token response: {response.status_code}"
                         
-                        with urllib.request.urlopen(req, timeout=10) as response:
-                            st.session_state["auth_status"] = f"Token response: {response.status}"
-                            response_body = response.read().decode('utf-8')
-                            token_data = json.loads(response_body)
+                        if response.status_code == 200:
+                            token_data = response.json()
+                        else:
+                            st.session_state["auth_status"] = f"HTTP Error {response.status_code}: {response.reason}"
+                            st.session_state["auth_error"] = f"Details: {response.text}"
+                            st.error(f"Autentiseringsfeil: {response.reason}")
+                            st.query_params.clear()
+                            return
+
+                    except Exception as req_err:
+                        st.session_state["auth_status"] = f"Request failed: {req_err}"
+                        st.session_state["auth_error"] = f"Exception: {str(req_err)}"
+                        st.error(f"Feil under token-utveksling: {req_err}")
+                        return # Stop, do not raise
+                        
+                    st.session_state["auth_status"] = "Token received. Checking access..."
                             
                     except urllib.error.HTTPError as e:
                         error_body = e.read().decode('utf-8')
@@ -1382,21 +1393,20 @@ def main():
                         # Get user info from Graph API
                         access_token = token_data["access_token"]
                         
-                        # Use urllib instead of requests
-                        req = urllib.request.Request("https://graph.microsoft.com/v1.0/me")
-                        req.add_header("Authorization", f"Bearer {access_token}")
+                        # Use requests instead of urllib
+                        headers = {"Authorization": f"Bearer {access_token}"}
                         
                         try:
-                            with urllib.request.urlopen(req, timeout=10) as graph_response:
-                                if graph_response.status == 200:
-                                    response_body = graph_response.read().decode('utf-8')
-                                    user_info = json.loads(response_body)
-                                    user_email = user_info.get("mail") or user_info.get("userPrincipalName")
-                                    user_name = user_info.get("displayName", "Unknown")
-                                    st.session_state["auth_status"] = "Graph success. Email found."
-                                else:
-                                    st.error(f"Failed to fetch Microsoft user info: {graph_response.status}")
-                                    st.session_state["auth_status"] = f"Graph fail: {graph_response.status}"
+                            graph_response = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers, timeout=10)
+                            
+                            if graph_response.status_code == 200:
+                                user_info = graph_response.json()
+                                user_email = user_info.get("mail") or user_info.get("userPrincipalName")
+                                user_name = user_info.get("displayName", "Unknown")
+                                st.session_state["auth_status"] = "Graph success. Email found."
+                            else:
+                                st.error(f"Failed to fetch Microsoft user info: {graph_response.status_code}")
+                                st.session_state["auth_status"] = f"Graph fail: {graph_response.status_code}"
                         except Exception as graph_err:
                              st.session_state["auth_status"] = f"Graph request failed: {graph_err}"
                              st.error(f"Feil mot Graph API: {graph_err}")
@@ -1482,7 +1492,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.12")
+    st.sidebar.caption("v1.8.13")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1568,14 +1578,22 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Button is also available here for normal login screen
-            if st.button("🔄 Nullstill app (hvis du står fast)", key="reset_login_page"):
-                st.session_state.clear()
-                st.query_params.clear()
-                st.rerun()
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("🔄 Nullstill app", key="reset_login_page"):
+                    st.session_state.clear()
+                    st.query_params.clear()
+                    st.rerun()
+            with col2:
+                if st.button("🌐 Test Nettverk", key="test_network"):
+                    try:
+                        res = requests.get("https://www.google.com", timeout=5)
+                        st.success(f"Nettverk OK! Status: {res.status_code}")
+                    except Exception as e:
+                        st.error(f"Nettverksfeil: {e}")
             
-            # Debug Info (v1.8.12)
-            with st.expander("Debug Info (v1.8.12)"):
+            # Debug Info (v1.8.13)
+            with st.expander("Debug Info (v1.8.13)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1584,7 +1602,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.12")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.13")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
@@ -1626,6 +1644,7 @@ def main():
                     "state": st.session_state.language # Revert to just language for Google
                 }
                 # Use quote_via=urllib.parse.quote to get %20 instead of + for spaces
+                import urllib.parse
                 auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
                 
                 # --- Microsoft Auth URL ---
@@ -1644,6 +1663,7 @@ def main():
                         "state": f"microsoft|{st.session_state.language}",
                         "prompt": "select_account"
                     }
+                    import urllib.parse
                     ms_auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
                 # --- Render Buttons ---
