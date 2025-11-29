@@ -20,13 +20,20 @@ import json
 st.set_page_config(page_title="Flervalgsgenerator", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
 
 # --- Debug Info (v1.8.21) - ALWAYS VISIBLE AT TOP OF MAIN ---
-with st.sidebar.expander("Debug Info (v1.8.21)"):
+# Initialize Cookie Manager (Global)
+# This must be done after set_page_config
+cookie_manager = stx.CookieManager()
+
+# --- Debug Info (v1.8.22) - ALWAYS VISIBLE AT TOP OF MAIN ---
+debug_cookies = cookie_manager.get_all()
+with st.sidebar.expander("Debug Info (v1.8.22)"):
     st.write(f"Session State: {st.session_state.keys()}")
     st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
     st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
     st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
     st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
     st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
+    st.write(f"Cookies: {list(debug_cookies.keys()) if debug_cookies else 'None'}")
     st.write(f"Query Params: {st.query_params}")
     # Use unique key to avoid StreamlitDuplicateElementKey
     # Note: cookie_manager must be initialized before this block if used here.
@@ -1373,9 +1380,30 @@ def main():
                         else:
                             st.session_state["auth_status"] = f"HTTP Error {response.status_code}: {response.reason}"
                             st.session_state["auth_error"] = f"Details: {response.text}"
-                            st.error(f"Autentiseringsfeil: {response.reason}")
-                            st.warning("Her er detaljene fra Microsoft:")
-                            st.code(response.text, language="json") # SHOW ME THE ERROR!
+                            
+                            # Check for AADSTS70000 (Expired Code) - Race Condition Handler
+                            if "AADSTS70000" in response.text:
+                                st.warning("Koden er utløpt (AADSTS70000). Sjekker om vi allerede er logget inn...")
+                                import time
+                                time.sleep(1) # Give cookies a moment to sync
+                                
+                                # Check cookies directly
+                                saved_email = cookie_manager.get("user_email")
+                                if saved_email:
+                                    st.success(f"Fant lagret sesjon for {saved_email}! Fortsetter...")
+                                    st.session_state.user_email = saved_email
+                                    # Try to get name too
+                                    st.session_state.user_name = cookie_manager.get("user_name", "Unknown")
+                                    st.query_params.clear()
+                                    st.rerun()
+                                    return
+                                else:
+                                    st.error("Koden var utløpt og ingen sesjon ble funnet. Prøv igjen.")
+                            else:
+                                st.error(f"Autentiseringsfeil: {response.reason}")
+                                st.warning("Her er detaljene fra Microsoft:")
+                                st.code(response.text, language="json")
+
                             st.query_params.clear()
                             return
 
@@ -1493,7 +1521,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.22")
+    st.sidebar.caption("v1.8.23")
     
     # Debug Info moved to top of main()
     
