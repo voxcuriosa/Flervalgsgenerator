@@ -1362,12 +1362,7 @@ def main():
                         st.warning("Koblingen utløp. Vennligst klikk på knappen igjen.")
                     else:
                         st.error(f"Feil ved innlogging ({provider}): {error_desc}")
-                    
-                    # Stop execution so user can see the error
-                    if st.button("Prøv igjen"):
-                        st.query_params.clear()
-                        st.rerun()
-                    st.stop()
+                    st.query_params.clear() # Clear params to prevent loop
                     
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
