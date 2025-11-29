@@ -1252,7 +1252,8 @@ def main():
                 st.session_state["reuse_trace"] = f"Reuse detected. Previous status: {st.session_state.get('auth_status')}"
                 # Silently ignore and clear params to prevent "Link expired" error
                 st.query_params.clear()
-                st.rerun()
+                st.warning("Innloggingen ble avbrutt. Vennligst prøv igjen.")
+                # st.rerun() # STOP THE LOOP!
             
             st.session_state["auth_status"] = "New code. Starting exchange..."
             st.session_state.last_auth_code = code # Set IMMEDIATELY to catch reloads
@@ -1333,11 +1334,20 @@ def main():
                         "grant_type": "authorization_code",
                         "client_secret": ms_client_secret,
                     }
-                    st.session_state["auth_status"] = "Posting to token endpoint..."
+                    st.session_state["auth_status"] = "Posting to token endpoint (urllib)..."
                     try:
-                        response = requests.post(token_url, data=data, timeout=10)
-                        st.session_state["auth_status"] = f"Token response: {response.status_code}"
-                        token_data = response.json()
+                        import urllib.request
+                        import urllib.parse
+                        import json
+                        
+                        data_encoded = urllib.parse.urlencode(data).encode('utf-8')
+                        req = urllib.request.Request(token_url, data=data_encoded, method='POST')
+                        
+                        with urllib.request.urlopen(req, timeout=10) as response:
+                            st.session_state["auth_status"] = f"Token response: {response.status}"
+                            response_body = response.read().decode('utf-8')
+                            token_data = json.loads(response_body)
+                            
                     except Exception as req_err:
                         st.session_state["auth_status"] = f"Request failed: {req_err}"
                         raise req_err
@@ -1440,7 +1450,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.2")
+    st.sidebar.caption("v1.9.1")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1526,8 +1536,8 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.8.2)
-            with st.expander("Debug Info (v1.8.2)"):
+            # Debug Info (v1.9.1)
+            with st.expander("Debug Info (v1.9.1)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1536,7 +1546,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.2")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.9.1")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
