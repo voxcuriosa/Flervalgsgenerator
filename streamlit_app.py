@@ -1245,11 +1245,13 @@ def main():
             st.session_state["pre_check_trace"] = f"Code: {code}, Last: {st.session_state.get('last_auth_code')}"
             
             # Check if we already tried this code
-            # if code == st.session_state.get("last_auth_code"):
-            #     # Silently ignore and clear params to prevent "Link expired" error
-            #     st.query_params.clear()
-            #     st.rerun()
+            if code == st.session_state.get("last_auth_code"):
+                st.session_state["auth_status"] = "Reuse detected. Clearing params."
+                # Silently ignore and clear params to prevent "Link expired" error
+                st.query_params.clear()
+                st.rerun()
             
+            st.session_state["auth_status"] = "New code. Starting exchange..."
             st.session_state.last_auth_code = code
             
             # Parse state to get provider and language
@@ -1330,8 +1332,10 @@ def main():
                     }
                     response = requests.post(token_url, data=data)
                     token_data = response.json()
+                    st.session_state["auth_status"] = "Token received. Checking access..."
                     
                     if "access_token" in token_data:
+                        st.session_state["auth_status"] = "Access token found. Fetching Graph..."
                         # Get user info from Graph API
                         access_token = token_data["access_token"]
                         headers = {"Authorization": f"Bearer {access_token}"}
@@ -1341,8 +1345,10 @@ def main():
                             user_info = graph_response.json()
                             user_email = user_info.get("mail") or user_info.get("userPrincipalName")
                             user_name = user_info.get("displayName", "Unknown")
+                            st.session_state["auth_status"] = "Graph success. Email found."
                         else:
                             st.error(f"Failed to fetch Microsoft user info: {graph_response.text}")
+                            st.session_state["auth_status"] = f"Graph fail: {graph_response.status_code}"
 
                 # Common Success Handling
                 if token_data and ("access_token" in token_data or "id_token" in token_data) and user_email:
@@ -1508,17 +1514,18 @@ def main():
             
             # Show Language Selector on Login Screen too!
             st.image(LOGO_URL, width=150)
-            st.title(f"{get_text('title')} v1.7")
+            st.title(f"{get_text('title')} v1.7.1")
             
-            # Debug Info (v1.7)
-            with st.expander("Debug Info (v1.7)"):
+            # Debug Info (v1.7.1)
+            with st.expander("Debug Info (v1.7.1)"):
                 st.write(f"Session State: {st.session_state.keys()}")
+                st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
                 st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7.1")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
