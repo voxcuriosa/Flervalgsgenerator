@@ -1184,6 +1184,7 @@ def render_quiz_generator():
             st.rerun()
 
 def main():
+    print(f"DEBUG: Start main(). Params: {st.query_params}")
     # Initialize Language FIRST
     if "language" not in st.session_state:
         st.session_state.language = "no"
