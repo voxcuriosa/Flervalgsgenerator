@@ -1252,7 +1252,7 @@ def main():
                 st.rerun()
             
             st.session_state["auth_status"] = "New code. Starting exchange..."
-            # MOVED: st.session_state.last_auth_code = code (Set it later to allow retries on interrupt)
+            st.session_state.last_auth_code = code
             
             # Parse state to get provider and language
             # Format: "provider|language" (e.g., "google|no" or "microsoft|en")
@@ -1383,13 +1383,11 @@ def main():
                     else:
                         st.error(f"Feil ved innlogging ({provider}): {error_desc}")
                     
-                    st.session_state.last_auth_code = code # Mark as used
                     st.query_params.clear() # Clear params to prevent loop
                     
             except Exception as e:
                 st.error(f"Feil under token-utveksling: {e}")
                 st.session_state["auth_error"] = f"Exception: {str(e)}"
-                st.session_state.last_auth_code = code # Mark as used (failed)
                 st.query_params.clear() # Clear params to prevent loop
                 # st.stop() # Allow script to continue so user can try again
     
@@ -1432,7 +1430,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.7.5")
+    st.sidebar.caption("v1.8")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1518,8 +1516,8 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.7.5)
-            with st.expander("Debug Info (v1.7.5)"):
+            # Debug Info (v1.8)
+            with st.expander("Debug Info (v1.8)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
@@ -1527,7 +1525,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7.5")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
@@ -1575,15 +1573,13 @@ def main():
                 ms_tenant_id = st.secrets["microsoft"]["tenant_id"]
                 ms_redirect_uri = st.secrets["microsoft"]["redirect_uri"]
                 
-                import uuid
-                random_state = str(uuid.uuid4())
                 ms_params = {
                     "client_id": ms_client_id,
                     "response_type": "code",
                     "redirect_uri": ms_redirect_uri,
                     "response_mode": "query",
                     "scope": "User.Read openid profile email",
-                    "state": f"microsoft|{st.session_state.language}|{random_state}",
+                    "state": f"microsoft|{st.session_state.language}",
                     "prompt": "select_account"
                 }
                 ms_auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
