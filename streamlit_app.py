@@ -1290,7 +1290,7 @@ def main():
                     st.session_state["lang_selector_login"] = language
                 
             try:
-                import requests
+
                 import jwt # PyJWT
                 
                 token_data = None
@@ -1477,7 +1477,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.16")
+    st.sidebar.caption("v1.8.17")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1577,8 +1577,8 @@ def main():
                     except Exception as e:
                         st.error(f"Nettverksfeil: {e}")
             
-            # Debug Info (v1.8.16)
-            with st.expander("Debug Info (v1.8.16)"):
+            # Debug Info (v1.8.17)
+            with st.expander("Debug Info (v1.8.17)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1587,7 +1587,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.16")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.17")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
