@@ -1202,6 +1202,14 @@ def main():
             [data-testid="stSidebarCollapseButton"] {
                 font-size: 3rem !important;
                 color: #4285F4 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 2px !important;
+                width: auto !important;
+                height: auto !important;
+                padding: 5px !important;
             }
             [data-testid="stSidebarCollapseButton"] button {
                 border: none !important;
@@ -1210,6 +1218,13 @@ def main():
                 height: 50px !important;
                 background-color: rgba(66, 133, 244, 0.1) !important;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            [data-testid="stSidebarCollapseButton"]::after {
+                content: "Meny";
+                font-size: 14px !important;
+                color: #4285F4 !important;
+                font-weight: bold !important;
+                line-height: 1 !important;
             }
             [data-testid="stSidebarCollapseButton"] button:hover {
                 background-color: rgba(66, 133, 244, 0.3) !important;
@@ -1492,7 +1507,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.2")
+    st.sidebar.caption("v1.9.3")
     
     # Debug Info moved to top of main()
     
@@ -1738,7 +1753,7 @@ def main():
 
     st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
     
-    st.info("""
+    st.markdown("""
     **Her kan du generere flervalgsoppgaver fra læreboka 'Historie på tvers' eller fra NDLA.**
     
     Du kan også velge andre kilder og til og med filer (PDF/PPT/Word), velge antall spørsmål og svar, og velge antall riktige svar.
