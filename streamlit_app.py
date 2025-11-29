@@ -1261,7 +1261,7 @@ def main():
             
             if state:
                 parts = state.split('|')
-                if len(parts) == 2:
+                if len(parts) >= 2:
                     provider = parts[0]
                     language = parts[1]
                 elif state in ["no", "en", "ar", "so", "ti", "uk", "th"]:
@@ -1431,7 +1431,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.7.3")
+    st.sidebar.caption("v1.7.4")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1475,18 +1475,17 @@ def main():
                 cookie_manager.delete("user_name", key="del_name")
                 
                 # Clear session state
-                for key in list(st.session_state.keys()):
-                    del st.session_state[key]
+                st.session_state.clear()
                     
                 import time
-                time.sleep(1)
+                time.sleep(0.5)
                 
                 # Just rerun to show login screen
                 st.query_params.clear()
                 st.rerun()
                 
             except Exception as e:
-                print(f"Logout error: {e}")
+                st.error(f"Logout error: {e}")
             
             st.rerun()
             
@@ -1514,12 +1513,12 @@ def main():
                  return
             
             # Show Language Selector on Login Screen too!
-            st.sidebar.caption("v1.7.3")
+            st.sidebar.caption("v1.7.4")
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.7.3)
-            with st.expander("Debug Info (v1.7.3)"):
+            # Debug Info (v1.7.4)
+            with st.expander("Debug Info (v1.7.4)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
@@ -1527,7 +1526,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7.3")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.7.4")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
@@ -1575,13 +1574,15 @@ def main():
                 ms_tenant_id = st.secrets["microsoft"]["tenant_id"]
                 ms_redirect_uri = st.secrets["microsoft"]["redirect_uri"]
                 
+                import uuid
+                random_state = str(uuid.uuid4())
                 ms_params = {
                     "client_id": ms_client_id,
                     "response_type": "code",
                     "redirect_uri": ms_redirect_uri,
                     "response_mode": "query",
                     "scope": "User.Read openid profile email",
-                    "state": f"microsoft|{st.session_state.language}",
+                    "state": f"microsoft|{st.session_state.language}|{random_state}",
                     "prompt": "select_account"
                 }
                 ms_auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
