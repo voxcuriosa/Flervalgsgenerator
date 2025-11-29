@@ -1204,7 +1204,7 @@ def main():
                 color: #4285F4 !important;
             }
             [data-testid="stSidebarCollapseButton"] button {
-                border: 2px solid #4285F4 !important;
+                border: none !important;
                 border-radius: 50% !important;
                 width: 50px !important;
                 height: 50px !important;
@@ -1492,7 +1492,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.1")
+    st.sidebar.caption("v1.9.2")
     
     # Debug Info moved to top of main()
     
@@ -1741,9 +1741,13 @@ def main():
     st.info("""
     **Her kan du generere flervalgsoppgaver fra læreboka 'Historie på tvers' eller fra NDLA.**
     
+    Du kan også velge andre kilder og til og med filer (PDF/PPT/Word), velge antall spørsmål og svar, og velge antall riktige svar.
+    
     Du kan også se gjennom NDLA-fagstoffet direkte i appen.
     
-    Du kan velge andre kilder og filer, velge antall spørsmål og svar, og velge antall riktige svar.
+    **Velkommen!**
+    
+    PS: Feil kan du rapportere til borchgrevink@gmail.com
     """)
     
     # --- Main Navigation ---
