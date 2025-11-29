@@ -22,18 +22,18 @@ st.set_page_config(page_title="Flervalgsgenerator", page_icon="📝", layout="wi
 # --- Debug Info (v1.8.21) - ALWAYS VISIBLE AT TOP OF MAIN ---
 # Initialize Cookie Manager (Global)
 # This must be done after set_page_config
-cookie_manager = stx.CookieManager()
+# cookie_manager = stx.CookieManager() # MOVED TO MAIN to avoid reload race condition
 
-# --- Debug Info (v1.8.25) - ALWAYS VISIBLE AT TOP OF MAIN ---
-debug_cookies = cookie_manager.get_all(key="debug_cookies_top")
-with st.sidebar.expander("Debug Info (v1.8.25)"):
+# --- Debug Info (v1.8.26) - ALWAYS VISIBLE AT TOP OF MAIN ---
+# debug_cookies = cookie_manager.get_all(key="debug_cookies_top") # Cannot get yet
+with st.sidebar.expander("Debug Info (v1.8.26)"):
     st.write(f"Session State: {st.session_state.keys()}")
     st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
     st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
     st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
     st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
     st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
-    st.write(f"Cookies: {list(debug_cookies.keys()) if debug_cookies else 'None'}")
+    st.write(f"Cookies: (Delayed for safety)")
     st.write(f"Query Params: {st.query_params}")
     # Use unique key to avoid StreamlitDuplicateElementKey
     # Note: cookie_manager must be initialized before this block if used here.
@@ -1385,14 +1385,19 @@ def main():
                             if "AADSTS70000" in response.text:
                                 st.warning("Koden er utløpt (AADSTS70000). Sjekker om vi allerede er logget inn...")
                                 import time
-                                time.sleep(1) # Give cookies a moment to sync
+                                time.sleep(1) 
+                                
+                                # NOW we can try to init cookie manager to check
+                                if not cookie_manager:
+                                    cookie_manager = stx.CookieManager(key="cm_rescue")
+                                    import time
+                                    time.sleep(1) # Wait for load
                                 
                                 # Check cookies directly
                                 saved_email = cookie_manager.get("user_email")
                                 if saved_email:
                                     st.success(f"Fant lagret sesjon for {saved_email}! Fortsetter...")
                                     st.session_state.user_email = saved_email
-                                    # Try to get name too
                                     st.session_state.user_name = cookie_manager.get("user_name", "Unknown")
                                     st.query_params.clear()
                                     st.rerun()
@@ -1455,6 +1460,11 @@ def main():
                         log_login(user_email, user_name)
                     
                     # Set persistent cookie
+                    # NOW we init cookie manager if not already done
+                    if not cookie_manager:
+                        cookie_manager = stx.CookieManager(key="cm_success")
+                        # This might trigger a reload, which is fine NOW because we have the token in session_state!
+                    
                     import datetime
                     expires = datetime.datetime.now() + datetime.timedelta(days=30)
                     cookie_manager.set("user_email", user_email, expires_at=expires, key="set_email")
@@ -1480,32 +1490,58 @@ def main():
                 st.error(f"Feil under token-utveksling: {e}")
                 st.session_state["auth_error"] = f"Exception: {str(e)}"
                 st.query_params.clear() # Clear params to prevent loop
-                # st.stop() # Allow script to continue so user can try again
+                # st.stop() # Allow script to contdef main():
+    # --- Cookie Manager Strategy (v1.8.26) ---
+    # We MUST delay cookie_manager init if we are performing an auth code exchange.
+    # Initializing it triggers a reload, which kills the auth request -> "Expired Code".
     
-    # Check for existing login cookie if not in session state
-    if "user_email" not in st.session_state:
+    cookie_manager = None
+    
+    # Check if we have an auth code to process
+    has_auth_code = "code" in st.query_params
+    
+    if has_auth_code and "user_email" not in st.session_state:
+        st.session_state["auth_status"] = "Auth Code Detected - Delaying Cookie Manager..."
+        # Do NOT init cookie_manager yet!
+    else:
+        # Safe to init
+        cookie_manager = stx.CookieManager(key="cm_main")
+    
+    # --- Auth Logic ---
+    
+    # 1. Check for existing session (only if safe)
+    if cookie_manager and "user_email" not in st.session_state:
         # We need to wait a bit for the cookie manager to load
         import time
-        # Retry mechanism for cookies
-        # Retry mechanism for cookies is NOT safe with components (DuplicateKey error)
         # Just check once. The rerun from login should have set it.
-        # Just check once. The rerun from login should have set it.
-        cookies = cookie_manager.get_all(key="main_cookies_check")
+        cookies = cookie_manager.get_all(key="cm_check")
         if cookies and "user_email" in cookies:
             cookie_email = cookies["user_email"]
         
             if cookie_email:
                 # Only auto-login if we also have the name!
-                # This forces a re-login for users with old cookies (missing name)
                 if "user_name" in cookies:
                     st.session_state.user_email = cookie_email
                     st.session_state.user_name = cookies["user_name"]
                     st.rerun()
                 else:
-                    # Cookie exists but no name. Clear it and force login.
-                    # We can't easily delete here without a rerun loop, 
-                    # but we can just ignore it and let the login button appear.
                     pass
+
+    # 2. Handle Auth Code (Microsoft)
+    if "code" in st.query_params:
+        code = st.query_params["code"]
+        state = st.query_params.get("state", "")
+        
+        # ... (Reuse check logic) ...
+        # We can keep reuse check, but now it shouldn't trigger falsely
+        
+        if "microsoft" in state:
+            provider = "Microsoft"
+            # ...
+            
+            # Perform Token Exchange (WITHOUT Cookie Manager interruption)
+            # ... (Logic continues below, we just ensured cookie_manager isn't reloading us)
+
             
     # --- Language Selector (Top of Sidebar) ---
     lang_options = {
@@ -1521,7 +1557,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.25")
+    st.sidebar.caption("v1.8.26")
     
     # Debug Info moved to top of main()
     
@@ -1801,7 +1837,10 @@ def main():
     st.divider()
     
     if app_mode == get_text("module_quiz"):
-        render_quiz_generator()
+        # Init cookie manager if needed for logout inside quiz generator
+        if not cookie_manager:
+             cookie_manager = stx.CookieManager(key="cm_quiz")
+        render_quiz_generator(cookie_manager)
     elif app_mode == get_text("module_ndla"):
         render_ndla_viewer()
 
