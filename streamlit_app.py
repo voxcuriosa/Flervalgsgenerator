@@ -844,12 +844,24 @@ def render_admin_panel():
             cookie_manager.delete("user_email")
         except:
             pass
-            
         st.rerun()
 
 def render_quiz_generator():
 
-    # --- App Logic ---
+    # --- Debug Info (v1.8.20) - ALWAYS VISIBLE AT TOP ---
+    with st.sidebar.expander("Debug Info (v1.8.20)"):
+        st.write(f"Session State: {st.session_state.keys()}")
+        st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
+        st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
+        st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
+        st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
+        st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
+        st.write(f"Query Params: {st.query_params}")
+        # Use unique key to avoid StreamlitDuplicateElementKey
+        debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.20")
+        st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
+        
+    # --- Auth Logic ---
     
     # Sidebar
     st.sidebar.header(get_text("settings"))
@@ -1477,20 +1489,10 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.19")
+    st.sidebar.caption("v1.8.20")
     
-    # Debug Info (v1.8.19) - Moved to sidebar for visibility
-    with st.sidebar.expander("Debug Info (v1.8.19)"):
-        st.write(f"Session State: {st.session_state.keys()}")
-        st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
-        st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
-        st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
-        st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
-        st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
-        st.write(f"Query Params: {st.query_params}")
-        # Use unique key to avoid StreamlitDuplicateElementKey
-        debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.19")
-        st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
+    # Debug Info moved to top of main()
+    
 
     lang_keys = list(lang_options.keys())
     try:
