@@ -1366,7 +1366,8 @@ def main():
                     except Exception as req_err:
                         st.session_state["auth_status"] = f"Request failed: {req_err}"
                         st.session_state["auth_error"] = f"Exception: {str(req_err)}"
-                        raise req_err
+                        st.error(f"Feil under token-utveksling: {req_err}")
+                        return # Stop, do not raise
                         
                     st.session_state["auth_status"] = "Token received. Checking access..."
                     
@@ -1392,7 +1393,8 @@ def main():
                                     st.session_state["auth_status"] = f"Graph fail: {graph_response.status}"
                         except Exception as graph_err:
                              st.session_state["auth_status"] = f"Graph request failed: {graph_err}"
-                             raise graph_err
+                             st.error(f"Feil mot Graph API: {graph_err}")
+                             return # Stop, do not raise
 
                 # Common Success Handling
                 if token_data and ("access_token" in token_data or "id_token" in token_data) and user_email:
@@ -1474,7 +1476,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.6")
+    st.sidebar.caption("v1.8.7")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1560,8 +1562,13 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.8.6)
-            with st.expander("Debug Info (v1.8.6)"):
+            if st.button("🔄 Nullstill app (hvis du står fast)"):
+                st.session_state.clear()
+                st.query_params.clear()
+                st.rerun()
+            
+            # Debug Info (v1.8.7)
+            with st.expander("Debug Info (v1.8.7)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1570,7 +1577,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.6")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.7")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
