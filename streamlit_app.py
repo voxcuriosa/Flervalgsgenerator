@@ -1069,6 +1069,16 @@ def render_quiz_generator():
 
     # Tabs
     # Display Results
+    if not st.session_state.get("user_email"):
+        st.title(f"{get_text('title')} v1.2")
+        
+        # Debug Info (Temporary)
+        with st.expander("Debug Info (v1.2)"):
+            st.write(f"Session State: {st.session_state.keys()}")
+            st.write(f"Query Params: {st.query_params}")
+            st.write(f"Cookies: {cookie_manager.get_all().keys() if cookie_manager.get_all() else 'None'}")
+        
+        col1, col2 = st.columns(2)
     if st.session_state.get("quiz_submitted", False):
         st.header(get_text("results_header"))
         
