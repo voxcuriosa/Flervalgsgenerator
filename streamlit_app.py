@@ -19,37 +19,6 @@ import json
 # Page Config
 st.set_page_config(page_title="Flervalgsgenerator", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
 
-# --- Debug Info (v1.8.21) - ALWAYS VISIBLE AT TOP OF MAIN ---
-# Initialize Cookie Manager (Global)
-# This must be done after set_page_config
-# cookie_manager = stx.CookieManager() # MOVED TO MAIN to avoid reload race condition
-
-# --- Debug Info (v1.8.26) - ALWAYS VISIBLE AT TOP OF MAIN ---
-# debug_cookies = cookie_manager.get_all(key="debug_cookies_top") # Cannot get yet
-with st.sidebar.expander("Debug Info (v1.8.26)"):
-    st.write(f"Session State: {st.session_state.keys()}")
-    st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
-    st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
-    st.write(f"Auth Error: {st.session_state.get('auth_error', 'None')}")
-    st.write(f"Pre-Check Trace: {st.session_state.get('pre_check_trace', 'None')}")
-    st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
-    st.write(f"Cookies: (Delayed for safety)")
-    st.write(f"Query Params: {st.query_params}")
-    # Use unique key to avoid StreamlitDuplicateElementKey
-    # Note: cookie_manager must be initialized before this block if used here.
-    # Assuming cookie_manager is initialized globally after set_page_config.
-    # If cookie_manager is not yet initialized, this line will cause an error.
-    # For now, keeping it as per instruction, assuming it will be initialized.
-    # If cookie_manager is initialized later, this line should be moved.
-    # For this specific instruction, I will assume cookie_manager is available.
-    # However, the original code initializes it *after* the set_page_config block.
-    # To make this syntactically correct and functional, cookie_manager must be initialized first.
-    # I will move the cookie_manager initialization up to make the debug info work.
-
-# Initialize Cookie Manager (Global)
-# This must be done after set_page_config
-# cookie_manager = stx.CookieManager() # REMOVED DUPLICATE (Already initialized at top)
-
 # Constants
 PDF_FILES = ["HPT.pdf", "HPTx.pdf"]
 HTML_VIEWER_PATH = "ndla_content_viewer.html"
@@ -1520,7 +1489,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.29")
+    st.sidebar.caption("v1.9.0")
     
     # Debug Info moved to top of main()
     
@@ -1561,29 +1530,8 @@ def main():
             st.query_params.clear()
             
         # Logout Button in Sidebar
+        # Logout Button (Hard Logout Logic)
         if st.sidebar.button(get_text("logout")):
-            try:
-                # Delete cookie
-                cookie_manager.delete("user_email", key="del_email")
-                cookie_manager.delete("user_name", key="del_name")
-                
-                # Clear session state
-                st.session_state.clear()
-                    
-                import time
-                time.sleep(0.5)
-                
-                # Just rerun to show login screen
-                st.query_params.clear()
-                st.rerun()
-                
-            except Exception as e:
-                st.error(f"Logout error: {e}")
-            
-            st.rerun()
-            
-        # Hard Logout (JS Reload)
-        if st.sidebar.button("Hard Utlogging (hvis vanlig feiler)"):
             # Clear cookies first
             try:
                 cookie_manager.delete("user_email", key="del_email_hard")
@@ -1617,12 +1565,8 @@ def main():
                     st.query_params.clear()
                     st.rerun()
             with col2:
-                if st.button("🌐 Test Nettverk", key="test_network"):
-                    try:
-                        res = requests.get("https://www.google.com", timeout=5)
-                        st.success(f"Nettverk OK! Status: {res.status_code}")
-                    except Exception as e:
-                        st.error(f"Nettverksfeil: {e}")
+                # Network test removed
+                pass
             
 
             
