@@ -1369,7 +1369,8 @@ def main():
                     
                     import time
                     time.sleep(0.5)
-                    st.query_params.clear()
+                    # Do NOT clear params here, it might cause state loss. 
+                    # We clean it up in the main block if logged in.
                     st.rerun()
                 else:
                     error_desc = token_data.get('error_description', str(token_data))
@@ -1455,6 +1456,10 @@ def main():
         return # Stop rendering the rest of the app
             
     if st.session_state.get("user_email"):
+        # Clean URL if we have leftover auth params
+        if "code" in st.query_params:
+            st.query_params.clear()
+            
         # Logout Button in Sidebar
         if st.sidebar.button(get_text("logout")):
             try:
