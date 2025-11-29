@@ -1482,7 +1482,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.11")
+    st.sidebar.caption("v1.8.12")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1574,8 +1574,8 @@ def main():
                 st.query_params.clear()
                 st.rerun()
             
-            # Debug Info (v1.8.11)
-            with st.expander("Debug Info (v1.8.11)"):
+            # Debug Info (v1.8.12)
+            with st.expander("Debug Info (v1.8.12)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1584,7 +1584,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.11")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.12")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
@@ -1614,131 +1614,129 @@ def main():
                  pass
             else:
                 # Check Google Auth
-                # import urllib.parse # REMOVED LOCAL IMPORT
                 # --- Google Auth URL ---
-            # --- Google Auth URL ---
-            scope = "openid email profile"
-            params = {
-                "client_id": client_id,
-                "redirect_uri": redirect_uri,
-                "response_type": "code",
-                "scope": scope,
-                "access_type": "offline",
-                "prompt": "consent",
-                "state": st.session_state.language # Revert to just language for Google
-            }
-            # Use quote_via=urllib.parse.quote to get %20 instead of + for spaces
-            auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
-            
-            # --- Microsoft Auth URL ---
-            ms_auth_url = None
-            if "microsoft" in st.secrets:
-                ms_client_id = st.secrets["microsoft"]["client_id"]
-                ms_tenant_id = st.secrets["microsoft"]["tenant_id"]
-                ms_redirect_uri = st.secrets["microsoft"]["redirect_uri"]
-                
-                ms_params = {
-                    "client_id": ms_client_id,
+                scope = "openid email profile"
+                params = {
+                    "client_id": client_id,
+                    "redirect_uri": redirect_uri,
                     "response_type": "code",
-                    "redirect_uri": ms_redirect_uri,
-                    "response_mode": "query",
-                    "scope": "User.Read openid profile email",
-                    "state": f"microsoft|{st.session_state.language}",
-                    "prompt": "select_account"
+                    "scope": scope,
+                    "access_type": "offline",
+                    "prompt": "consent",
+                    "state": st.session_state.language # Revert to just language for Google
                 }
-                ms_auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
+                # Use quote_via=urllib.parse.quote to get %20 instead of + for spaces
+                auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params, quote_via=urllib.parse.quote)}"
+                
+                # --- Microsoft Auth URL ---
+                ms_auth_url = None
+                if "microsoft" in st.secrets:
+                    ms_client_id = st.secrets["microsoft"]["client_id"]
+                    ms_tenant_id = st.secrets["microsoft"]["tenant_id"]
+                    ms_redirect_uri = st.secrets["microsoft"]["redirect_uri"]
+                    
+                    ms_params = {
+                        "client_id": ms_client_id,
+                        "response_type": "code",
+                        "redirect_uri": ms_redirect_uri,
+                        "response_mode": "query",
+                        "scope": "User.Read openid profile email",
+                        "state": f"microsoft|{st.session_state.language}",
+                        "prompt": "select_account"
+                    }
+                    ms_auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(ms_params)}"
 
-            # --- Render Buttons ---
-            import textwrap
-            
-            # Helper to clean HTML
-            def clean_html(html):
-                return textwrap.dedent(html).strip()
+                # --- Render Buttons ---
+                import textwrap
+                
+                # Helper to clean HTML
+                def clean_html(html):
+                    return textwrap.dedent(html).strip()
 
-            # Google Button
-            google_btn = clean_html(f'''
-                <a href="{auth_url}" target="_blank" style="text-decoration: none;">
-                    <button style="
-                        background-color: #4285F4; 
-                        color: white; 
-                        padding: 12px 24px; 
-                        border: none; 
-                        border-radius: 4px; 
-                        cursor: pointer; 
-                        font-size: 16px;
-                        font-family: Roboto, sans-serif;
-                        display: flex;
-                        align-items: center;
-                        gap: 12px;
-                        width: 250px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                    ">
-                        <img src="https://www.google.com/favicon.ico" width="20" style="background: white; border-radius: 50%; padding: 2px;">
-                        <span>{get_text("login_google")}</span>
-                    </button>
-                </a>
-            ''')
-
-            # Microsoft Button
-            if ms_auth_url:
-                ms_btn = clean_html(f'''
-                    <a href="{ms_auth_url}" target="_blank" style="text-decoration: none;">
+                # Google Button
+                google_btn = clean_html(f'''
+                    <a href="{auth_url}" target="_blank" style="text-decoration: none;">
                         <button style="
-                            background-color: #2F2F2F; 
+                            background-color: #4285F4; 
                             color: white; 
                             padding: 12px 24px; 
-                            border: 1px solid #555; 
+                            border: none; 
                             border-radius: 4px; 
                             cursor: pointer; 
                             font-size: 16px;
-                            font-family: Segoe UI, sans-serif;
+                            font-family: Roboto, sans-serif;
                             display: flex;
                             align-items: center;
                             gap: 12px;
                             width: 250px;
                             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                         ">
+                            <img src="https://www.google.com/favicon.ico" width="20" style="background: white; border-radius: 50%; padding: 2px;">
+                            <span>{get_text("login_google")}</span>
+                        </button>
+                    </a>
+                ''')
+
+                # Microsoft Button
+                if ms_auth_url:
+                    ms_btn = clean_html(f'''
+                        <a href="{ms_auth_url}" target="_blank" style="text-decoration: none;">
+                            <button style="
+                                background-color: #2F2F2F; 
+                                color: white; 
+                                padding: 12px 24px; 
+                                border: 1px solid #555; 
+                                border-radius: 4px; 
+                                cursor: pointer; 
+                                font-size: 16px;
+                                font-family: Segoe UI, sans-serif;
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                width: 250px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                            ">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
+                                <span>Logg inn med Microsoft</span>
+                            </button>
+                        </a>
+                        <p style="font-size: 12px; color: #888; margin-top: 5px; text-align: center;">(Kun personlig Microsoft-konto, ikke jobb/skole)</p>
+                    ''')
+                else:
+                    # Disabled state
+                    ms_btn = clean_html(f'''
+                        <button style="
+                            background-color: #2F2F2F; 
+                            color: white; 
+                            padding: 12px 24px; 
+                            border: 1px solid #555; 
+                            border-radius: 4px; 
+                            cursor: not-allowed; 
+                            font-size: 16px;
+                            font-family: Segoe UI, sans-serif;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            width: 250px;
+                            box-shadow: none;
+                            opacity: 0.5;
+                        ">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
                             <span>Logg inn med Microsoft</span>
                         </button>
-                    </a>
-                    <p style="font-size: 12px; color: #888; margin-top: 5px; text-align: center;">(Kun personlig Microsoft-konto, ikke jobb/skole)</p>
-                ''')
-            else:
-                # Disabled state
-                ms_btn = clean_html(f'''
-                    <button style="
-                        background-color: #2F2F2F; 
-                        color: white; 
-                        padding: 12px 24px; 
-                        border: 1px solid #555; 
-                        border-radius: 4px; 
-                        cursor: not-allowed; 
-                        font-size: 16px;
-                        font-family: Segoe UI, sans-serif;
-                        display: flex;
-                        align-items: center;
-                        gap: 12px;
-                        width: 250px;
-                        box-shadow: none;
-                        opacity: 0.5;
-                    ">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width="20">
-                        <span>Logg inn med Microsoft</span>
-                    </button>
-                    <p style="font-size: 12px; color: #888; margin-top: 5px; text-align: center;">(Kun personlig Microsoft-konto, ikke jobb/skole)</p>
+                        <p style="font-size: 12px; color: #888; margin-top: 5px; text-align: center;">(Kun personlig Microsoft-konto, ikke jobb/skole)</p>
+                    ''')
+
+                # Combine in a container
+                full_html = clean_html(f'''
+                    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
+                        {google_btn}
+                        {ms_btn}
+                    </div>
                 ''')
 
-            # Combine in a container
-            full_html = clean_html(f'''
-                <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px;">
-                    {google_btn}
-                    {ms_btn}
-                </div>
-            ''')
-
-            st.markdown(full_html, unsafe_allow_html=True)
-            return
+                st.markdown(full_html, unsafe_allow_html=True)
+                return
 
     # --- Main App (Only reached if logged in) ---
     
