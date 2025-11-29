@@ -24,9 +24,9 @@ st.set_page_config(page_title="Flervalgsgenerator", page_icon="📝", layout="wi
 # This must be done after set_page_config
 cookie_manager = stx.CookieManager()
 
-# --- Debug Info (v1.8.22) - ALWAYS VISIBLE AT TOP OF MAIN ---
+# --- Debug Info (v1.8.24) - ALWAYS VISIBLE AT TOP OF MAIN ---
 debug_cookies = cookie_manager.get_all()
-with st.sidebar.expander("Debug Info (v1.8.22)"):
+with st.sidebar.expander("Debug Info (v1.8.24)"):
     st.write(f"Session State: {st.session_state.keys()}")
     st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
     st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -48,7 +48,7 @@ with st.sidebar.expander("Debug Info (v1.8.22)"):
 
 # Initialize Cookie Manager (Global)
 # This must be done after set_page_config
-cookie_manager = stx.CookieManager()
+# cookie_manager = stx.CookieManager() # REMOVED DUPLICATE (Already initialized at top)
 
 # Constants
 PDF_FILES = ["HPT.pdf", "HPTx.pdf"]
@@ -1521,7 +1521,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.23")
+    st.sidebar.caption("v1.8.24")
     
     # Debug Info moved to top of main()
     
