@@ -1257,6 +1257,12 @@ def main():
                 
                 st.error(reuse_msg) # Show the error!
                 st.warning("Innloggingen ble avbrutt. Vennligst prøv igjen.")
+                
+                if st.button("🔄 Nullstill app (hvis du står fast)"):
+                    st.session_state.clear()
+                    st.query_params.clear()
+                    st.rerun()
+                    
                 st.query_params.clear()
                 return # STOP THE EXECUTION HERE
             
@@ -1476,7 +1482,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.8")
+    st.sidebar.caption("v1.8.9")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1562,13 +1568,14 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            if st.button("🔄 Nullstill app (hvis du står fast)"):
+            # Button is also available here for normal login screen
+            if st.button("🔄 Nullstill app (hvis du står fast)", key="reset_login_page"):
                 st.session_state.clear()
                 st.query_params.clear()
                 st.rerun()
             
-            # Debug Info (v1.8.8)
-            with st.expander("Debug Info (v1.8.8)"):
+            # Debug Info (v1.8.9)
+            with st.expander("Debug Info (v1.8.9)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1577,7 +1584,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.8")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.9")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
