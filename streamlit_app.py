@@ -1244,11 +1244,9 @@ def main():
         if code:
             # Check if we already tried this code
             if code == st.session_state.get("last_auth_code"):
-                st.warning("Duplikat innloggingsforsøk. Dette kan skje hvis siden lastes på nytt.")
-                if st.button("Tilbake til start"):
-                    st.query_params.clear()
-                    st.rerun()
-                st.stop()
+                print("DEBUG: Code reused, clearing params to prevent loop.")
+                st.query_params.clear()
+                st.rerun()
             
             st.session_state.last_auth_code = code
             
