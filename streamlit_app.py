@@ -1253,7 +1253,8 @@ def main():
                 # Silently ignore and clear params to prevent "Link expired" error
                 st.query_params.clear()
                 st.warning("Innloggingen ble avbrutt. Vennligst prøv igjen.")
-                # st.rerun() # STOP THE LOOP!
+                st.query_params.clear()
+                return # STOP THE EXECUTION HERE
             
             st.session_state["auth_status"] = "New code. Starting exchange..."
             st.session_state.last_auth_code = code # Set IMMEDIATELY to catch reloads
@@ -1334,6 +1335,11 @@ def main():
                         "grant_type": "authorization_code",
                         "client_secret": ms_client_secret,
                     }
+                    
+                    if not ms_client_secret:
+                        st.error("Mangler client_secret i secrets.toml!")
+                        return
+
                     st.session_state["auth_status"] = "Posting to token endpoint (urllib)..."
                     try:
                         import urllib.request
@@ -1460,7 +1466,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.8.3")
+    st.sidebar.caption("v1.8.4")
     lang_keys = list(lang_options.keys())
     try:
         current_index = lang_keys.index(st.session_state.language)
@@ -1546,8 +1552,8 @@ def main():
             st.image(LOGO_URL, width=150)
             st.title(get_text("title"))
             
-            # Debug Info (v1.8.3)
-            with st.expander("Debug Info (v1.8.3)"):
+            # Debug Info (v1.8.4)
+            with st.expander("Debug Info (v1.8.4)"):
                 st.write(f"Session State: {st.session_state.keys()}")
                 st.write(f"Auth Status: {st.session_state.get('auth_status', 'None')}")
                 st.write(f"Reuse Trace: {st.session_state.get('reuse_trace', 'None')}")
@@ -1556,7 +1562,7 @@ def main():
                 st.write(f"Login Trace: {st.session_state.get('login_trace', 'None')}")
                 st.write(f"Query Params: {st.query_params}")
                 # Use unique key to avoid StreamlitDuplicateElementKey
-                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.3")
+                debug_cookies = cookie_manager.get_all(key="debug_cookies_v1.8.4")
                 st.write(f"Cookies: {debug_cookies.keys() if debug_cookies else 'None'}")
             
             lang_options = {
