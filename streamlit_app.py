@@ -1,4 +1,5 @@
 import streamlit as st
+print("DEBUG: Top level execution started")
 import pandas as pd
 import os
 from pdf_processor import get_topics, extract_text_by_topic
