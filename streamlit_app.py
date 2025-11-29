@@ -1200,18 +1200,21 @@ def main():
     st.markdown("""
         <style>
             [data-testid="stSidebarCollapseButton"] {
-                font-size: 2rem;
-                color: #4285F4;
+                font-size: 3rem !important;
+                color: #4285F4 !important;
             }
             [data-testid="stSidebarCollapseButton"] button {
-                border: 2px solid #4285F4;
-                border-radius: 10px;
-                width: 40px;
-                height: 40px;
-                background-color: rgba(66, 133, 244, 0.1);
+                border: 2px solid #4285F4 !important;
+                border-radius: 50% !important;
+                width: 50px !important;
+                height: 50px !important;
+                background-color: rgba(66, 133, 244, 0.1) !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             }
             [data-testid="stSidebarCollapseButton"] button:hover {
-                background-color: rgba(66, 133, 244, 0.3);
+                background-color: rgba(66, 133, 244, 0.3) !important;
+                transform: scale(1.1);
+                transition: transform 0.2s;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -1489,7 +1492,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.0")
+    st.sidebar.caption("v1.9.1")
     
     # Debug Info moved to top of main()
     
@@ -1734,6 +1737,14 @@ def main():
 
 
     st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
+    
+    st.info("""
+    **Her kan du generere flervalgsoppgaver fra læreboka 'Historie på tvers' eller fra NDLA.**
+    
+    Du kan også se gjennom NDLA-fagstoffet direkte i appen.
+    
+    Du kan velge andre kilder og filer, velge antall spørsmål og svar, og velge antall riktige svar.
+    """)
     
     # --- Main Navigation ---
     # Using a sidebar radio to switch modes
