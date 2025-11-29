@@ -1242,14 +1242,6 @@ def main():
             state = state[0]
         
         if code:
-            # Check if we already tried this code
-            if code == st.session_state.get("last_auth_code"):
-                print("DEBUG: Code reused, clearing params to prevent loop.")
-                st.query_params.clear()
-                st.rerun()
-            
-            st.session_state.last_auth_code = code
-            
             # Parse state to get provider and language
             # Format: "provider|language" (e.g., "google|no" or "microsoft|en")
             provider = "google" # Default
