@@ -1,5 +1,4 @@
 import streamlit as st
-print("DEBUG: Top level execution started")
 import pandas as pd
 import os
 from quiz_generator import generate_quiz
@@ -1185,7 +1184,6 @@ def render_quiz_generator():
             st.rerun()
 
 def main():
-    print(f"DEBUG: Start main(). Params: {st.query_params}")
     # Initialize Language FIRST
     if "language" not in st.session_state:
         st.session_state.language = "no"
@@ -1330,31 +1328,27 @@ def main():
                     }
                     response = requests.post(token_url, data=data)
                     token_data = response.json()
-                    print(f"DEBUG: Microsoft Token Response: {token_data}")
                     
                     if "access_token" in token_data:
                         # Get user info from Graph API
                         access_token = token_data["access_token"]
                         headers = {"Authorization": f"Bearer {access_token}"}
                         graph_response = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers)
-                        print(f"DEBUG: Graph API Status: {graph_response.status_code}")
+                        graph_response = requests.get("https://graph.microsoft.com/v1.0/me", headers=headers)
                         if graph_response.status_code == 200:
                             user_info = graph_response.json()
-                            print(f"DEBUG: Graph API Response: {user_info}")
                             user_email = user_info.get("mail") or user_info.get("userPrincipalName")
                             user_name = user_info.get("displayName", "Unknown")
                         else:
-                            print(f"DEBUG: Graph API Error: {graph_response.text}")
                             st.error(f"Failed to fetch Microsoft user info: {graph_response.text}")
 
                 # Common Success Handling
-                print(f"DEBUG: Checking success. Email: {user_email}, Token keys: {token_data.keys() if token_data else 'None'}")
                 if token_data and ("access_token" in token_data or "id_token" in token_data) and user_email:
                     st.session_state.token = token_data
                     st.session_state.user_email = user_email
                     st.session_state.user_name = user_name
                     
-                    print(f"DEBUG: Login Success ({provider}) - Email: {user_email}, Name: {user_name}")
+                    st.session_state.user_name = user_name
                     
                     # Log login (exclude admin)
                     if user_email != "borchgrevink@gmail.com":
@@ -1392,8 +1386,8 @@ def main():
         # Retry mechanism for cookies
         # Retry mechanism for cookies is NOT safe with components (DuplicateKey error)
         # Just check once. The rerun from login should have set it.
+        # Just check once. The rerun from login should have set it.
         cookies = cookie_manager.get_all()
-        print(f"DEBUG: Cookies loaded: {cookies.keys() if cookies else 'None'}")
         if cookies and "user_email" in cookies:
             cookie_email = cookies["user_email"]
         
@@ -1406,7 +1400,6 @@ def main():
                     st.rerun()
                 else:
                     # Cookie exists but no name. Clear it and force login.
-                    print("DEBUG: Found email cookie but no name. Forcing re-login.")
                     # We can't easily delete here without a rerun loop, 
                     # but we can just ignore it and let the login button appear.
                     pass
@@ -1662,7 +1655,7 @@ def main():
     
     # Logo in Sidebar
     st.sidebar.image(LOGO_URL, width=150)
-    st.sidebar.title(get_text("title"))
+    st.sidebar.title(get_text("title") + " v1.1")
     
 
 
