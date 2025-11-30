@@ -1203,10 +1203,10 @@ def main():
                 font-size: 3rem !important;
                 color: #4285F4 !important;
                 display: flex !important;
-                flex-direction: column !important;
+                flex-direction: row !important; /* CHANGED TO ROW */
                 align-items: center !important;
                 justify-content: center !important;
-                gap: 2px !important;
+                gap: 8px !important;
                 width: auto !important;
                 height: auto !important;
                 padding: 5px !important;
@@ -1214,10 +1214,7 @@ def main():
                 display: block !important;
                 z-index: 9999999 !important; /* Extremely high z-index */
                 background-color: transparent !important;
-                width: auto !important;
-                height: auto !important;
                 border: none !important;
-                padding: 5px !important;
                 
                 /* FORCE FIXED POSITION ALWAYS */
                 position: fixed !important;
@@ -1231,9 +1228,6 @@ def main():
                 /* Ensure container allows overflow for text */
                 overflow: visible !important;
                 display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 8px !important; /* Space between icon and text */
             }
             
             /* RESTORE children (SVG) visibility */
@@ -1249,6 +1243,13 @@ def main():
                 color: #4285F4 !important;
                 font-weight: bold;
                 white-space: nowrap;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            /* Explicit Text: "Åpne meny" when sidebar is collapsed (Fix for missing text) */
+            body:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stSidebarCollapseButton"]::after {
+                content: "Åpne meny" !important;
                 visibility: visible !important;
                 opacity: 1 !important;
             }
@@ -1817,7 +1818,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.23")
+                st.sidebar.caption("v1.9.24")
                 return
 
     # --- Main App (Only reached if logged in) ---
