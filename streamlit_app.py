@@ -1213,15 +1213,12 @@ def main():
                 z-index: 999999 !important;
                 opacity: 1 !important;
                 visibility: visible !important;
-                position: fixed !important;
-                top: 60px !important;
-                left: 10px !important;
-                z-index: 999999 !important;
                 display: block !important;
-                background-color: rgba(255, 255, 255, 0.1); /* Slight background to make it clickable area larger */
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
+                z-index: 999999 !important;
+                /* Remove fixed position to avoid overlap, let it sit where Streamlit puts it */
+                /* position: fixed !important; */
+                /* top: 60px !important; */
+                /* left: 10px !important; */
             }
             /* Add "Meny" label to the native button */
             [data-testid="stSidebarCollapseButton"] button::after {
@@ -1236,6 +1233,17 @@ def main():
             /* Ensure the button inside is also visible */
             [data-testid="stSidebarCollapseButton"] button {
                  visibility: visible !important;
+            }
+            
+            /* Mobile Fallback Button Styling */
+            .mobile-menu-btn-container {
+                display: none; /* Hidden by default on desktop */
+            }
+            @media (max-width: 768px) {
+                .mobile-menu-btn-container {
+                    display: block;
+                    margin-bottom: 20px;
+                }
             }
             [data-testid="stSidebarCollapseButton"] button:hover {
                 background-color: rgba(66, 133, 244, 0.3) !important;
@@ -1520,7 +1528,8 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.13")
+    # Version number moved to bottom of sidebar
+
     
     # Privacy Policy Link (Required for Google Verification)
     st.sidebar.markdown("---")
@@ -1562,7 +1571,6 @@ def main():
     if st.session_state.get("user_email"):
         # --- Force Sidebar Open on Mobile (Aggressive JS Hack) - ONLY AFTER LOGIN ---
         # Streamlit defaults to collapsed on mobile. We want it open.
-        # Removed sessionStorage check to ensure it works.
         
         components.html("""
             <script>
@@ -1591,6 +1599,17 @@ def main():
                 })();
             </script>
         """, height=0, width=0)
+        
+        # --- Mobile Fallback Button ---
+        # A visible button in the main area to open the menu if the auto-open fails
+        st.markdown(f"""
+            <div class="mobile-menu-btn-container">
+                <button onclick="window.parent.document.querySelector('[data-testid=stSidebarCollapseButton]').click()" 
+                        style="background-color: #4285F4; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; width: 100%;">
+                    ☰ Åpne Meny
+                </button>
+            </div>
+        """, unsafe_allow_html=True)
 
         # Clean URL if we have leftover auth params
         if "code" in st.query_params:
