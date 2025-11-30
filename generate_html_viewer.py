@@ -405,7 +405,18 @@ def generate_html():
     """
 
     # Generate Sidebar Loop
-    for subject, root_node in hierarchy.items():
+    # Custom Sort Order
+    subject_order = ["Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi"]
+    
+    def get_sort_key(subject_name):
+        if subject_name in subject_order:
+            return (subject_order.index(subject_name), subject_name)
+        return (999, subject_name)
+        
+    sorted_subjects = sorted(hierarchy.keys(), key=get_sort_key)
+
+    for subject in sorted_subjects:
+        root_node = hierarchy[subject]
         html_content += f'<div class="nav-level-1" style="color: #e67e22; font-weight: bold; padding-left: 10px; margin-top: 20px;">{subject}</div>'
         html_content += generate_sidebar_recursive(root_node, 1, subject)
     
@@ -416,7 +427,18 @@ def generate_html():
     """
     
     # Generate Content
-    for subject, root_node in hierarchy.items():
+    # Custom Sort Order
+    subject_order = ["Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi"]
+    
+    def get_sort_key(subject_name):
+        if subject_name in subject_order:
+            return (subject_order.index(subject_name), subject_name)
+        return (999, subject_name)
+    
+    sorted_subjects = sorted(hierarchy.keys(), key=get_sort_key)
+
+    for subject in sorted_subjects:
+        root_node = hierarchy[subject]
         html_content += f'<h1 class="subject-header">{subject}</h1>'
         html_content += generate_html_recursive(root_node, 1, subject)
 

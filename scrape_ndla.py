@@ -165,24 +165,27 @@ def process_node(node, path_stack, engine, subject_name):
             title, content = extract_content_from_html(html_response.text)
             
             if title and content:
+                # Suffix source_id with subject to allow same content in multiple subjects
+                # This bypasses the UNIQUE(source_id) constraint
+                db_source_id = f"{res_id}#{subject_name}"
+                
                 # Store in DB
                 with engine.connect() as conn:
-                    # Check existence
-                    result = conn.execute(text("SELECT id FROM learning_materials WHERE source_id = :sid"), {"sid": res_id})
+                    # Check existence for this specific subject (using suffixed ID)
+                    result = conn.execute(text("SELECT id FROM learning_materials WHERE source_id = :sid"), {"sid": db_source_id})
                     if result.fetchone():
                         # Update
                         conn.execute(text("""
                             UPDATE learning_materials 
-                            SET title = :title, content = :content, url = :url, subject = :subject, topic = :topic, path = :path
+                            SET title = :title, content = :content, url = :url, topic = :topic, path = :path
                             WHERE source_id = :sid
                         """), {
                             "title": title,
                             "content": content,
                             "url": full_url,
-                            "subject": subject_name,
                             "topic": node_name, # Immediate parent
                             "path": path_str,   # Full path
-                            "sid": res_id
+                            "sid": db_source_id
                         })
                     else:
                         # Insert
@@ -195,7 +198,7 @@ def process_node(node, path_stack, engine, subject_name):
                             "title": title,
                             "content": content,
                             "url": full_url,
-                            "sid": res_id,
+                            "sid": db_source_id,
                             "path": path_str
                         })
                     conn.commit()
