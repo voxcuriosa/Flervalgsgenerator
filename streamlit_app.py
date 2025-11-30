@@ -1216,14 +1216,26 @@ def main():
                 position: fixed !important;
                 top: 60px !important;
                 left: 10px !important;
+                z-index: 999999 !important;
+                display: block !important;
+                background-color: rgba(255, 255, 255, 0.1); /* Slight background to make it clickable area larger */
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
             }
             /* Add "Meny" label to the native button */
             [data-testid="stSidebarCollapseButton"] button::after {
                 content: "Meny";
-                font-size: 14px !important;
-                color: #4285F4 !important;
-                font-weight: bold !important;
-                line-height: 1 !important;
+                display: block;
+                font-size: 10px;
+                color: inherit;
+                margin-top: -2px;
+                font-weight: bold;
+            }
+            
+            /* Ensure the button inside is also visible */
+            [data-testid="stSidebarCollapseButton"] button {
+                 visibility: visible !important;
             }
             [data-testid="stSidebarCollapseButton"] button:hover {
                 background-color: rgba(66, 133, 244, 0.3) !important;
@@ -1508,7 +1520,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.12")
+    st.sidebar.caption("v1.9.13")
     
     # Privacy Policy Link (Required for Google Verification)
     st.sidebar.markdown("---")
@@ -1549,19 +1561,12 @@ def main():
             
     if st.session_state.get("user_email"):
         # --- Force Sidebar Open on Mobile (Aggressive JS Hack) - ONLY AFTER LOGIN ---
-        # Streamlit defaults to collapsed on mobile. We want it open, but only when the app is actually usable.
-        # We use a session state flag to try to ensure we don't annoy the user if they manually closed it.
-        # But since we can't read client-side state easily, we'll just force it once per session load.
+        # Streamlit defaults to collapsed on mobile. We want it open.
+        # Removed sessionStorage check to ensure it works.
         
         components.html("""
             <script>
                 (function() {
-                    // Check if we already forced it open in this session (client-side storage)
-                    if (sessionStorage.getItem('sidebar_forced_open')) {
-                        console.log("Sidebar already forced open this session. Skipping.");
-                        return;
-                    }
-
                     var attempts = 0;
                     var maxAttempts = 20; // Try for 2 seconds
                     var interval = setInterval(function() {
@@ -1574,18 +1579,9 @@ def main():
                             if (sidebar.getAttribute('aria-expanded') === 'false') {
                                 button.click();
                                 console.log("Sidebar forced open by script (Post-Login)");
-                                sessionStorage.setItem('sidebar_forced_open', 'true'); // Mark as done
-                            } else if (sidebar.getAttribute('aria-expanded') === 'true') {
-                                // It's already open, mark as done
-                                sessionStorage.setItem('sidebar_forced_open', 'true');
-                                clearInterval(interval);
                             }
-                            
-                            // If we clicked, we can stop polling? 
-                            // Maybe wait one more tick to be sure?
-                            if (sessionStorage.getItem('sidebar_forced_open')) {
-                                clearInterval(interval);
-                            }
+                            // We don't clear interval immediately to ensure it stays open if there's a race
+                            if (attempts > 5) clearInterval(interval);
                         }
                         
                         if (attempts >= maxAttempts) {
