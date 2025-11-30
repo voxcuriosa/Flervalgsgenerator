@@ -753,6 +753,67 @@ def render_admin_panel():
 
     st.divider()
 
+    # --- 4. User Permissions Management ---
+    st.info("🔒 **Rettighetsstyring**")
+    
+    from storage import get_all_permissions, grant_permission
+    
+    # List all users with permissions
+    perms_df = get_all_permissions()
+    
+    # We also want to see users who have logged in but might not be in the permissions table yet
+    # So let's merge with login logs or just list unique emails from logs
+    all_users = set()
+    if not logs_df.empty:
+        all_users.update(logs_df['user_email'].unique())
+    if not perms_df.empty:
+        all_users.update(perms_df['user_email'].unique())
+        
+    # Create a DataFrame for display/editing
+    user_list = []
+    for email in all_users:
+        # Get current permission
+        can_download = False
+        if not perms_df.empty and email in perms_df['user_email'].values:
+            can_download = bool(perms_df[perms_df['user_email'] == email]['can_download'].iloc[0])
+        
+        # Admins always have access
+        is_admin = email in ADMINS
+        if is_admin:
+            can_download = True
+            
+        user_list.append({"user_email": email, "can_download": can_download, "is_admin": is_admin})
+        
+    users_df = pd.DataFrame(user_list)
+    
+    if not users_df.empty:
+        # Display as a data editor? Or just a list with checkboxes?
+        # Data editor is cleaner
+        
+        st.write("Administrer nedlastningstilgang (MS Forms / PDF):")
+        
+        # We need to handle updates. 
+        # Let's iterate and show toggles.
+        
+        for index, row in users_df.iterrows():
+            c1, c2, c3 = st.columns([3, 1, 1])
+            c1.write(row['user_email'])
+            
+            if row['is_admin']:
+                c2.success("Admin")
+            else:
+                # Checkbox for permission
+                new_perm = c2.checkbox("Tilgang", value=row['can_download'], key=f"perm_{row['user_email']}")
+                if new_perm != row['can_download']:
+                    if grant_permission(row['user_email'], new_perm):
+                        st.toast(f"Oppdaterte rettigheter for {row['user_email']}")
+                        # We might need to rerun to refresh the list source of truth, but toast is nice
+                        
+    else:
+        st.info("Ingen brukere funnet.")
+
+    st.divider()
+
     # --- 3. Content Update Section (Moved to Bottom) ---
     st.info("🛠️ **Verktøy for innholdsoppdatering**")
     
@@ -1105,6 +1166,10 @@ def render_quiz_generator(cookie_manager):
                          correct_indices = []
                 else:
                     correct_indices = []
+            
+            # Ensure correct_indices is added to the question object for PDF generation
+            q['correct_indices'] = correct_indices
+            
             user_indices = answers.get(i, [])
             
             q_score = 0
@@ -1112,7 +1177,8 @@ def render_quiz_generator(cookie_manager):
             
             # Let's calculate points
             for idx in user_indices:
-                if idx in correct_indices:
+                # Ensure we are comparing integers
+                if int(idx) in [int(ci) for ci in correct_indices]:
                     q_score += 1
                 else:
                     pass
@@ -1169,32 +1235,50 @@ def render_quiz_generator(cookie_manager):
         st.metric(get_text("score"), f"{score} / {total_possible}", f"{percentage:.1f}%")
         st.success(get_text("result_cat", category))
         
-        # PDF Download
-        pdf_bytes = generate_quiz_pdf(
-            st.session_state.get("selected_topic_name", "Quiz"), 
-            st.session_state.user_name, 
-            score, 
-            total_possible, 
-            percentage, 
-            questions, 
-            answers
-        )
+        # --- Permissions Check for Downloads ---
+        from storage import get_user_permissions, grant_permission
         
-        st.download_button(
-            label=get_text("download_pdf"),
-            data=pdf_bytes,
-            file_name=f"quiz_resultat.pdf",
-            mime="application/pdf"
-        )
+        # Check permissions
+        can_download = get_user_permissions(st.session_state.user_email)
+        
+        # Admins always have permission
+        if st.session_state.user_email in ADMINS:
+            can_download = True
+            # Ensure admin is in the DB with permission
+            grant_permission(st.session_state.user_email, True)
 
-        # Word Download (MS Forms)
-        docx_file = generate_docx(questions)
-        st.download_button(
-            label="Last ned for MS Forms (Word)",
-            data=docx_file,
-            file_name="quiz_ms_forms.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+        if can_download:
+            # PDF Download
+            pdf_bytes = generate_quiz_pdf(
+                st.session_state.get("selected_topic_name", "Quiz"), 
+                st.session_state.user_name, 
+                score, 
+                total_possible, 
+                percentage, 
+                questions, 
+                answers
+            )
+            
+            st.download_button(
+                label=get_text("download_pdf"),
+                data=pdf_bytes,
+                file_name=f"quiz_resultat.pdf",
+                mime="application/pdf"
+            )
+    
+            # Word Download (MS Forms)
+            docx_file = generate_docx(questions)
+            st.download_button(
+                label="Last ned for MS Forms (Word)",
+                data=docx_file,
+                file_name="quiz_ms_forms.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+        else:
+            st.info("Du har ikke tilgang til å laste ned resultatene. Kontakt administrator for tilgang.")
+            if st.button("Be om tilgang"):
+                # Ideally we would log this request, for now just show a message
+                st.success("Forespørsel sendt (simulert). Kontakt admin direkte.")
         
         if st.button(get_text("new_quiz")):
             del st.session_state.quiz_data
@@ -1843,7 +1927,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.1.1")
+                st.sidebar.caption("v2.1.2")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1913,7 +1997,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.1.1")
+    st.sidebar.caption("v2.1.2")
 
 if __name__ == "__main__":
     main()

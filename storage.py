@@ -74,6 +74,14 @@ def init_db():
                         user_name TEXT
                     );
                 """))
+
+                # Create user_permissions table
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS user_permissions (
+                        user_email TEXT PRIMARY KEY,
+                        can_download BOOLEAN DEFAULT FALSE
+                    );
+                """))
                 
                 conn.commit()
         except Exception as e:
@@ -125,7 +133,8 @@ def get_content_hierarchy():
     conn = None # Initialize conn to None
     try:
         conn = engine.connect() # Get a connection from the engine
-        query = "SELECT * FROM learning_materials ORDER BY subject, path, title"
+        # Use DISTINCT to prevent duplicates if any exist in the DB
+        query = "SELECT DISTINCT * FROM learning_materials ORDER BY subject, path, title"
         df = pd.read_sql(query, conn)
         
         hierarchy = {}
@@ -323,4 +332,48 @@ def get_user_results(user_email):
             return df
         except Exception as e:
             print(f"Error getting user results: {e}")
+    return pd.DataFrame()
+
+def get_user_permissions(user_email):
+    """Checks if a user has download permissions."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT can_download FROM user_permissions WHERE user_email = :email"), {"email": user_email})
+                row = result.fetchone()
+                if row:
+                    return row[0]
+        except Exception as e:
+            print(f"Error getting permissions for {user_email}: {e}")
+    return False
+
+def grant_permission(user_email, can_download=True):
+    """Updates or inserts a user's permission."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("""
+                    INSERT INTO user_permissions (user_email, can_download) 
+                    VALUES (:email, :can_download)
+                    ON CONFLICT (user_email) 
+                    DO UPDATE SET can_download = :can_download
+                """), {"email": user_email, "can_download": can_download})
+                conn.commit()
+                return True
+        except Exception as e:
+            print(f"Error granting permission to {user_email}: {e}")
+    return False
+
+def get_all_permissions():
+    """Retrieves all user permissions."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            query = "SELECT * FROM user_permissions"
+            df = pd.read_sql(query, engine)
+            return df
+        except Exception as e:
+            print(f"Error getting all permissions: {e}")
     return pd.DataFrame()
