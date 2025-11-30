@@ -1806,7 +1806,9 @@ def main():
                         {ms_btn}
                     </div>
                 ''')
-
+    # Version at the bottom
+    st.sidebar.markdown("---")
+    st.sidebar.caption("v1.9.14")
                 st.markdown(full_html, unsafe_allow_html=True)
                 return
 
