@@ -105,7 +105,27 @@ def extract_content_from_html(html_content):
                     
         full_html = f"<div>{content_html}</div>"
         soup = BeautifulSoup(full_html, "html.parser")
-        text_content = soup.get_text(separator="\n\n")
+        
+        # 1. Unwrap inline tags
+        for tag_name in ["em", "i", "strong", "b", "a", "span", "code", "u", "mark", "small"]:
+            for tag in soup.find_all(tag_name):
+                tag.unwrap()
+                
+        # 2. Handle breaks
+        for br in soup.find_all("br"):
+            br.replace_with("\n")
+            
+        # 3. Handle block elements - ensure they end with newline
+        # We append a newline to the text of block elements if not present
+        # Actually, simpler: insert a newline string after block elements
+        for tag_name in ["p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "section", "article"]:
+            for tag in soup.find_all(tag_name):
+                tag.insert_after("\n\n")
+                
+        # 4. Get text with empty separator (relying on our manual newlines)
+        text_content = soup.get_text(separator="")
+        
+        # 5. Cleanup
         text_content = re.sub(r'\n{3,}', '\n\n', text_content).strip()
         
         return title, text_content
@@ -117,9 +137,9 @@ def process_node(node, path_stack, engine, subject_name):
     node_id = node.get('id')
     
     # Filter out "Om faget" - ENABLED AGAIN per user request
-    # if node_name == "Om faget":
-    #     print("Skipping 'Om faget'")
-    #     return
+    if node_name == "Om faget":
+        print("Skipping 'Om faget'")
+        return
 
     current_path = path_stack + [node_name]
     path_str = " > ".join(current_path)
@@ -304,6 +324,8 @@ def get_subject_topics(subject_name):
         root_node_id = "urn:subject:1:ff69c291-6374-4766-80c2-47d5840d8bbf"
     elif subject_name == "Sosiologi og sosialantropologi":
         root_node_id = "urn:subject:1:fb6ad516-0108-4059-acc3-3c5f13f49368"
+    elif subject_name == "Historie (PB)":
+        root_node_id = "urn:subject:846a7552-ea6c-4174-89a4-85d6ba48c96e"
     
     if not root_node_id:
         return []

@@ -34,6 +34,8 @@ TRANSLATIONS = {
         "welcome": "Velkommen",
         "logout": "Logg ut",
         "navigation": "Navigasjon",
+        "home": "Hjem",
+        "my_history": "Min Historikk",
         "module_quiz": "Quiz-generator",
         "module_ndla": "NDLA Fagstoff",
         "settings": "Innstillinger",
@@ -93,6 +95,8 @@ TRANSLATIONS = {
         "welcome": "Welcome",
         "logout": "Log out",
         "navigation": "Navigation",
+        "home": "Home",
+        "my_history": "My History",
         "module_quiz": "Quiz Generator",
         "module_ndla": "NDLA Content",
         "settings": "Settings",
@@ -151,6 +155,8 @@ TRANSLATIONS = {
         "welcome": "أهلاً بك",
         "logout": "تسجيل الخروج",
         "navigation": "التنقل",
+        "home": "الرئيسية",
+        "my_history": "تاريخي",
         "module_quiz": "مولد الاختبارات",
         "module_ndla": "محتوى NDLA",
         "settings": "الإعدادات",
@@ -209,6 +215,8 @@ TRANSLATIONS = {
         "welcome": "Soo dhawoow",
         "logout": "Ka bax",
         "navigation": "Dhex mar",
+        "home": "Hoyga",
+        "my_history": "Taariikhdayda",
         "module_quiz": "Soo Saaraha Imtixaanka",
         "module_ndla": "Nuxurka NDLA",
         "settings": "Dejinta",
@@ -267,6 +275,8 @@ TRANSLATIONS = {
         "welcome": "እንቋዕ ብደሓን መጻእኩም",
         "logout": "ውጻእ",
         "navigation": "ምርጫ",
+        "home": "ገዛ",
+        "my_history": "ናይ ታሪኽ",
         "module_quiz": "መመንጨዊ ፈተና",
         "module_ndla": "ትሕዝቶ NDLA",
         "settings": "ቅንብራት",
@@ -592,6 +602,14 @@ def render_ndla_viewer():
 
 
 def render_admin_panel():
+    # --- Clear Cache Button ---
+    if st.button("🗑️ Tøm mellomlager (Cache)", help="Trykk her hvis du ikke ser endringer i innholdet."):
+        st.cache_data.clear()
+        st.success("Mellomlager tømt! Appen lastes på nytt...")
+        import time
+        time.sleep(1)
+        st.rerun()
+
     # --- 1. Settings (Max Questions) ---
     st.info("⚙️ **Innstillinger**")
     
@@ -740,7 +758,7 @@ def render_admin_panel():
     st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
     
     # Select Subject
-    update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3", "Sosiologi og sosialantropologi"], key="update_subject")
+    update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3", "Sosiologi og sosialantropologi", "Historie (PB)"], key="update_subject")
     
     # Fetch available topics for this subject
     # Fetch available topics for this subject
@@ -1818,7 +1836,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.0")
+                st.sidebar.caption("v2.0.1")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1830,31 +1848,29 @@ def main():
     
 
 
-    st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
-    
-    st.markdown("""
-    **Velkommen til Flervalgsgeneratoren!**
-
-    Dette verktøyet er utviklet for å gjøre det enkelt og effektivt å lage gode flervalgsoppgaver. Du kan hente fagstoff direkte fra læreboka *Historie på tvers* eller fra NDLA sine omfattende ressurser.
-
-    Du har også stor fleksibilitet til å bruke eget materiale:
-    *   Lim inn tekst fra nettsider
-    *   Last opp filer (PDF, PowerPoint, Word)
-
-    Du styrer selv vanskelighetsgraden ved å velge antall spørsmål, svaralternativer og hvor mange riktige svar som skal genereres.
-
-    I tillegg fungerer appen som en leser for NDLA-fagstoff, slik at du kan bla i og vurdere innholdet før du lager oppgaver.
-
-    _Lykke til med arbeidet!_
-
-    PS: Oppdager du feil eller har forslag? Ta kontakt på borchgrevink@gmail.com
-    """)
-    
-    # --- Main Navigation ---
-    # Using a sidebar radio to switch modes
     st.sidebar.title(get_text("navigation"))
-    app_mode = st.sidebar.radio(get_text("navigation"), [get_text("module_quiz"), get_text("module_ndla")], label_visibility="collapsed")
+    app_mode = st.sidebar.radio(get_text("navigation"), [get_text("home"), get_text("module_quiz"), get_text("module_ndla"), get_text("my_history")], label_visibility="collapsed")
     
+    if app_mode == get_text("home"):
+        st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
+        
+        st.markdown("""
+        **Velkommen til Flervalgsgeneratoren!**
+
+        Dette verktøyet er utviklet for å gjøre det enkelt og effektivt å lage gode flervalgsoppgaver. Du kan hente fagstoff direkte fra læreboka *Historie på tvers* eller fra NDLA sine omfattende ressurser.
+
+        Du har også stor fleksibilitet til å bruke eget materiale:
+        *   Lim inn tekst fra nettsider
+        *   Last opp filer (PDF, PowerPoint, Word)
+
+        Du styrer selv vanskelighetsgraden ved å velge antall spørsmål, svaralternativer og hvor mange riktige svar som skal genereres.
+
+        I tillegg fungerer appen som en leser for NDLA-fagstoff, slik at du kan bla i og vurdere innholdet før du lager oppgaver.
+
+        _Lykke til med arbeidet!_
+
+        PS: Oppdager du feil eller har forslag? Ta kontakt på borchgrevink@gmail.com
+        """)
         
     st.divider()
     
@@ -1865,10 +1881,32 @@ def main():
         render_quiz_generator(cookie_manager)
     elif app_mode == get_text("module_ndla"):
         render_ndla_viewer()
+    elif app_mode == get_text("my_history"):
+        st.header(f"📜 {get_text('my_history')}")
+        
+        user_email = st.session_state.get('user_email')
+        if user_email:
+            from storage import get_user_results
+            history_df = get_user_results(user_email)
+            
+            if not history_df.empty:
+                # Display specific columns as requested: Date, Topic, Score/Total
+                # Rename columns for better display
+                display_df = history_df[['timestamp', 'topic', 'score', 'total', 'percentage']]
+                display_df.columns = ["Dato", "Emne", "Poeng", "Totalt", "Prosent"]
+                
+                # Format percentage
+                display_df['Prosent'] = display_df['Prosent'].apply(lambda x: f"{x:.1f}%")
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+            else:
+                st.info("Du har ingen lagrede resultater ennå.")
+        else:
+            st.warning("Du må være logget inn for å se historikk.")
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.23")
+    st.sidebar.caption("v2.0.1")
 
 if __name__ == "__main__":
     main()

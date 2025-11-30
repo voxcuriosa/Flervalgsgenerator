@@ -309,3 +309,18 @@ def get_login_logs():
             st.error(f"Error reading login logs: {e}")
             return pd.DataFrame()
     return pd.DataFrame()
+
+def get_user_results(user_email):
+    """Retrieves quiz results for a specific user."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            # Use parameterized query for security
+            query = text("SELECT timestamp, topic, score, total, percentage, category FROM quiz_results WHERE user_email = :email ORDER BY id DESC")
+            with engine.connect() as conn:
+                result = conn.execute(query, {"email": user_email})
+                df = pd.DataFrame(result.fetchall(), columns=result.keys())
+            return df
+        except Exception as e:
+            print(f"Error getting user results: {e}")
+    return pd.DataFrame()
