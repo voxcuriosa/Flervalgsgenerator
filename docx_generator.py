@@ -25,9 +25,16 @@ def generate_docx(quiz_data):
         # Options (e.g., "A. Oslo")
         # MS Forms requires: Letter, dot, space, option text.
         options = q['options']
+        correct_indices = q.get('correct_indices', [])
+        
         for j, option in enumerate(options):
             letter = chr(65 + j) # 65 is 'A'
-            document.add_paragraph(f"{letter}. {option}")
+            p_opt = document.add_paragraph()
+            runner = p_opt.add_run(f"{letter}. {option}")
+            
+            # Bold if correct (Visual cue for manual selection in Forms)
+            if j in correct_indices:
+                runner.bold = True
             
         # Add empty line for separation (Critical for MS Forms)
         document.add_paragraph()
