@@ -1568,41 +1568,28 @@ def main():
         render_admin_panel()
         return # Stop rendering the rest of the app
             
-        # --- Force Sidebar Open on Mobile (Robust JS) ---
-        # We define a global function in the parent window so our button can call it too.
+    if st.session_state.get("user_email"):
+        # --- Force Sidebar Open on Mobile (Aggressive JS Hack) - ONLY AFTER LOGIN ---
+        # Streamlit defaults to collapsed on mobile. We want it open.
         
         components.html("""
             <script>
-                // Define the function on the parent window (the main Streamlit app)
-                window.parent.openSidebar = function() {
-                    console.log("Attempting to open sidebar...");
-                    const button = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
-                    const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
-                    
-                    if (button && sidebar) {
-                        // Only click if it's actually collapsed
-                        if (sidebar.getAttribute('aria-expanded') === 'false') {
-                            button.click();
-                            console.log("Sidebar opened!");
-                        } else {
-                            console.log("Sidebar already open.");
-                        }
-                    } else {
-                        console.log("Sidebar elements not found.");
-                    }
-                };
-
-                // Auto-open logic (Post-Login)
                 (function() {
                     var attempts = 0;
                     var maxAttempts = 20; // Try for 2 seconds
                     var interval = setInterval(function() {
                         attempts++;
-                        // Call the global function we just defined
-                        if (window.parent.openSidebar) {
-                            window.parent.openSidebar();
-                            // We don't clear interval immediately to ensure it catches late loads
-                            if (attempts > 10) clearInterval(interval);
+                        const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
+                        const button = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
+                        
+                        if (sidebar && button) {
+                            // Check if collapsed (aria-expanded is 'false')
+                            if (sidebar.getAttribute('aria-expanded') === 'false') {
+                                button.click();
+                                console.log("Sidebar forced open by script (Post-Login)");
+                            }
+                            // We don't clear interval immediately to ensure it stays open if there's a race
+                            if (attempts > 5) clearInterval(interval);
                         }
                         
                         if (attempts >= maxAttempts) {
@@ -1614,12 +1601,11 @@ def main():
         """, height=0, width=0)
         
         # --- Mobile Fallback Button ---
-        # Calls the global function defined above. 
-        # Since this is in st.markdown (main window), we access window.openSidebar directly.
+        # A visible button in the main area to open the menu if the auto-open fails
         st.markdown(f"""
             <div class="mobile-menu-btn-container">
-                <button onclick="if(window.openSidebar) window.openSidebar(); else console.log('Function not ready');" 
-                        style="background-color: #4285F4; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; width: 100%; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                <button onclick="window.parent.document.querySelector('[data-testid=stSidebarCollapseButton]').click()" 
+                        style="background-color: #4285F4; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; width: 100%;">
                     ☰ Åpne Meny
                 </button>
             </div>
@@ -1825,7 +1811,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.15")
+                st.sidebar.caption("v1.9.16 (Rollback)")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1875,7 +1861,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.15")
+    st.sidebar.caption("v1.9.16 (Rollback)")
 
 if __name__ == "__main__":
     main()
