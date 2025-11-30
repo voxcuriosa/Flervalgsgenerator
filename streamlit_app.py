@@ -1240,27 +1240,36 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
-    # --- Force Sidebar Open on Mobile (JS Hack) ---
+    # --- Force Sidebar Open on Mobile (Aggressive JS Hack) ---
     # Streamlit defaults to collapsed on mobile. We want it open.
+    # We use polling because DOM elements might take time to appear.
     components.html("""
         <script>
-            window.parent.document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(function() {
+            (function() {
+                var attempts = 0;
+                var maxAttempts = 20; // Try for 2 seconds (20 * 100ms)
+                var interval = setInterval(function() {
+                    attempts++;
                     const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
                     const button = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
-                    if (sidebar && sidebar.getAttribute('aria-expanded') === 'false' && button) {
-                        button.click();
+                    
+                    if (sidebar && button) {
+                        // Check if collapsed (aria-expanded is 'false')
+                        if (sidebar.getAttribute('aria-expanded') === 'false') {
+                            button.click();
+                            console.log("Sidebar forced open by script");
+                        }
+                        // Stop polling once we found the elements and tried to click
+                        // We can clear interval here, OR keep checking for a bit to ensure it stays open?
+                        // Let's clear it to avoid fighting the user if they want to close it.
+                        clearInterval(interval);
                     }
-                }, 500); # Delay to ensure load
-            });
-            # Also try immediately in case DOM is ready
-            setTimeout(function() {
-                const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
-                const button = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
-                if (sidebar && sidebar.getAttribute('aria-expanded') === 'false' && button) {
-                    button.click();
-                }
-            }, 1000);
+                    
+                    if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                    }
+                }, 100);
+            })();
         </script>
     """, height=0, width=0)
 
@@ -1537,7 +1546,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.7")
+    st.sidebar.caption("v1.9.8")
     
     # Debug Info moved to top of main()
     
