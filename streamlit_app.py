@@ -1251,7 +1251,7 @@ def main():
             #custom-menu-btn {
                 position: fixed;
                 top: 60px;
-                left: 10px;
+                right: 10px;
                 z-index: 999999;
                 background-color: rgba(66, 133, 244, 0.9);
                 color: white;
@@ -1600,7 +1600,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.9")
+    st.sidebar.caption("v1.9.10")
     
     # Debug Info moved to top of main()
     
