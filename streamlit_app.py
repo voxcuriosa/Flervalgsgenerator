@@ -1213,37 +1213,39 @@ def main():
                 visibility: visible !important;
                 display: block !important;
                 z-index: 999999 !important;
-                background-color: white !important; /* Ensure background is white so text is readable */
+                background-color: transparent !important; /* Transparent background */
                 width: auto !important;
                 height: auto !important;
-                border: 1px solid #4285F4 !important;
-                border-radius: 5px !important;
-                padding: 5px 10px !important;
+                border: none !important; /* No border */
+                padding: 5px !important;
                 
                 /* Restore fixed position to ensure it's ALWAYS visible */
                 position: fixed !important;
                 top: 60px !important;
                 left: 10px !important;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+                box-shadow: none !important; /* No shadow */
             }
             
-            /* Hide the default icon */
+            /* Hide the default icon (SVG) aggressively */
             [data-testid="stSidebarCollapseButton"] svg {
                 display: none !important;
+                opacity: 0 !important;
+                width: 0 !important;
+                height: 0 !important;
             }
             
             /* Default Text: "Åpne meny" */
             [data-testid="stSidebarCollapseButton"] button::after {
                 content: "Åpne meny";
                 display: block;
-                font-size: 14px;
-                color: #4285F4;
+                font-size: 16px; /* Slightly larger */
+                color: #4285F4 !important;
                 font-weight: bold;
                 white-space: nowrap;
+                visibility: visible !important;
             }
             
             /* Dynamic Text: "Lukk meny" when sidebar is expanded */
-            /* We use :has() to check if the sidebar (sibling/child) is expanded */
             body:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stSidebarCollapseButton"] button::after {
                 content: "Lukk meny";
             }
@@ -1252,11 +1254,13 @@ def main():
             [data-testid="stSidebarCollapseButton"] button {
                  visibility: visible !important;
                  width: auto !important;
+                 background-color: transparent !important;
+                 border: none !important;
             }
             
             [data-testid="stSidebarCollapseButton"] button:hover {
-                background-color: #f0f8ff !important; /* Light blue hover */
-                transform: none !important;
+                background-color: transparent !important;
+                transform: scale(1.05) !important;
 
                 transition: transform 0.2s;
             }
@@ -1812,7 +1816,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.18")
+                st.sidebar.caption("v1.9.19")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1862,7 +1866,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.18")
+    st.sidebar.caption("v1.9.19")
 
 if __name__ == "__main__":
     main()
