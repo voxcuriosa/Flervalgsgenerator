@@ -1272,10 +1272,7 @@ def main():
                 opacity: 1 !important;
             }
             
-            /* Dynamic Text: "Lukk meny" when sidebar is expanded */
-            body:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stSidebarCollapseButton"]::after {
-                content: "Lukk meny";
-            }
+            /* Dynamic Text: "Lukk meny" removed as per user request */
             
             [data-testid="stSidebarCollapseButton"]:hover {
                 transform: scale(1.05) !important;
@@ -1836,7 +1833,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.1")
+                st.sidebar.caption("v2.1.1")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1906,7 +1903,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.1")
+    st.sidebar.caption("v2.1.1")
 
 if __name__ == "__main__":
     main()
