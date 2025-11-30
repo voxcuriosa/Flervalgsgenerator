@@ -1,9 +1,10 @@
-# Personvernerklæring for HPT Flervalgsgenerator
+# Privacy Policy for Flervalgsgenerator
 
-**Sist oppdatert:** 27. november 2025
+**Last updated:** November 30, 2025
 
-## 1. Innledning
-Denne personvernerklæringen beskriver hvordan HPT Flervalgsgenerator ("vi", "oss" eller "appen") samler inn, bruker og deler informasjon om deg når du bruker vår applikasjon.
+**Flervalgsgenerator** ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how our application collects, uses, and shares your personal information when you use our service.
+
+This application is developed by **Christian Borchgrevink-Vigeland**.
 
 ## 2. Informasjon vi samler inn
 Når du logger inn med Google, samler vi inn følgende informasjon:

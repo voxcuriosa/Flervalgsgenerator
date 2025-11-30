@@ -1217,15 +1217,8 @@ def main():
                 top: 60px !important;
                 left: 10px !important;
             }
-            [data-testid="stSidebarCollapseButton"] button {
-                border: none !important;
-                border-radius: 50% !important;
-                width: 50px !important;
-                height: 50px !important;
-                background-color: rgba(66, 133, 244, 0.1) !important;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-            [data-testid="stSidebarCollapseButton"]::after {
+            /* Add "Meny" label to the native button */
+            [data-testid="stSidebarCollapseButton"] button::after {
                 content: "Meny";
                 font-size: 14px !important;
                 color: #4285F4 !important;
@@ -1515,7 +1508,11 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.11")
+    st.sidebar.caption("v1.9.12")
+    
+    # Privacy Policy Link (Required for Google Verification)
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("[📄 Personvernerklæring (Privacy Policy)](https://github.com/voxcuriosa/Flervalgsgenerator/blob/main/privacy_policy.md)")
     
     # Debug Info moved to top of main()
     
@@ -1553,9 +1550,18 @@ def main():
     if st.session_state.get("user_email"):
         # --- Force Sidebar Open on Mobile (Aggressive JS Hack) - ONLY AFTER LOGIN ---
         # Streamlit defaults to collapsed on mobile. We want it open, but only when the app is actually usable.
+        # We use a session state flag to try to ensure we don't annoy the user if they manually closed it.
+        # But since we can't read client-side state easily, we'll just force it once per session load.
+        
         components.html("""
             <script>
                 (function() {
+                    // Check if we already forced it open in this session (client-side storage)
+                    if (sessionStorage.getItem('sidebar_forced_open')) {
+                        console.log("Sidebar already forced open this session. Skipping.");
+                        return;
+                    }
+
                     var attempts = 0;
                     var maxAttempts = 20; // Try for 2 seconds
                     var interval = setInterval(function() {
@@ -1568,8 +1574,18 @@ def main():
                             if (sidebar.getAttribute('aria-expanded') === 'false') {
                                 button.click();
                                 console.log("Sidebar forced open by script (Post-Login)");
+                                sessionStorage.setItem('sidebar_forced_open', 'true'); // Mark as done
+                            } else if (sidebar.getAttribute('aria-expanded') === 'true') {
+                                // It's already open, mark as done
+                                sessionStorage.setItem('sidebar_forced_open', 'true');
+                                clearInterval(interval);
                             }
-                            clearInterval(interval);
+                            
+                            // If we clicked, we can stop polling? 
+                            // Maybe wait one more tick to be sure?
+                            if (sessionStorage.getItem('sidebar_forced_open')) {
+                                clearInterval(interval);
+                            }
                         }
                         
                         if (attempts >= maxAttempts) {
