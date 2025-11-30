@@ -1227,6 +1227,11 @@ def main():
                 
                 /* Ensure text color is visible against white background */
                 color: #4285F4 !important;
+                
+                /* Ensure container allows overflow for text */
+                overflow: visible !important;
+                display: flex !important;
+                align-items: center !important;
             }
             
             /* Hide the default icon (SVG) aggressively */
@@ -1237,8 +1242,8 @@ def main():
                 height: 0 !important;
             }
             
-            /* Default Text: "Åpne meny" */
-            [data-testid="stSidebarCollapseButton"] button::after {
+            /* Default Text: "Åpne meny" - APPLIED TO CONTAINER, NOT BUTTON */
+            [data-testid="stSidebarCollapseButton"]::after {
                 content: "Åpne meny";
                 display: block;
                 font-size: 16px;
@@ -1247,14 +1252,15 @@ def main():
                 white-space: nowrap;
                 visibility: visible !important;
                 opacity: 1 !important;
+                margin-left: 5px; /* Spacing if needed */
             }
             
             /* Dynamic Text: "Lukk meny" when sidebar is expanded */
-            body:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stSidebarCollapseButton"] button::after {
+            body:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stSidebarCollapseButton"]::after {
                 content: "Lukk meny";
             }
             
-            /* Ensure the button inside is also visible */
+            /* Ensure the button inside is also visible but transparent */
             [data-testid="stSidebarCollapseButton"] button {
                  visibility: visible !important;
                  opacity: 1 !important;
@@ -1263,9 +1269,15 @@ def main():
                  border: none !important;
             }
             
+            /* Hide the button's own pseudo-elements if any */
+            [data-testid="stSidebarCollapseButton"] button::after {
+                content: "" !important;
+            }
+            
             [data-testid="stSidebarCollapseButton"] button:hover {
                 background-color: transparent !important;
                 transform: scale(1.05) !important;
+
 
                 transition: transform 0.2s;
             }
@@ -1821,7 +1833,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.20")
+                st.sidebar.caption("v1.9.21")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1871,7 +1883,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.20")
+    st.sidebar.caption("v1.9.21")
 
 if __name__ == "__main__":
     main()
