@@ -1806,10 +1806,12 @@ def main():
                         {ms_btn}
                     </div>
                 ''')
-    # Version at the bottom
-    st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.14")
+
                 st.markdown(full_html, unsafe_allow_html=True)
+                
+                # Version at the bottom (Login Screen)
+                st.sidebar.markdown("---")
+                st.sidebar.caption("v1.9.14")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1856,6 +1858,10 @@ def main():
         render_quiz_generator(cookie_manager)
     elif app_mode == get_text("module_ndla"):
         render_ndla_viewer()
+
+    # Version at the bottom (Main App)
+    st.sidebar.markdown("---")
+    st.sidebar.caption("v1.9.14")
 
 if __name__ == "__main__":
     main()
