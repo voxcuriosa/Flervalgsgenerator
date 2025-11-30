@@ -1210,44 +1210,44 @@ def main():
                 width: auto !important;
                 height: auto !important;
                 padding: 5px !important;
-                z-index: 999999 !important;
-                opacity: 1 !important;
                 visibility: visible !important;
                 display: block !important;
                 z-index: 999999 !important;
-                /* Remove fixed position to avoid overlap, let it sit where Streamlit puts it */
-                /* position: fixed !important; */
-                /* top: 60px !important; */
-                /* left: 10px !important; */
+                background-color: transparent !important;
+                width: auto !important;
+                height: auto !important;
+                border: 1px solid #4285F4 !important;
+                border-radius: 5px !important;
+                padding: 5px 10px !important;
+                margin-top: 10px !important;
+                margin-left: 10px !important;
             }
-            /* Add "Meny" label to the native button */
+            
+            /* Hide the default icon */
+            [data-testid="stSidebarCollapseButton"] svg {
+                display: none !important;
+            }
+            
+            /* Add custom text label */
             [data-testid="stSidebarCollapseButton"] button::after {
-                content: "Meny";
+                content: "Åpne/Lukke meny";
                 display: block;
-                font-size: 10px;
-                color: inherit;
-                margin-top: -2px;
+                font-size: 14px;
+                color: #4285F4;
                 font-weight: bold;
+                white-space: nowrap;
             }
             
             /* Ensure the button inside is also visible */
             [data-testid="stSidebarCollapseButton"] button {
                  visibility: visible !important;
+                 width: auto !important;
             }
             
-            /* Mobile Fallback Button Styling */
-            .mobile-menu-btn-container {
-                display: none; /* Hidden by default on desktop */
-            }
-            @media (max-width: 768px) {
-                .mobile-menu-btn-container {
-                    display: block;
-                    margin-bottom: 20px;
-                }
-            }
             [data-testid="stSidebarCollapseButton"] button:hover {
-                background-color: rgba(66, 133, 244, 0.3) !important;
-                transform: scale(1.1);
+                background-color: rgba(66, 133, 244, 0.1) !important;
+                transform: none !important;
+
                 transition: transform 0.2s;
             }
         </style>
@@ -1600,16 +1600,7 @@ def main():
             </script>
         """, height=0, width=0)
         
-        # --- Mobile Fallback Button ---
-        # A visible button in the main area to open the menu if the auto-open fails
-        st.markdown(f"""
-            <div class="mobile-menu-btn-container">
-                <button onclick="window.parent.document.querySelector('[data-testid=stSidebarCollapseButton]').click()" 
-                        style="background-color: #4285F4; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; width: 100%;">
-                    ☰ Åpne Meny
-                </button>
-            </div>
-        """, unsafe_allow_html=True)
+
 
         # Clean URL if we have leftover auth params
         if "code" in st.query_params:
@@ -1811,7 +1802,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.16 (Rollback)")
+                st.sidebar.caption("v1.9.17")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1861,7 +1852,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.16 (Rollback)")
+    st.sidebar.caption("v1.9.17")
 
 if __name__ == "__main__":
     main()
