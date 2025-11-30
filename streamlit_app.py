@@ -1214,7 +1214,7 @@ def main():
                 opacity: 1 !important;
                 visibility: visible !important;
                 position: fixed !important;
-                top: 10px !important;
+                top: 60px !important;
                 left: 10px !important;
             }
             [data-testid="stSidebarCollapseButton"] button {
@@ -1239,6 +1239,30 @@ def main():
             }
         </style>
     """, unsafe_allow_html=True)
+
+    # --- Force Sidebar Open on Mobile (JS Hack) ---
+    # Streamlit defaults to collapsed on mobile. We want it open.
+    components.html("""
+        <script>
+            window.parent.document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
+                    const button = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
+                    if (sidebar && sidebar.getAttribute('aria-expanded') === 'false' && button) {
+                        button.click();
+                    }
+                }, 500); # Delay to ensure load
+            });
+            # Also try immediately in case DOM is ready
+            setTimeout(function() {
+                const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
+                const button = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
+                if (sidebar && sidebar.getAttribute('aria-expanded') === 'false' && button) {
+                    button.click();
+                }
+            }, 1000);
+        </script>
+    """, height=0, width=0)
 
     # --- Authentication Logic (Must run before widgets) ---
     if "google" not in st.secrets:
@@ -1513,7 +1537,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.6")
+    st.sidebar.caption("v1.9.7")
     
     # Debug Info moved to top of main()
     
