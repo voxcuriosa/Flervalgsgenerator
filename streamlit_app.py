@@ -1212,18 +1212,21 @@ def main():
                 padding: 5px !important;
                 visibility: visible !important;
                 display: block !important;
-                z-index: 999999 !important;
-                background-color: transparent !important; /* Transparent background */
+                z-index: 9999999 !important; /* Extremely high z-index */
+                background-color: transparent !important;
                 width: auto !important;
                 height: auto !important;
-                border: none !important; /* No border */
+                border: none !important;
                 padding: 5px !important;
                 
-                /* Restore fixed position to ensure it's ALWAYS visible */
+                /* FORCE FIXED POSITION ALWAYS */
                 position: fixed !important;
                 top: 60px !important;
                 left: 10px !important;
-                box-shadow: none !important; /* No shadow */
+                box-shadow: none !important;
+                
+                /* Ensure text color is visible against white background */
+                color: #4285F4 !important;
             }
             
             /* Hide the default icon (SVG) aggressively */
@@ -1238,11 +1241,12 @@ def main():
             [data-testid="stSidebarCollapseButton"] button::after {
                 content: "Åpne meny";
                 display: block;
-                font-size: 16px; /* Slightly larger */
+                font-size: 16px;
                 color: #4285F4 !important;
                 font-weight: bold;
                 white-space: nowrap;
                 visibility: visible !important;
+                opacity: 1 !important;
             }
             
             /* Dynamic Text: "Lukk meny" when sidebar is expanded */
@@ -1253,6 +1257,7 @@ def main():
             /* Ensure the button inside is also visible */
             [data-testid="stSidebarCollapseButton"] button {
                  visibility: visible !important;
+                 opacity: 1 !important;
                  width: auto !important;
                  background-color: transparent !important;
                  border: none !important;
@@ -1816,7 +1821,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.19")
+                st.sidebar.caption("v1.9.20")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1866,7 +1871,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.19")
+    st.sidebar.caption("v1.9.20")
 
 if __name__ == "__main__":
     main()
