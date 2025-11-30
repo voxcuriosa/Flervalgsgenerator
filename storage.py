@@ -126,6 +126,7 @@ def get_content_hierarchy():
     Fetches all learning materials and builds a nested dictionary hierarchy.
     Returns: dict {Subject: {Level1: {Level2: ... {_articles: [rows]} ... }}}
     """
+    # Force cache invalidation (v2.1.7 fix)
     engine = get_db_connection()
     if not engine:
         return {}
