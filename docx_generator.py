@@ -41,17 +41,31 @@ def generate_docx(quiz_data):
         document.add_heading(f"Spørsmål {i}", level=2)
         
         # Correct Answer
-        correct_answer = q['correct_answer']
-        # Find which option is correct to give the letter
-        correct_letter = "?"
-        for j, option in enumerate(q['options']):
-            if option == correct_answer:
-                correct_letter = chr(65 + j)
-                break
+        # Correct Answer(s)
+        correct_indices = q.get('correct_indices', [])
         
-        p = document.add_paragraph()
-        p.add_run("Riktig svar: ").bold = True
-        p.add_run(f"{correct_letter}. {correct_answer}")
+        # If for some reason it's empty, try to fallback or skip
+        if not correct_indices:
+            p = document.add_paragraph()
+            p.add_run("Riktig svar: ").bold = True
+            p.add_run("Ingen riktig svar funnet (Feil i generering)")
+        else:
+            correct_letters = []
+            correct_texts = []
+            
+            for idx in correct_indices:
+                if 0 <= idx < len(q['options']):
+                    letter = chr(65 + idx)
+                    correct_letters.append(letter)
+                    correct_texts.append(f"{letter}. {q['options'][idx]}")
+            
+            p = document.add_paragraph()
+            if len(correct_letters) > 1:
+                p.add_run("Riktige svar: ").bold = True
+            else:
+                p.add_run("Riktig svar: ").bold = True
+                
+            p.add_run(", ".join(correct_texts))
         
         # Explanation
         if 'explanation' in q and q['explanation']:

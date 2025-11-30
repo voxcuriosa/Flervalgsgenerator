@@ -1909,7 +1909,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.1.3")
+                st.sidebar.caption("v2.1.4")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1979,7 +1979,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.1.3")
+    st.sidebar.caption("v2.1.4")
 
 if __name__ == "__main__":
     main()
