@@ -1210,6 +1210,9 @@ def main():
                 width: auto !important;
                 height: auto !important;
                 padding: 5px !important;
+                z-index: 999999 !important;
+                opacity: 1 !important;
+                visibility: visible !important;
             }
             [data-testid="stSidebarCollapseButton"] button {
                 border: none !important;
@@ -1507,7 +1510,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.3")
+    st.sidebar.caption("v1.9.4")
     
     # Debug Info moved to top of main()
     
