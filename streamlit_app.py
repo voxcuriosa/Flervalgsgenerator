@@ -1240,28 +1240,82 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
-    # --- Force Sidebar Open on Mobile (Aggressive JS Hack) ---
-    # Streamlit defaults to collapsed on mobile. We want it open.
-    # We use polling because DOM elements might take time to appear.
+    # --- Custom Floating Menu Button (v1.9.9) ---
+    # Since native styling is unreliable on mobile, we inject our own button.
+    st.markdown("""
+        <div id="custom-menu-btn" onclick="toggleSidebar()">
+            <div style="font-size: 24px;">☰</div>
+            <div style="font-size: 12px; font-weight: bold;">Meny</div>
+        </div>
+        <style>
+            #custom-menu-btn {
+                position: fixed;
+                top: 60px;
+                left: 10px;
+                z-index: 999999;
+                background-color: rgba(66, 133, 244, 0.9);
+                color: white;
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+            #custom-menu-btn:hover {
+                transform: scale(1.1);
+                background-color: rgba(66, 133, 244, 1);
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # --- JS Logic for Toggle and Auto-Open ---
     components.html("""
         <script>
+            function toggleSidebar() {
+                const selectors = [
+                    '[data-testid="stSidebarCollapseButton"]',
+                    '[data-testid="collapsedControl"]',
+                    'button[kind="header"]' // Fallback for some mobile views
+                ];
+                
+                for (let selector of selectors) {
+                    const btn = window.parent.document.querySelector(selector);
+                    if (btn) {
+                        btn.click();
+                        return;
+                    }
+                }
+                console.log("Sidebar toggle button not found");
+            }
+
+            // Bind click event to our custom button (since it's in parent frame)
+            // We need to attach the function to the parent window so the custom button (in st.markdown) can call it?
+            // Actually, st.markdown HTML is in the main frame, but components.html is in an iframe.
+            // The custom button above is in st.markdown, so it is in the main DOM (mostly).
+            // Wait, st.markdown puts HTML in a div in the main app.
+            // The 'onclick="toggleSidebar()"' needs toggleSidebar to be defined in the main window scope.
+            
+            // Let's inject the script into the main window using the iframe hack.
+            window.parent.toggleSidebar = toggleSidebar;
+            
+            // Auto-open logic
             (function() {
                 var attempts = 0;
-                var maxAttempts = 20; // Try for 2 seconds (20 * 100ms)
+                var maxAttempts = 20; 
                 var interval = setInterval(function() {
                     attempts++;
                     const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
-                    const button = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
                     
-                    if (sidebar && button) {
-                        // Check if collapsed (aria-expanded is 'false')
+                    if (sidebar) {
                         if (sidebar.getAttribute('aria-expanded') === 'false') {
-                            button.click();
+                            toggleSidebar();
                             console.log("Sidebar forced open by script");
                         }
-                        // Stop polling once we found the elements and tried to click
-                        // We can clear interval here, OR keep checking for a bit to ensure it stays open?
-                        // Let's clear it to avoid fighting the user if they want to close it.
                         clearInterval(interval);
                     }
                     
@@ -1546,7 +1600,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.8")
+    st.sidebar.caption("v1.9.9")
     
     # Debug Info moved to top of main()
     
