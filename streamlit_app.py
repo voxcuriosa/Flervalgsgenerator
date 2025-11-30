@@ -1248,24 +1248,6 @@ def render_quiz_generator(cookie_manager):
             grant_permission(st.session_state.user_email, True)
 
         if can_download:
-            # PDF Download
-            pdf_bytes = generate_quiz_pdf(
-                st.session_state.get("selected_topic_name", "Quiz"), 
-                st.session_state.user_name, 
-                score, 
-                total_possible, 
-                percentage, 
-                questions, 
-                answers
-            )
-            
-            st.download_button(
-                label=get_text("download_pdf"),
-                data=pdf_bytes,
-                file_name=f"quiz_resultat.pdf",
-                mime="application/pdf"
-            )
-    
             # Word Download (MS Forms)
             docx_file = generate_docx(questions)
             st.download_button(
@@ -1927,7 +1909,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.1.2")
+                st.sidebar.caption("v2.1.3")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1997,7 +1979,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.1.2")
+    st.sidebar.caption("v2.1.3")
 
 if __name__ == "__main__":
     main()
