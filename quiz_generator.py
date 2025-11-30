@@ -27,6 +27,12 @@ def generate_quiz(text, num_questions, num_options, multiple_correct, language="
     elif language == "th":
         lang_str = "Thai"
         
+    # Construct instruction based on multiple_correct boolean
+    if multiple_correct:
+        multiple_instruction = "Allow up to 2 correct answers in 'correct_indices'."
+    else:
+        multiple_instruction = "Ensure there is EXACTLY ONE correct answer in 'correct_indices'."
+
     prompt = f"""
     Generate {num_questions} multiple choice questions based on the text provided below.
     The questions should be in {lang_str}.
@@ -38,7 +44,7 @@ def generate_quiz(text, num_questions, num_options, multiple_correct, language="
     - "correct_indices": A list of integers representing the indices of the correct options (0-indexed).
     - "justification": A short explanation for the correct answer(s).
 
-    If 'multiple_correct' is {multiple_correct}, allow up to 2 correct answers in "correct_indices". Otherwise, exactly one correct answer.
+    {multiple_instruction}
     
     Text:
     {text[:15000]} 
