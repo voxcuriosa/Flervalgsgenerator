@@ -1213,6 +1213,9 @@ def main():
                 z-index: 999999 !important;
                 opacity: 1 !important;
                 visibility: visible !important;
+                position: fixed !important;
+                top: 10px !important;
+                left: 10px !important;
             }
             [data-testid="stSidebarCollapseButton"] button {
                 border: none !important;
@@ -1510,7 +1513,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.4")
+    st.sidebar.caption("v1.9.5")
     
     # Debug Info moved to top of main()
     
