@@ -1232,17 +1232,15 @@ def main():
                 overflow: visible !important;
                 display: flex !important;
                 align-items: center !important;
+                justify-content: center !important;
             }
             
-            /* Hide the default icon (SVG) aggressively */
-            [data-testid="stSidebarCollapseButton"] svg {
+            /* Hide ALL children of the button container (SVG, IMG, etc.) aggressively */
+            [data-testid="stSidebarCollapseButton"] > * {
                 display: none !important;
-                opacity: 0 !important;
-                width: 0 !important;
-                height: 0 !important;
             }
             
-            /* Default Text: "Åpne meny" - APPLIED TO CONTAINER, NOT BUTTON */
+            /* Default Text: "Åpne meny" - APPLIED TO CONTAINER */
             [data-testid="stSidebarCollapseButton"]::after {
                 content: "Åpne meny";
                 display: block;
@@ -1252,7 +1250,7 @@ def main():
                 white-space: nowrap;
                 visibility: visible !important;
                 opacity: 1 !important;
-                margin-left: 5px; /* Spacing if needed */
+                margin-left: 0px; 
             }
             
             /* Dynamic Text: "Lukk meny" when sidebar is expanded */
@@ -1260,27 +1258,12 @@ def main():
                 content: "Lukk meny";
             }
             
-            /* Ensure the button inside is also visible but transparent */
-            [data-testid="stSidebarCollapseButton"] button {
-                 visibility: visible !important;
-                 opacity: 1 !important;
-                 width: auto !important;
-                 background-color: transparent !important;
-                 border: none !important;
-            }
-            
-            /* Hide the button's own pseudo-elements if any */
-            [data-testid="stSidebarCollapseButton"] button::after {
-                content: "" !important;
-            }
-            
-            [data-testid="stSidebarCollapseButton"] button:hover {
-                background-color: transparent !important;
+            [data-testid="stSidebarCollapseButton"]:hover {
                 transform: scale(1.05) !important;
-
-
                 transition: transform 0.2s;
+                cursor: pointer;
             }
+
         </style>
     """, unsafe_allow_html=True)
 
@@ -1833,7 +1816,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.21")
+                st.sidebar.caption("v1.9.22")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1883,7 +1866,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.21")
+    st.sidebar.caption("v1.9.22")
 
 if __name__ == "__main__":
     main()
