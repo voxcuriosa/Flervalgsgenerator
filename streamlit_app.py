@@ -1513,7 +1513,7 @@ def main():
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
 
-    st.sidebar.caption("v1.9.5")
+    st.sidebar.caption("v1.9.6")
     
     # Debug Info moved to top of main()
     
@@ -1760,15 +1760,21 @@ def main():
     st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
     
     st.markdown("""
-    **Her kan du generere flervalgsoppgaver fra læreboka 'Historie på tvers' eller fra NDLA.**
-    
-    Du kan også velge andre kilder og til og med filer (PDF/PPT/Word), velge antall spørsmål og svar, og velge antall riktige svar.
-    
-    Du kan også se gjennom NDLA-fagstoffet direkte i appen.
-    
-    **Velkommen!**
-    
-    PS: Feil kan du rapportere til borchgrevink@gmail.com
+    **Velkommen til Flervalgsgeneratoren!**
+
+    Dette verktøyet er utviklet for å gjøre det enkelt og effektivt å lage gode flervalgsoppgaver. Du kan hente fagstoff direkte fra læreboka *Historie på tvers* eller fra NDLA sine omfattende ressurser.
+
+    Du har også stor fleksibilitet til å bruke eget materiale:
+    *   Lim inn tekst fra nettsider
+    *   Last opp filer (PDF, PowerPoint, Word)
+
+    Du styrer selv vanskelighetsgraden ved å velge antall spørsmål, svaralternativer og hvor mange riktige svar som skal genereres.
+
+    I tillegg fungerer appen som en leser for NDLA-fagstoff, slik at du kan bla i og vurdere innholdet før du lager oppgaver.
+
+    _Lykke til med arbeidet!_
+
+    PS: Oppdager du feil eller har forslag? Ta kontakt på borchgrevink@gmail.com
     """)
     
     # --- Main Navigation ---
