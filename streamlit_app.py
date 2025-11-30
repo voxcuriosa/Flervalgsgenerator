@@ -1233,11 +1233,12 @@ def main():
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
+                gap: 8px !important; /* Space between icon and text */
             }
             
-            /* Hide ALL children of the button container (SVG, IMG, etc.) aggressively */
+            /* RESTORE children (SVG) visibility */
             [data-testid="stSidebarCollapseButton"] > * {
-                display: none !important;
+                display: flex !important; /* or block, depending on what it was */
             }
             
             /* Default Text: "Åpne meny" - APPLIED TO CONTAINER */
@@ -1250,7 +1251,6 @@ def main():
                 white-space: nowrap;
                 visibility: visible !important;
                 opacity: 1 !important;
-                margin-left: 0px; 
             }
             
             /* Dynamic Text: "Lukk meny" when sidebar is expanded */
@@ -1263,6 +1263,7 @@ def main():
                 transition: transform 0.2s;
                 cursor: pointer;
             }
+
 
         </style>
     """, unsafe_allow_html=True)
@@ -1816,7 +1817,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.22")
+                st.sidebar.caption("v1.9.23")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1866,7 +1867,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.22")
+    st.sidebar.caption("v1.9.23")
 
 if __name__ == "__main__":
     main()
