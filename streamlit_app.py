@@ -1213,14 +1213,18 @@ def main():
                 visibility: visible !important;
                 display: block !important;
                 z-index: 999999 !important;
-                background-color: transparent !important;
+                background-color: white !important; /* Ensure background is white so text is readable */
                 width: auto !important;
                 height: auto !important;
                 border: 1px solid #4285F4 !important;
                 border-radius: 5px !important;
                 padding: 5px 10px !important;
-                margin-top: 10px !important;
-                margin-left: 10px !important;
+                
+                /* Restore fixed position to ensure it's ALWAYS visible */
+                position: fixed !important;
+                top: 60px !important;
+                left: 10px !important;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
             }
             
             /* Hide the default icon */
@@ -1228,14 +1232,20 @@ def main():
                 display: none !important;
             }
             
-            /* Add custom text label */
+            /* Default Text: "Åpne meny" */
             [data-testid="stSidebarCollapseButton"] button::after {
-                content: "Åpne/Lukke meny";
+                content: "Åpne meny";
                 display: block;
                 font-size: 14px;
                 color: #4285F4;
                 font-weight: bold;
                 white-space: nowrap;
+            }
+            
+            /* Dynamic Text: "Lukk meny" when sidebar is expanded */
+            /* We use :has() to check if the sidebar (sibling/child) is expanded */
+            body:has([data-testid="stSidebar"][aria-expanded="true"]) [data-testid="stSidebarCollapseButton"] button::after {
+                content: "Lukk meny";
             }
             
             /* Ensure the button inside is also visible */
@@ -1245,7 +1255,7 @@ def main():
             }
             
             [data-testid="stSidebarCollapseButton"] button:hover {
-                background-color: rgba(66, 133, 244, 0.1) !important;
+                background-color: #f0f8ff !important; /* Light blue hover */
                 transform: none !important;
 
                 transition: transform 0.2s;
@@ -1802,7 +1812,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v1.9.17")
+                st.sidebar.caption("v1.9.18")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1852,7 +1862,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v1.9.17")
+    st.sidebar.caption("v1.9.18")
 
 if __name__ == "__main__":
     main()
