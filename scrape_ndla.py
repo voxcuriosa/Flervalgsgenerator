@@ -329,6 +329,8 @@ def get_subject_topics(subject_name):
         root_node_id = "urn:subject:1:fb6ad516-0108-4059-acc3-3c5f13f49368"
     elif subject_name == "Historie (PB)":
         root_node_id = "urn:subject:846a7552-ea6c-4174-89a4-85d6ba48c96e"
+    elif subject_name == "Samfunnskunnskap":
+        root_node_id = "urn:subject:1:470720f9-6b03-40cb-ab58-e3e130803578"
     
     if not root_node_id:
         return []

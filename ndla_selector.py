@@ -8,7 +8,7 @@ def render_ndla_selector(hierarchy):
     selected_articles = []
     
     # Get available subjects
-    subjects = list(hierarchy.keys())
+    subjects = sorted(list(hierarchy.keys()))
     
     if not subjects:
         st.warning("Ingen fag funnet i databasen.")

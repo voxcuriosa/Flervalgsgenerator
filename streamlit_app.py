@@ -820,7 +820,11 @@ def render_admin_panel():
     st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
     
     # Select Subject
-    update_subject = st.selectbox("Velg fag", ["Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi"], key="update_subject")
+    update_subject = st.selectbox(
+        "Velg fag å oppdatere:",
+        ["Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap"],
+        key="update_subject"
+    )
     
     # Fetch available topics for this subject
     # Fetch available topics for this subject
@@ -1909,7 +1913,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.1.6")
+                st.sidebar.caption("v2.1.7")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1979,7 +1983,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.1.6")
+    st.sidebar.caption("v2.1.7")
 
 if __name__ == "__main__":
     main()
