@@ -7,6 +7,7 @@ from storage import save_result, get_content_hierarchy
 from pdf_generator import generate_quiz_pdf
 from ndla_selector import render_ndla_selector
 from generate_html_viewer import generate_html
+from docx_generator import generate_docx
 import streamlit_oauth as oauth
 import asyncio
 import streamlit.components.v1 as components
@@ -1184,6 +1185,15 @@ def render_quiz_generator(cookie_manager):
             data=pdf_bytes,
             file_name=f"quiz_resultat.pdf",
             mime="application/pdf"
+        )
+
+        # Word Download (MS Forms)
+        docx_file = generate_docx(questions)
+        st.download_button(
+            label="Last ned for MS Forms (Word)",
+            data=docx_file,
+            file_name="quiz_ms_forms.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
         
         if st.button(get_text("new_quiz")):
