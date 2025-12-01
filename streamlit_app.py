@@ -113,6 +113,90 @@ _Lykke til med arbeidet!_
 
 PS: Oppdager du feil eller har forslag? Ta kontakt på borchgrevink@gmail.com"""
     },
+    "nn": {
+        "title": "Generator for fleirvalsoppgåver",
+        "language": "Språk",
+        "login_google": "Logg inn med Google",
+        "welcome": "Velkomen",
+        "logout": "Logg ut",
+        "navigation": "Navigasjon",
+        "home": "Heim",
+        "my_history": "Min Historikk",
+        "module_quiz": "Quiz-generator",
+        "module_ndla": "NDLA Fagstoff",
+        "settings": "Kjelde til quiz",
+        "source": "Vel kjelde:",
+        "source_pdf": "Historie på Tvers (Lærebok)",
+        "source_ndla": "NDLA (Nettressurs)",
+        "update_topics": "Oppdater emne",
+        "topics_found": "Fann {} emne.",
+        "select_topic": "Vel emne",
+        "ndla_info": "Vel emne og artiklar frå NDLA-databasen nedanfor.",
+        "ndla_expand": "Vel NDLA-innhald",
+        "selected_articles": "Valt {} artiklar.",
+        "no_articles": "Ingen artiklar valde.",
+        "num_questions": "Tal på spørsmål",
+        "num_options": "Tal på svaralternativ",
+        "multiple_correct": "Fleire rette svar (maks 2)",
+        "generate_btn": "Generer quiz",
+        "analyzing_pdf": "Analyserer PDF...",
+        "fetching_text": "Hentar tekst frå {}...",
+        "error_ndla_select": "Du må velje minst éin artikkel frå NDLA.",
+        "generating": "Genererer spørsmål med AI (OpenAI GPT-4o)...",
+        "error_gen": "Feil under generering: {}",
+        "quiz_header": "Quiz: {}",
+        "submit_btn": "Lever svar",
+        "results_header": "Resultat",
+        "question": "Spørsmål",
+        "your_answer_correct": "✅ (Ditt svar - Rett)",
+        "your_answer_wrong": "❌ (Ditt svar - Feil)",
+        "correct_answer": "⚠️ (Rett svar)",
+        "justification": "Grunngiving",
+        "score": "Din poengsum",
+        "result_cat": "Resultat: {}",
+        "download_pdf": "Last ned resultat (PDF)",
+        "new_quiz": "Ta ny quiz",
+        "admin_panel": "Vis admin-panel",
+        "admin_header": "Admin: Resultat (frå Database)",
+        "admin_tools": "**Verktøy:**\n- [Opne NDLA Database-visning](http://localhost:8000/ndla_content_viewer.html) (Krev lokal server)",
+        "select_user": "Vel brukar for detaljar",
+        "results_for": "Resultat for: {}",
+        "total_quizzes": "Totalt tal på quizar",
+        "total_questions": "Totalt tal på spørsmål",
+        "total_score": "Total poengsum",
+        "avg_score": "Gjennomsnittleg poengsum",
+        "results_per_topic": "Resultat per emne",
+        "history": "Historikk",
+        "download_csv": "Last ned alle resultat (CSV)",
+        "no_results": "Ingen resultat funne enno.",
+        "ndla_viewer_header": "NDLA Innhald",
+        "ndla_viewer_info": "Innhald henta frå lokal database basert på NDLA-scraping.",
+        "ndla_viewer_error": "Kunne ikkje laste innhaldsvisar: {}",
+        "reset_app": "Nullstill app (Debug)",
+        "url_input_label": "URL til nettside",
+        "fetch_and_gen_btn": "Hent innhald og generer quiz",
+        "paste_url_warning": "Du må lime inn ein URL først.",
+        "fetch_content_spinner": "Hentar innhald frå nettside...",
+        "no_text_found": "Fann ingen tekst på sida.",
+        "paste_urls_info": "Lim inn URL-ar til artiklar du vil generere spørsmål frå. Du kan leggje til fleire URL-ar ved å trykkje på Enter mellom kvar.",
+        "urls_input_label": "URL-ar (éin per linje):",
+        "fetch_urls_btn": "Hent innhald frå {} URL-ar",
+        "welcome_message": """**Velkomen til Fleirvalgsgeneratoren!**
+
+Dette verktøyet er utvikla for å gjere det enkelt og effektivt å lage gode fleirvalsoppgåver. Du kan hente fagstoff direkte frå læreboka *Historie på tvers* eller frå NDLA sine omfattande ressursar.
+
+Du har òg stor fleksibilitet til å bruke eige materiale:
+*   Lim inn tekst frå nettsider
+*   Last opp filer (PDF, PowerPoint, Word)
+
+Du styrer sjølv vanskelegheitsgraden ved å velje tal på spørsmål, svaralternativ og kor mange rette svar som skal genererast.
+
+I tillegg fungerer appen som ein lesar for NDLA-fagstoff, slik at du kan bla i og vurdere innhaldet før du lagar oppgåver.
+
+_Lukke til med arbeidet!_
+
+PS: Oppdagar du feil eller har forslag? Ta kontakt på borchgrevink@gmail.com"""
+    },
     "en": {
         "title": "Multiple Choice Generator",
         "language": "Language",
@@ -1925,7 +2009,8 @@ def main():
     
 
     lang_options = {
-        "no": "🇳🇴 Norsk", 
+        "no": "🇳🇴 Norsk (Bokmål)", 
+        "nn": "🇳🇴 Norsk (Nynorsk)",
         "en": "🇬🇧 English", 
         "ar": "🇸🇦 العربية", 
         "so": "🇸🇴 Soomaali", 
@@ -2045,7 +2130,8 @@ def main():
 
             
             lang_options = {
-                "no": "🇳🇴 Norsk", 
+                "no": "🇳🇴 Norsk (Bokmål)", 
+                "nn": "🇳🇴 Norsk (Nynorsk)",
                 "en": "🇬🇧 English", 
                 "ar": "🇸🇦 العربية", 
                 "so": "🇸🇴 Soomaali", 
@@ -2058,7 +2144,7 @@ def main():
                 "Language / Språk / لغة", 
                 options=list(lang_options.keys()), 
                 format_func=lambda x: lang_options[x],
-                index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "en" else (2 if st.session_state.language == "ar" else (3 if st.session_state.language == "so" else (4 if st.session_state.language == "ti" else (5 if st.session_state.language == "uk" else (6 if st.session_state.language == "th" else 7)))))),
+                index=0 if st.session_state.language == "no" else (1 if st.session_state.language == "nn" else (2 if st.session_state.language == "en" else (3 if st.session_state.language == "ar" else (4 if st.session_state.language == "so" else (5 if st.session_state.language == "ti" else (6 if st.session_state.language == "uk" else (7 if st.session_state.language == "th" else 8))))))),
                 key="lang_selector_login",
                 horizontal=True
             )
