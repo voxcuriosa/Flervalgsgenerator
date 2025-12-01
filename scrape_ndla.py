@@ -6,6 +6,7 @@ import argparse
 from bs4 import BeautifulSoup
 from sqlalchemy import text
 from storage import get_db_connection, init_db
+from generate_html_viewer import generate_html
 
 # --- Helper Functions ---
 
@@ -326,40 +327,29 @@ def get_subject_topics(subject_name):
     Returns: [{'name': 'Topic Name', 'id': 'urn:topic:...'}]
     """
     root_node_id = None
-    if subject_name == "Historie vg3":
-        root_node_id = "urn:subject:cc109c51-a083-413b-b497-7f80a0569a92"
-    elif subject_name == "Historie vg2":
-        root_node_id = "urn:subject:1:ff69c291-6374-4766-80c2-47d5840d8bbf"
-    elif subject_name == "Sosiologi og sosialantropologi":
-        root_node_id = "urn:subject:1:fb6ad516-0108-4059-acc3-3c5f13f49368"
-    elif subject_name == "Historie (PB)":
-        root_node_id = "urn:subject:846a7552-ea6c-4174-89a4-85d6ba48c96e"
-    elif subject_name == "Samfunnskunnskap":
-        root_node_id = "urn:subject:1:470720f9-6b03-40cb-ab58-e3e130803578"
-    elif subject_name == "Norsk (PB)":
-        root_node_id = "urn:subject:af91136f-7da8-4cf1-b0ba-0ea6acdf1489"
-    elif subject_name == "Geografi":
-        root_node_id = "urn:subject:f041dc02-55f3-4f01-a9c9-962bef5a1eff"
-    elif subject_name == "Matematikk 1P":
-        root_node_id = "urn:subject:1:a3c1b65a-c41f-4879-b650-32a13fe1801b"
-    elif subject_name == "Matematikk 1T":
-        root_node_id = "urn:subject:1:8bfd0a97-d456-448d-8b5f-3bc49e445b37"
-    elif subject_name == "Norsk (SF vg1)":
-        root_node_id = "urn:subject:1:605d33e0-1695-4540-9255-fc5e612e996f"
-    elif subject_name == "Norsk kort botid (SF vg1)":
-        root_node_id = "urn:subject:c02a4ac1-3121-4985-b7b2-cf158502a960"
-    elif subject_name == "Tysk 1":
-        root_node_id = "urn:subject:1:1a05c6c7-121e-49e2-933c-580da74afe1a"
-    elif subject_name == "Tysk 2":
-        root_node_id = "urn:subject:1:ec288dfb-4768-4f82-8387-fe2d73fff1e1"
-    elif subject_name == "Bransje og arbeidsliv (RM-RMF vg1)":
-        root_node_id = "urn:subject:1:cd3a3bb8-eed2-4d02-8c21-b3dca5a2a11b"
-    elif subject_name == "Råvare, produksjon og kvalitet (RM-RMF vg1)":
-        root_node_id = "urn:subject:1:fdefda2a-7d3a-4749-92cf-24ad466a20db"
-    elif subject_name == "Bransje og arbeidsliv (RM-KOS vg2)":
-        root_node_id = "urn:subject:1:09410bfa-5b0d-470b-8727-5006e711bc1f"
-    elif subject_name == "Råvare, produksjon, salg og service (RM-KOS vg2)":
-        root_node_id = "urn:subject:1:9e515764-0ce6-49d5-8ecd-1cde8b08a33f"
+# Subject ID Mapping
+SUBJECTS = {
+    "Historie vg3": "urn:subject:cc109c51-a083-413b-b497-7f80a0569a92",
+    "Historie vg2": "urn:subject:1:ff69c291-6374-4766-80c2-47d5840d8bbf",
+    "Sosiologi og sosialantropologi": "urn:subject:1:fb6ad516-0108-4059-acc3-3c5f13f49368",
+    "Historie (PB)": "urn:subject:846a7552-ea6c-4174-89a4-85d6ba48c96e",
+    "Samfunnskunnskap": "urn:subject:1:470720f9-6b03-40cb-ab58-e3e130803578",
+    "Norsk (PB)": "urn:subject:af91136f-7da8-4cf1-b0ba-0ea6acdf1489",
+    "Geografi": "urn:subject:f041dc02-55f3-4f01-a9c9-962bef5a1eff",
+    "Matematikk 1P": "urn:subject:1:a3c1b65a-c41f-4879-b650-32a13fe1801b",
+    "Matematikk 1T": "urn:subject:1:8bfd0a97-d456-448d-8b5f-3bc49e445b37",
+    "Norsk (SF vg1)": "urn:subject:1:605d33e0-1695-4540-9255-fc5e612e996f",
+    "Norsk kort botid (SF vg1)": "urn:subject:c02a4ac1-3121-4985-b7b2-cf158502a960",
+    "Tysk 1": "urn:subject:1:1a05c6c7-121e-49e2-933c-580da74afe1a",
+    "Tysk 2": "urn:subject:1:ec288dfb-4768-4f82-8387-fe2d73fff1e1",
+    "Bransje og arbeidsliv (RM-RMF vg1)": "urn:subject:1:cd3a3bb8-eed2-4d02-8c21-b3dca5a2a11b",
+    "Råvare, produksjon og kvalitet (RM-RMF vg1)": "urn:subject:1:fdefda2a-7d3a-4749-92cf-24ad466a20db",
+    "Bransje og arbeidsliv (RM-KOS vg2)": "urn:subject:1:09410bfa-5b0d-470b-8727-5006e711bc1f",
+    "Råvare, produksjon, salg og service (RM-KOS vg2)": "urn:subject:1:9e515764-0ce6-49d5-8ecd-1cde8b08a33f"
+}
+
+def get_subject_topics(subject_name):
+    root_node_id = SUBJECTS.get(subject_name)
     
     if not root_node_id:
         return []
@@ -418,3 +408,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     scrape_subject(args.subject, args.url)
+    
+    # Automatically update HTML viewer
+    print("\nUpdating HTML viewer...")
+    generate_html()
+    print("HTML viewer updated.")

@@ -1149,20 +1149,15 @@ def render_admin_panel():
     
     st.write("Her kan du hente siste versjon av innholdet fra NDLA. Velg fag og emner du vil oppdatere.")
     
+    # Fetch available topics for this subject
+    from scrape_ndla import get_subject_topics, update_topic, SUBJECTS
+    
     # Select Subject
     update_subject = st.selectbox(
         "Velg fag å oppdatere:",
-        [
-            "Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap",
-            "Norsk (PB)", "Geografi", "Matematikk 1P", "Matematikk 1T", 
-            "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", "Tysk 1", "Tysk 2"
-        ],
+        list(SUBJECTS.keys()),
         key="update_subject"
     )
-    
-    # Fetch available topics for this subject
-    # Fetch available topics for this subject
-    from scrape_ndla import get_subject_topics, update_topic
     
     @st.cache_data(ttl=3600)
     def get_cached_subject_topics(subject):
