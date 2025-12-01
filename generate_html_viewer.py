@@ -406,7 +406,11 @@ def generate_html():
 
     # Generate Sidebar Loop
     # Custom Sort Order
-    subject_order = ["Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap"]
+    subject_order = [
+        "Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap",
+        "Norsk (PB)", "Geografi", "Matematikk 1P", "Matematikk 1T", 
+        "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", "Tysk 1", "Tysk 2"
+    ]
     
     def get_sort_key(subject_name):
         if subject_name in subject_order:
@@ -428,7 +432,11 @@ def generate_html():
     
     # Generate Content
     # Custom Sort Order
-    subject_order = ["Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap"]
+    subject_order = [
+        "Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap",
+        "Norsk (PB)", "Geografi", "Matematikk 1P", "Matematikk 1T", 
+        "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", "Tysk 1", "Tysk 2"
+    ]
     
     def get_sort_key(subject_name):
         if subject_name in subject_order:

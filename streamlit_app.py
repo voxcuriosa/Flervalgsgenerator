@@ -822,7 +822,11 @@ def render_admin_panel():
     # Select Subject
     update_subject = st.selectbox(
         "Velg fag å oppdatere:",
-        ["Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap"],
+        [
+            "Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap",
+            "Norsk (PB)", "Geografi", "Matematikk 1P", "Matematikk 1T", 
+            "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", "Tysk 1", "Tysk 2"
+        ],
         key="update_subject"
     )
     
@@ -970,7 +974,56 @@ def render_quiz_generator(cookie_manager):
                         st.sidebar.error(f"Feil: {e}")
     
                         st.sidebar.error(f"Feil: {e}")
-    
+        st.sidebar.info("Lim inn URL-er til artikler du vil generere spørsmål fra. Du kan legge til flere URL-er ved å trykke på Enter mellom hver.")
+        
+        # Use text_area for multiple URLs
+        urls_input = st.sidebar.text_area("URL-er (én per linje):", height=150, placeholder="https://example.com/artikkel1\nhttps://example.com/artikkel2", key="urls_input")
+        
+        if urls_input:
+            urls = [url.strip() for url in urls_input.split('\n') if url.strip()]
+            
+            if urls:
+                if st.sidebar.button(f"Hent innhold fra {len(urls)} URL-er", key="fetch_urls_btn"):
+                    with st.spinner("Henter innhold..."):
+                        combined_text = ""
+                        valid_urls = 0
+                        
+                        for url in urls:
+                            try:
+                                import requests
+                                from bs4 import BeautifulSoup
+                                
+                                response = requests.get(url)
+                                if response.status_code == 200:
+                                    soup = BeautifulSoup(response.text, 'html.parser')
+                                    # Try to find main content
+                                    # This is a heuristic
+                                    content_div = soup.find('article') or soup.find('main') or soup.body
+                                    if content_div:
+                                        text = content_div.get_text(separator='\n', strip=True)
+                                        combined_text += f"\n\n--- Kilde: {url} ---\n\n{text}"
+                                        valid_urls += 1
+                            except Exception as e:
+                                st.sidebar.error(f"Kunne ikke hente {url}: {e}")
+                        
+                        if valid_urls > 0:
+                            st.session_state['quiz_source_text'] = combined_text
+                            st.session_state['quiz_source_name'] = f"Nettsider ({valid_urls} kilder)"
+                            st.sidebar.success(f"Hentet innhold fra {valid_urls} URL-er!")
+                        else:
+                            st.sidebar.error("Fant ikke noe innhold på URL-ene.")
+            else:
+                st.sidebar.warning("Vennligst lim inn minst én URL.")
+        
+        # If content has been fetched, allow generation
+        if 'quiz_source_text' in st.session_state and st.session_state['quiz_source_text']:
+            if st.sidebar.button("Generer quiz fra hentet innhold", type="primary", key="generate_from_urls_btn"):
+                final_text = st.session_state['quiz_source_text']
+                final_topic_name = st.session_state.get('quiz_source_name', "Nettsider")
+                trigger_generation = True
+        else:
+            st.sidebar.info("Lim inn URL-er og trykk 'Hent innhold' for å fortsette.")
+
     elif source_type == "Filopplasting (PDF/Word/PPT)":
         st.sidebar.info("Last opp en fil (PDF, DOCX, PPTX) for å lage quiz.")
         uploaded_file = st.sidebar.file_uploader("Velg fil", type=["pdf", "docx", "pptx"])
@@ -1913,7 +1966,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.1.7")
+                st.sidebar.caption("v2.2.0")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -1983,7 +2036,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.1.7")
+    st.sidebar.caption("v2.2.0")
 
 if __name__ == "__main__":
     main()

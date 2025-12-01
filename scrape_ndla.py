@@ -137,8 +137,13 @@ def process_node(node, path_stack, engine, subject_name):
     node_id = node.get('id')
     
     # Filter out "Om faget" - ENABLED AGAIN per user request
-    if node_name == "Om faget":
-        print("Skipping 'Om faget'")
+    # Filter out "Om faget" - ONLY for specific subjects per user request
+    # Drop for: Geografi, Matematikk 1P, Matematikk 1T
+    # Keep for: Norsk (PB), Norsk (SF vg1), Norsk kort botid (SF vg1), Tysk 1, Tysk 2
+    subjects_to_skip_om_faget = ["Geografi", "Matematikk 1P", "Matematikk 1T"]
+    
+    if node_name == "Om faget" and subject_name in subjects_to_skip_om_faget:
+        print(f"Skipping 'Om faget' for {subject_name}")
         return
 
     current_path = path_stack + [node_name]
@@ -331,6 +336,22 @@ def get_subject_topics(subject_name):
         root_node_id = "urn:subject:846a7552-ea6c-4174-89a4-85d6ba48c96e"
     elif subject_name == "Samfunnskunnskap":
         root_node_id = "urn:subject:1:470720f9-6b03-40cb-ab58-e3e130803578"
+    elif subject_name == "Norsk (PB)":
+        root_node_id = "urn:subject:af91136f-7da8-4cf1-b0ba-0ea6acdf1489"
+    elif subject_name == "Geografi":
+        root_node_id = "urn:subject:f041dc02-55f3-4f01-a9c9-962bef5a1eff"
+    elif subject_name == "Matematikk 1P":
+        root_node_id = "urn:subject:1:a3c1b65a-c41f-4879-b650-32a13fe1801b"
+    elif subject_name == "Matematikk 1T":
+        root_node_id = "urn:subject:1:8bfd0a97-d456-448d-8b5f-3bc49e445b37"
+    elif subject_name == "Norsk (SF vg1)":
+        root_node_id = "urn:subject:1:605d33e0-1695-4540-9255-fc5e612e996f"
+    elif subject_name == "Norsk kort botid (SF vg1)":
+        root_node_id = "urn:subject:c02a4ac1-3121-4985-b7b2-cf158502a960"
+    elif subject_name == "Tysk 1":
+        root_node_id = "urn:subject:1:1a05c6c7-121e-49e2-933c-580da74afe1a"
+    elif subject_name == "Tysk 2":
+        root_node_id = "urn:subject:1:ec288dfb-4768-4f82-8387-fe2d73fff1e1"
     
     if not root_node_id:
         return []
