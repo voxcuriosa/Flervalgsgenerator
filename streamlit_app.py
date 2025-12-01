@@ -1387,23 +1387,7 @@ def main():
             }
             
             /* Default Text: "Åpne meny" - APPLIED TO CONTAINER */
-            [data-testid="stSidebarCollapseButton"]::after {
-                content: "Åpne meny";
-                display: block;
-                font-size: 16px;
-                color: #4285F4 !important;
-                font-weight: bold;
-                white-space: nowrap;
-                visibility: visible !important;
-                opacity: 1 !important;
-            }
-
-            /* Explicit Text: "Åpne meny" when sidebar is collapsed (Fix for missing text) */
-            body:has([data-testid="stSidebar"][aria-expanded="false"]) [data-testid="stSidebarCollapseButton"]::after {
-                content: "Åpne meny" !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-            }
+            /* Text removed as per user request */
             
             /* Dynamic Text: "Lukk meny" removed as per user request */
             
