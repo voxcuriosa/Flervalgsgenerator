@@ -87,7 +87,16 @@ TRANSLATIONS = {
         "ndla_viewer_header": "NDLA Fagstoff",
         "ndla_viewer_info": "Innholdet hentes fra lokal database basert på NDLA-skraping.",
         "ndla_viewer_error": "Kunne ikke laste innholdsvisning: {}",
-        "reset_app": "Nullstill app (Debug)"
+        "ndla_viewer_error": "Kunne ikke laste innholdsvisning: {}",
+        "reset_app": "Nullstill app (Debug)",
+        "url_input_label": "URL til nettside",
+        "fetch_and_gen_btn": "Hent innhold og generer quiz",
+        "paste_url_warning": "Du må lime inn en URL først.",
+        "fetch_content_spinner": "Henter innhold fra nettside...",
+        "no_text_found": "Fant ingen tekst på siden.",
+        "paste_urls_info": "Lim inn URL-er til artikler du vil generere spørsmål fra. Du kan legge til flere URL-er ved å trykke på Enter mellom hver.",
+        "urls_input_label": "URL-er (én per linje):",
+        "fetch_urls_btn": "Hent innhold fra {} URL-er"
     },
     "en": {
         "title": "Multiple Choice Generator",
@@ -148,7 +157,15 @@ TRANSLATIONS = {
         "ndla_viewer_header": "NDLA Content",
         "ndla_viewer_info": "Content fetched from local database based on NDLA scraping.",
         "ndla_viewer_error": "Could not load content viewer: {}",
-        "reset_app": "Reset App (Debug)"
+        "reset_app": "Reset App (Debug)",
+        "url_input_label": "URL to website",
+        "fetch_and_gen_btn": "Fetch content and generate quiz",
+        "paste_url_warning": "You must paste a URL first.",
+        "fetch_content_spinner": "Fetching content from website...",
+        "no_text_found": "No text found on page.",
+        "paste_urls_info": "Paste URLs to articles you want to generate questions from. You can add multiple URLs by pressing Enter between each.",
+        "urls_input_label": "URLs (one per line):",
+        "fetch_urls_btn": "Fetch content from {} URLs"
     },
     "ar": {
         "title": "مولد الأسئلة متعددة الخيارات",
@@ -208,7 +225,15 @@ TRANSLATIONS = {
         "ndla_viewer_header": "محتوى NDLA",
         "ndla_viewer_info": "تم جلب المحتوى من قاعدة البيانات المحلية بناءً على استخراج NDLA.",
         "ndla_viewer_error": "تعذر تحميل عارض المحتوى: {}",
-        "reset_app": "إعادة تعيين التطبيق (تصحيح)"
+        "reset_app": "إعادة تعيين التطبيق (تصحيح)",
+        "url_input_label": "URL للموقع",
+        "fetch_and_gen_btn": "جلب المحتوى وإنشاء اختبار",
+        "paste_url_warning": "يجب عليك لصق عنوان URL أولاً.",
+        "fetch_content_spinner": "جاري جلب المحتوى من الموقع...",
+        "no_text_found": "لم يتم العثور على نص في الصفحة.",
+        "paste_urls_info": "الصق عناوين URL للمقالات التي تريد إنشاء أسئلة منها. يمكنك إضافة عناوين URL متعددة بالضغط على Enter بين كل منها.",
+        "urls_input_label": "عناوين URL (واحد في كل سطر):",
+        "fetch_urls_btn": "جلب المحتوى من {} عناوين URL"
     },
     "so": {
         "title": "Soo Saaraha Su'aalaha Kala Doorashada",
@@ -268,7 +293,15 @@ TRANSLATIONS = {
         "ndla_viewer_header": "Nuxurka NDLA",
         "ndla_viewer_info": "Nuxurka waxaa laga keenay database-ka maxalliga ah iyadoo lagu saleynayo soo saarista NDLA.",
         "ndla_viewer_error": "Lama soo shubi karo muuqaalka nuxurka: {}",
-        "reset_app": "Dib u deji App-ka (Debug)"
+        "reset_app": "Dib u deji App-ka (Debug)",
+        "url_input_label": "URL-ka websaydhka",
+        "fetch_and_gen_btn": "Keen nuxurka oo samee imtixaan",
+        "paste_url_warning": "Waa inaad marka hore dhejisaa URL.",
+        "fetch_content_spinner": "Ka keenaya nuxurka websaydhka...",
+        "no_text_found": "Qoraal lagama helin bogga.",
+        "paste_urls_info": "Dheji URL-yada maqaallada aad rabto inaad su'aalo ka sameyso. Waxaad ku dari kartaa URL-yo badan adigoo riixaya Enter inta u dhaxaysa.",
+        "urls_input_label": "URL-yada (midkiiba hal sadar):",
+        "fetch_urls_btn": "Ka keen nuxurka {} URL-yo"
     },
     "ti": {
         "title": "ናይ ብዙሕ ምርጫ ሕቶታት መመንጨዊ",
@@ -328,7 +361,15 @@ TRANSLATIONS = {
         "ndla_viewer_header": "ትሕዝቶ NDLA",
         "ndla_viewer_info": "Innholdet hentes fra lokal database basert på NDLA-skraping.",
         "ndla_viewer_error": "Kunne ikke laste innholdsvisning: {}",
-        "reset_app": "Nullstill app (Debug)"
+        "reset_app": "Nullstill app (Debug)",
+        "url_input_label": "URL ናብ መርበብ ሓበሬታ",
+        "fetch_and_gen_btn": "ትሕዝቶ ኣምጽእ እሞ ፈተና ፍጠር",
+        "paste_url_warning": "ቅድም URL ክትለጥፍ ኣለካ።",
+        "fetch_content_spinner": "ትሕዝቶ ካብ መርበብ ሓበሬታ የውጽእ ኣሎ...",
+        "no_text_found": "ኣብቲ ገጽ ዝኾነ ጽሑፍ ኣይተረኽበን።",
+        "paste_urls_info": "URL ናይቶም ሕቶታት ክትፈጥረሎም እትደሊ ዓንቀጻት ለጥፍ። ኣብ መንጎ ነፍሲ ወከፍ Enter ብምርጋጽ ብዙሓት URL ክትውስኽ ትኽእል ኢኻ።",
+        "urls_input_label": "URLs (ሓደ ኣብ ነፍሲ ወከፍ መስመር):",
+        "fetch_urls_btn": "ትሕዝቶ ካብ {} URLs ኣምጽእ"
     },
     "th": {
         "title": "เครื่องมือสร้างข้อสอบปรนัย",
@@ -387,7 +428,15 @@ TRANSLATIONS = {
         "ndla_viewer_header": "เนื้อหา NDLA",
         "ndla_viewer_info": "ดึงเนื้อหาจากฐานข้อมูลภายในเครื่องตามการขูดข้อมูล NDLA",
         "ndla_viewer_error": "ไม่สามารถโหลดมุมมองเนื้อหา: {}",
-        "reset_app": "รีเซ็ตแอป (แก้ไขจุดบกพร่อง)"
+        "reset_app": "รีเซ็ตแอป (แก้ไขจุดบกพร่อง)",
+        "url_input_label": "URL ไปยังเว็บไซต์",
+        "fetch_and_gen_btn": "ดึงเนื้อหาและสร้างแบบทดสอบ",
+        "paste_url_warning": "คุณต้องวาง URL ก่อน",
+        "fetch_content_spinner": "กำลังดึงเนื้อหาจากเว็บไซต์...",
+        "no_text_found": "ไม่พบข้อความในหน้า",
+        "paste_urls_info": "วาง URL ของบทความที่คุณต้องการสร้างคำถาม คุณสามารถเพิ่มหลาย URL ได้โดยกด Enter ระหว่างแต่ละ URL",
+        "urls_input_label": "URL (หนึ่งรายการต่อบรรทัด):",
+        "fetch_urls_btn": "ดึงเนื้อหาจาก {} URL"
     },
     "uk": {
         "title": "Генератор тестів з варіантами відповідей",
@@ -445,7 +494,15 @@ TRANSLATIONS = {
         "ndla_viewer_header": "Контент NDLA",
         "ndla_viewer_info": "Контент отримано з локальної бази даних на основі скрапінгу NDLA.",
         "ndla_viewer_error": "Не вдалося завантажити переглядач контенту: {}",
-        "reset_app": "Скинути додаток (Debug)"
+        "reset_app": "Скинути додаток (Debug)",
+        "url_input_label": "URL веб-сайту",
+        "fetch_and_gen_btn": "Отримати контент та згенерувати тест",
+        "paste_url_warning": "Спочатку потрібно вставити URL.",
+        "fetch_content_spinner": "Отримання контенту з веб-сайту...",
+        "no_text_found": "Текст на сторінці не знайдено.",
+        "paste_urls_info": "Вставте URL-адреси статей, з яких ви хочете згенерувати питання. Ви можете додати кілька URL-адрес, натискаючи Enter між ними.",
+        "urls_input_label": "URL-адреси (одна на рядок):",
+        "fetch_urls_btn": "Отримати контент з {} URL-адрес"
     },
     "tig": {
         "title": "መውለዲ ብዙሕ ምርጫ",
@@ -506,7 +563,15 @@ TRANSLATIONS = {
         "ndla_viewer_header": "ትሕዝቶ NDLA",
         "ndla_viewer_info": "ትሕዝቶ ካብ ናይ ከባቢ ቋት ሓበሬታ ተወሲዱ (NDLA scraping)።",
         "ndla_viewer_error": "መራእይ ትሕዝቶ ክጽዕን ኣይተኻእለን: {}",
-        "reset_app": "ኣፕሊኬሽን ዳግማይ ጀምር (Debug)"
+        "reset_app": "ኣፕሊኬሽን ዳግማይ ጀምር (Debug)",
+        "url_input_label": "URL ናብ መርበብ ሓበሬታ",
+        "fetch_and_gen_btn": "ትሕዝቶ ኣምጽእ እሞ ፈተና ፍጠር",
+        "paste_url_warning": "ቅድም URL ክትለጥፍ ኣለካ።",
+        "fetch_content_spinner": "ትሕዝቶ ካብ መርበብ ሓበሬታ የውጽእ ኣሎ...",
+        "no_text_found": "ኣብቲ ገጽ ዝኾነ ጽሑፍ ኣይተረኽበን።",
+        "paste_urls_info": "URL ናይቶም ሕቶታት ክትፈጥረሎም እትደሊ ዓንቀጻት ለጥፍ። ኣብ መንጎ ነፍሲ ወከፍ Enter ብምርጋጽ ብዙሓት URL ክትውስኽ ትኽእል ኢኻ።",
+        "urls_input_label": "URLs (ሓደ ኣብ ነፍሲ ወከፍ መስመር):",
+        "fetch_urls_btn": "ትሕዝቶ ካብ {} URLs ኣምጽእ"
     },
 }
 
@@ -1007,15 +1072,15 @@ def render_quiz_generator(cookie_manager):
     final_topic_name = ""
     
     if source_type == "Nettside (URL)":
-        st.sidebar.info("Lim inn en lenke til en nettside du vil lage quiz fra.")
-        url_input = st.sidebar.text_input("URL til nettside", key="url_input")
+        st.sidebar.info(get_text("paste_urls_info"))
+        url_input = st.sidebar.text_input(get_text("url_input_label"), key="url_input")
         
         # Combined button - always visible
-        if st.sidebar.button("Hent innhold og generer quiz", type="primary"):
+        if st.sidebar.button(get_text("fetch_and_gen_btn"), type="primary"):
             if not url_input:
-                st.sidebar.warning("Du må lime inn en URL først.")
+                st.sidebar.warning(get_text("paste_url_warning"))
             else:
-                with st.spinner("Henter innhold fra nettside..."):
+                with st.spinner(get_text("fetch_content_spinner")):
                     try:
                         from scrape_url import scrape_url
                         text = scrape_url(url_input)
@@ -1030,21 +1095,21 @@ def render_quiz_generator(cookie_manager):
                             final_topic_name = "Nettside: " + url_input
                             
                         else:
-                            st.sidebar.warning("Fant ingen tekst på siden.")
+                            st.sidebar.warning(get_text("no_text_found"))
                     except Exception as e:
                         st.sidebar.error(f"Feil: {e}")
     
                         st.sidebar.error(f"Feil: {e}")
-        st.sidebar.info("Lim inn URL-er til artikler du vil generere spørsmål fra. Du kan legge til flere URL-er ved å trykke på Enter mellom hver.")
+        st.sidebar.info(get_text("paste_urls_info"))
         
         # Use text_area for multiple URLs
-        urls_input = st.sidebar.text_area("URL-er (én per linje):", height=150, placeholder="https://example.com/artikkel1\nhttps://example.com/artikkel2", key="urls_input")
+        urls_input = st.sidebar.text_area(get_text("urls_input_label"), height=150, placeholder="https://example.com/artikkel1\nhttps://example.com/artikkel2", key="urls_input")
         
         if urls_input:
             urls = [url.strip() for url in urls_input.split('\n') if url.strip()]
             
             if urls:
-                if st.sidebar.button(f"Hent innhold fra {len(urls)} URL-er", key="fetch_urls_btn"):
+                if st.sidebar.button(get_text("fetch_urls_btn").format(len(urls)), key="fetch_urls_btn"):
                     with st.spinner("Henter innhold..."):
                         combined_text = ""
                         valid_urls = 0
@@ -1724,15 +1789,7 @@ def main():
 
             
     # --- Language Selector (Top of Sidebar) ---
-    lang_options = {
-        "no": "🇳🇴 Norsk", 
-        "en": "🇬🇧 English", 
-        "ar": "🇸🇦 العربية", 
-        "so": "🇸🇴 Soomaali", 
-        "ti": "🇪🇷 ትግርኛ", 
-        "uk": "🇺🇦 Українська",
-        "th": "🇹🇭 ไทย"
-    }
+    # lang_options moved below
     
     def update_lang():
         st.session_state.language = st.session_state.lang_selector
@@ -1746,6 +1803,17 @@ def main():
     
     # Debug Info moved to top of main()
     
+
+    lang_options = {
+        "no": "🇳🇴 Norsk", 
+        "en": "🇬🇧 English", 
+        "ar": "🇸🇦 العربية", 
+        "so": "🇸🇴 Soomaali", 
+        "ti": "🇪🇷 ትግርኛ", 
+        "uk": "🇺🇦 Українська",
+        "th": "🇹🇭 ไทย",
+        "tig": "🇪🇷 ትግረ"
+    }
 
     lang_keys = list(lang_options.keys())
     try:
