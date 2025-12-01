@@ -668,23 +668,21 @@ PS: Виявили помилки або маєте пропозиції? Зв'�
         "ndla_viewer_header": "ትሕዝቶ NDLA",
         "ndla_viewer_info": "ትሕዝቶ ካብ ናይ ከባቢ ቋት ሓበሬታ ተወሲዱ (NDLA scraping)።",
         "ndla_viewer_error": "መራእይ ትሕዝቶ ክጽዕን ኣይተኻእለን: {}",
-        "welcome_message": """**Merhaba! (Welcome to the Multiple Choice Generator!)**
+        "welcome_message": """**Merhaba! (Nab Mewledi Bizuh Mircha Enkwae Bdehan Metsakum!)**
 
-*Note: Tigre translation is currently limited. Showing English text.*
+Elli mesarhi tsubuq nay bizuh mircha hitotat biqelilu nimdilaw zitedalewe tu. Nay timhirti tsihuf kel *Historie på tvers* wey kel NDLA ketamtsu tikdu.
 
-This tool is designed to make it easy and efficient to create good multiple-choice questions. You can fetch subject material directly from the textbook *Historie på tvers* or from NDLA's extensive resources.
+Nay geza risikum tsihuf nimtiqam gabi teatsatsafnet alekum:
+*   Tsihuf kel merbeb habereta letifu
+*   Files tsaanu (PDF, PowerPoint, Word)
 
-You also have great flexibility to use your own material:
-*   Paste text from websites
-*   Upload files (PDF, PowerPoint, Word)
+Bizhi hitotat, mircha melsi, wa kindey qinu melsi kem zifeter bimimrats dereja tsegem baalkum tiwesnu.
 
-You control the difficulty level yourself by choosing the number of questions, answer options, and how many correct answers to generate.
+Bite we saki, elli app kem menbebi nay NDLA timhirti tsihuf koynu yegelgil, slezi hitotat qidmi mimdilawkum neti tihizto kitriwo tikdu.
 
-In addition, the app functions as a reader for NDLA subject material, allowing you to browse and evaluate the content before creating questions.
+_Tsubuq idil ab sirahkum!_
 
-_Good luck with your work!_
-
-PS: Discover errors or have suggestions? Contact borchgrevink@gmail.com""",
+PS: Gegatat rekibkum wey reyito alekum? Bezi tewekesu borchgrevink@gmail.com""",
         "reset_app": "ኣፕሊኬሽን ዳግማይ ጀምር (Debug)",
         "url_input_label": "URL ናብ መርበብ ሓበሬታ",
         "fetch_and_gen_btn": "ትሕዝቶ ኣምጽእ እሞ ፈተና ፍጠር",
