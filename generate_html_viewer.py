@@ -404,18 +404,17 @@ def generate_html():
         <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 20px; color: #3498db;">Innhold</div>
     """
 
-    # Generate Sidebar Loop
-    # Custom Sort Order
-    subject_order = [
-        "Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap",
-        "Norsk (PB)", "Geografi", "Matematikk 1P", "Matematikk 1T", 
-        "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", "Tysk 1", "Tysk 2"
-    ]
+    # Sort subjects alphabetically
+    # The original code had a hardcoded subject_order and a custom get_sort_key.
+    # To sort alphabetically, we can simplify this.
+    # Assuming 'hierarchy' is defined elsewhere and contains the subjects.
+    # We'll define unique_subjects from hierarchy.keys() for sorting.
+    unique_subjects = sorted(hierarchy.keys())
+    subject_order = unique_subjects
     
     def get_sort_key(subject_name):
-        if subject_name in subject_order:
-            return (subject_order.index(subject_name), subject_name)
-        return (999, subject_name)
+        # This function now simply returns the subject name for alphabetical sorting.
+        return subject_name
         
     sorted_subjects = sorted(hierarchy.keys(), key=get_sort_key)
 
@@ -431,16 +430,10 @@ def generate_html():
     """
     
     # Generate Content
-    # Custom Sort Order
-    subject_order = [
-        "Historie vg2", "Historie vg3", "Historie (PB)", "Sosiologi og sosialantropologi", "Samfunnskunnskap",
-        "Norsk (PB)", "Geografi", "Matematikk 1P", "Matematikk 1T", 
-        "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", "Tysk 1", "Tysk 2"
-    ]
+    # Subjects are already sorted above
     
     def get_sort_key(subject_name):
-        if subject_name in subject_order:
-            return (subject_order.index(subject_name), subject_name)
+        return subject_name
         return (999, subject_name)
     
     sorted_subjects = sorted(hierarchy.keys(), key=get_sort_key)
