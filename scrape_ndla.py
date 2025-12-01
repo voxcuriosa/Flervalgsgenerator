@@ -352,6 +352,14 @@ def get_subject_topics(subject_name):
         root_node_id = "urn:subject:1:1a05c6c7-121e-49e2-933c-580da74afe1a"
     elif subject_name == "Tysk 2":
         root_node_id = "urn:subject:1:ec288dfb-4768-4f82-8387-fe2d73fff1e1"
+    elif subject_name == "Bransje og arbeidsliv (RM-RMF vg1)":
+        root_node_id = "urn:subject:1:cd3a3bb8-eed2-4d02-8c21-b3dca5a2a11b"
+    elif subject_name == "Råvare, produksjon og kvalitet (RM-RMF vg1)":
+        root_node_id = "urn:subject:1:fdefda2a-7d3a-4749-92cf-24ad466a20db"
+    elif subject_name == "Bransje og arbeidsliv (RM-KOS vg2)":
+        root_node_id = "urn:subject:1:09410bfa-5b0d-470b-8727-5006e711bc1f"
+    elif subject_name == "Råvare, produksjon, salg og service (RM-KOS vg2)":
+        root_node_id = "urn:subject:1:9e515764-0ce6-49d5-8ecd-1cde8b08a33f"
     
     if not root_node_id:
         return []
@@ -369,8 +377,8 @@ def get_subject_topics(subject_name):
         for child in children:
             name = child.get('name', '').strip()
             # Filter out "Om faget" (robust check) - ENABLED AGAIN
-            # if name.lower() == "om faget":
-            #     continue
+            if name.lower() == "om faget":
+                continue
                 
             # We only want topics, not resources (though at this level they should be topics)
             # Filter out "Diverse" if we want, or keep it.
@@ -385,8 +393,8 @@ def get_subject_topics(subject_name):
                 sub_children = get_nodes(child.get('id'))
                 for sub in sub_children:
                     sub_name = sub.get('name', '').strip()
-                    # if sub_name.lower() == "om faget":
-                    #     continue
+                    if sub_name.lower() == "om faget":
+                        continue
                         
                     topic_data['children'].append({
                         'name': sub_name,
