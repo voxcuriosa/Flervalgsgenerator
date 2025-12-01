@@ -96,7 +96,22 @@ TRANSLATIONS = {
         "no_text_found": "Fant ingen tekst på siden.",
         "paste_urls_info": "Lim inn URL-er til artikler du vil generere spørsmål fra. Du kan legge til flere URL-er ved å trykke på Enter mellom hver.",
         "urls_input_label": "URL-er (én per linje):",
-        "fetch_urls_btn": "Hent innhold fra {} URL-er"
+        "fetch_urls_btn": "Hent innhold fra {} URL-er",
+        "welcome_message": """**Velkommen til Flervalgsgeneratoren!**
+
+Dette verktøyet er utviklet for å gjøre det enkelt og effektivt å lage gode flervalgsoppgaver. Du kan hente fagstoff direkte fra læreboka *Historie på tvers* eller fra NDLA sine omfattende ressurser.
+
+Du har også stor fleksibilitet til å bruke eget materiale:
+*   Lim inn tekst fra nettsider
+*   Last opp filer (PDF, PowerPoint, Word)
+
+Du styrer selv vanskelighetsgraden ved å velge antall spørsmål, svaralternativer og hvor mange riktige svar som skal genereres.
+
+I tillegg fungerer appen som en leser for NDLA-fagstoff, slik at du kan bla i og vurdere innholdet før du lager oppgaver.
+
+_Lykke til med arbeidet!_
+
+PS: Oppdager du feil eller har forslag? Ta kontakt på borchgrevink@gmail.com"""
     },
     "en": {
         "title": "Multiple Choice Generator",
@@ -165,7 +180,22 @@ TRANSLATIONS = {
         "no_text_found": "No text found on page.",
         "paste_urls_info": "Paste URLs to articles you want to generate questions from. You can add multiple URLs by pressing Enter between each.",
         "urls_input_label": "URLs (one per line):",
-        "fetch_urls_btn": "Fetch content from {} URLs"
+        "fetch_urls_btn": "Fetch content from {} URLs",
+        "welcome_message": """**Welcome to the Multiple Choice Generator!**
+
+This tool is designed to make it easy and efficient to create good multiple-choice questions. You can fetch subject material directly from the textbook *Historie på tvers* or from NDLA's extensive resources.
+
+You also have great flexibility to use your own material:
+*   Paste text from websites
+*   Upload files (PDF, PowerPoint, Word)
+
+You control the difficulty level yourself by choosing the number of questions, answer options, and how many correct answers to generate.
+
+In addition, the app functions as a reader for NDLA subject material, allowing you to browse and evaluate the content before creating questions.
+
+_Good luck with your work!_
+
+PS: Discover errors or have suggestions? Contact borchgrevink@gmail.com"""
     },
     "ar": {
         "title": "مولد الأسئلة متعددة الخيارات",
@@ -233,7 +263,22 @@ TRANSLATIONS = {
         "no_text_found": "لم يتم العثور على نص في الصفحة.",
         "paste_urls_info": "الصق عناوين URL للمقالات التي تريد إنشاء أسئلة منها. يمكنك إضافة عناوين URL متعددة بالضغط على Enter بين كل منها.",
         "urls_input_label": "عناوين URL (واحد في كل سطر):",
-        "fetch_urls_btn": "جلب المحتوى من {} عناوين URL"
+        "fetch_urls_btn": "جلب المحتوى من {} عناوين URL",
+        "welcome_message": """**مرحبًا بك في مولد الأسئلة متعددة الخيارات!**
+
+تم تطوير هذه الأداة لتسهيل إنشاء أسئلة متعددة الخيارات جيدة وبكفاءة. يمكنك جلب المواد الدراسية مباشرة من الكتاب المدرسي *Historie på tvers* أو من موارد NDLA الشاملة.
+
+لديك أيضًا مرونة كبيرة لاستخدام المواد الخاصة بك:
+*   لصق النص من مواقع الويب
+*   تحميل الملفات (PDF، PowerPoint، Word)
+
+أنت تتحكم في مستوى الصعوبة بنفسك عن طريق اختيار عدد الأسئلة وخيارات الإجابة وعدد الإجابات الصحيحة التي سيتم إنشاؤها.
+
+بالإضافة إلى ذلك، يعمل التطبيق كقارئ لمواد NDLA الدراسية، بحيث يمكنك تصفح المحتوى وتقييمه قبل إنشاء الأسئلة.
+
+_حظًا سعيدًا في عملك!_
+
+ملاحظة: هل اكتشفت أخطاء أو لديك اقتراحات؟ تواصل معنا على borchgrevink@gmail.com"""
     },
     "so": {
         "title": "Soo Saaraha Su'aalaha Kala Doorashada",
@@ -301,7 +346,22 @@ TRANSLATIONS = {
         "no_text_found": "Qoraal lagama helin bogga.",
         "paste_urls_info": "Dheji URL-yada maqaallada aad rabto inaad su'aalo ka sameyso. Waxaad ku dari kartaa URL-yo badan adigoo riixaya Enter inta u dhaxaysa.",
         "urls_input_label": "URL-yada (midkiiba hal sadar):",
-        "fetch_urls_btn": "Ka keen nuxurka {} URL-yo"
+        "fetch_urls_btn": "Ka keen nuxurka {} URL-yo",
+        "welcome_message": """**Ku soo dhawoow Soo-saaraha Su'aalaha Kala-doorashada!**
+
+Qalabkan waxaa loo sameeyay inuu fududeeyo oo uu waxtar u yeesho abuurista su'aalo kala-doorasho oo wanaagsan. Waxaad si toos ah uga soo qaadan kartaa agabka maadada buugga *Historie på tvers* ama kheyraadka ballaaran ee NDLA.
+
+Waxaad sidoo kale leedahay dabacsanaan weyn oo aad ku isticmaali karto agabkaaga:
+*   Ka soo dheji qoraalka websaydhada
+*   Soo rar faylasha (PDF, PowerPoint, Word)
+
+Adiga ayaa xakameynaya heerka adkaanta adigoo dooranaya tirada su'aalaha, xulashooyinka jawaabaha iyo inta jawaabood ee saxda ah ee la soo saarayo.
+
+Intaa waxaa dheer, app-ku wuxuu u shaqeeyaa sidii akhriste agabka maadada NDLA, si aad u baarto oo aad u qiimeyso nuxurka ka hor inta aadan abuurin su'aalo.
+
+_Nasiib wacan shaqadaada!_
+
+PS: Ma aragtay khaladaad mise waxaad haysaa soo jeedin? Kala xiriir borchgrevink@gmail.com"""
     },
     "ti": {
         "title": "ናይ ብዙሕ ምርጫ ሕቶታት መመንጨዊ",
@@ -369,7 +429,22 @@ TRANSLATIONS = {
         "no_text_found": "ኣብቲ ገጽ ዝኾነ ጽሑፍ ኣይተረኽበን።",
         "paste_urls_info": "URL ናይቶም ሕቶታት ክትፈጥረሎም እትደሊ ዓንቀጻት ለጥፍ። ኣብ መንጎ ነፍሲ ወከፍ Enter ብምርጋጽ ብዙሓት URL ክትውስኽ ትኽእል ኢኻ።",
         "urls_input_label": "URLs (ሓደ ኣብ ነፍሲ ወከፍ መስመር):",
-        "fetch_urls_btn": "ትሕዝቶ ካብ {} URLs ኣምጽእ"
+        "fetch_urls_btn": "ትሕዝቶ ካብ {} URLs ኣምጽእ",
+        "welcome_message": """**እንቋዕ ናብ መውለዲ ብዙሕ ምርጫ ብደሓን መጻእኩም!**
+
+እዚ መሳርሒ ጽቡቕ ናይ ብዙሕ ምርጫ ሕቶታት ብቐሊሉን ብብቕዓትን ንምድላው ዝተዳለወ እዩ። ናይ ትምህርቲ ጽሑፍ ብቐጥታ ካብ መጽሓፍ *Historie på tvers* ወይ ካብ ሰፊሕ ጸጋታት NDLA ከተምጽኡ ትኽእሉ ኢኹም።
+
+ናይ ገዛእ ርእስኹም ጽሑፍ ንምጥቃም እውን ዓቢ ተዓጻጻፍነት ኣለኩም:
+*   ጽሑፍ ካብ መርበብ ሓበሬታታት ለጥፉ
+*   ፋይላት ጽዓኑ (PDF, PowerPoint, Word)
+
+ብዝሒ ሕቶታት፣ ምርጫታት መልሲን ክንደይ ቅኑዕ መልሲ ከም ዝፍጠርን ብምምራጽ ደረጃ ጸገም ባዕልኹም ትውስኑ።
+
+ብተወሳኺ፣ እቲ ኣፕሊኬሽን ከም መንበቢ ናይ NDLA ትምህርቲ ጽሑፍ ኮይኑ የገልግል፣ ስለዚ ሕቶታት ቅድሚ ምድላውኩም ነቲ ትሕዝቶ ክትርእይዎን ክትግምግምዎን ትኽእሉ።
+
+_ጽቡቕ ዕድል ኣብ ስራሕኩም!_
+
+PS: ጌጋታት ረኺብኩም ወይ ርእይቶ ኣለኩም? በዚ ተወከሱ borchgrevink@gmail.com"""
     },
     "th": {
         "title": "เครื่องมือสร้างข้อสอบปรนัย",
@@ -436,7 +511,22 @@ TRANSLATIONS = {
         "no_text_found": "ไม่พบข้อความในหน้า",
         "paste_urls_info": "วาง URL ของบทความที่คุณต้องการสร้างคำถาม คุณสามารถเพิ่มหลาย URL ได้โดยกด Enter ระหว่างแต่ละ URL",
         "urls_input_label": "URL (หนึ่งรายการต่อบรรทัด):",
-        "fetch_urls_btn": "ดึงเนื้อหาจาก {} URL"
+        "fetch_urls_btn": "ดึงเนื้อหาจาก {} URL",
+        "welcome_message": """**ยินดีต้อนรับสู่เครื่องมือสร้างข้อสอบปรนัย!**
+
+เครื่องมือนี้พัฒนาขึ้นเพื่อให้ง่ายและมีประสิทธิภาพในการสร้างข้อสอบปรนัยที่ดี คุณสามารถดึงเนื้อหาวิชาได้โดยตรงจากหนังสือเรียน *Historie på tvers* หรือจากแหล่งข้อมูลที่ครอบคลุมของ NDLA
+
+คุณยังมีความยืดหยุ่นสูงในการใช้เนื้อหาของคุณเอง:
+*   วางข้อความจากเว็บไซต์
+*   อัปโหลดไฟล์ (PDF, PowerPoint, Word)
+
+คุณควบคุมระดับความยากได้ด้วยตัวเองโดยเลือกจำนวนคำถาม ตัวเลือกคำตอบ และจำนวนคำตอบที่ถูกต้องที่จะสร้าง
+
+นอกจากนี้ แอปยังทำหน้าที่เป็นผู้อ่านสำหรับเนื้อหาวิชา NDLA เพื่อให้คุณสามารถเรียกดูและประเมินเนื้อหาก่อนสร้างคำถาม
+
+_ขอให้โชคดีกับการทำงาน!_
+
+PS: พบข้อผิดพลาดหรือมีข้อเสนอแนะ? ติดต่อที่ borchgrevink@gmail.com"""
     },
     "uk": {
         "title": "Генератор тестів з варіантами відповідей",
@@ -502,7 +592,22 @@ TRANSLATIONS = {
         "no_text_found": "Текст на сторінці не знайдено.",
         "paste_urls_info": "Вставте URL-адреси статей, з яких ви хочете згенерувати питання. Ви можете додати кілька URL-адрес, натискаючи Enter між ними.",
         "urls_input_label": "URL-адреси (одна на рядок):",
-        "fetch_urls_btn": "Отримати контент з {} URL-адрес"
+        "fetch_urls_btn": "Отримати контент з {} URL-адрес",
+        "welcome_message": """**Ласкаво просимо до Генератора тестів з варіантами відповідей!**
+
+Цей інструмент розроблено для того, щоб зробити створення якісних тестів з варіантами відповідей простим та ефективним. Ви можете отримувати навчальний матеріал безпосередньо з підручника *Historie på tvers* або з обширних ресурсів NDLA.
+
+Ви також маєте велику гнучкість у використанні власного матеріалу:
+*   Вставляйте текст з веб-сайтів
+*   Завантажуйте файли (PDF, PowerPoint, Word)
+
+Ви самі керуєте рівнем складності, вибираючи кількість питань, варіантів відповідей та скільки правильних відповідей потрібно згенерувати.
+
+Крім того, додаток працює як читач для навчального матеріалу NDLA, тому ви можете переглядати та оцінювати контент перед створенням питань.
+
+_Успіхів у роботі!_
+
+PS: Виявили помилки або маєте пропозиції? Зв'яжіться за адресою borchgrevink@gmail.com"""
     },
     "tig": {
         "title": "መውለዲ ብዙሕ ምርጫ",
@@ -563,6 +668,21 @@ TRANSLATIONS = {
         "ndla_viewer_header": "ትሕዝቶ NDLA",
         "ndla_viewer_info": "ትሕዝቶ ካብ ናይ ከባቢ ቋት ሓበሬታ ተወሲዱ (NDLA scraping)።",
         "ndla_viewer_error": "መራእይ ትሕዝቶ ክጽዕን ኣይተኻእለን: {}",
+        "welcome_message": """**እንቋዕ ናብ መውለዲ ብዙሕ ምርጫ ብደሓን መጻእኩም!**
+
+እዚ መሳርሒ ጽቡቕ ናይ ብዙሕ ምርጫ ሕቶታት ብቐሊሉን ብብቕዓትን ንምድላው ዝተዳለወ እዩ። ናይ ትምህርቲ ጽሑፍ ብቐጥታ ካብ መጽሓፍ *Historie på tvers* ወይ ካብ ሰፊሕ ጸጋታት NDLA ከተምጽኡ ትኽእሉ ኢኹም።
+
+ናይ ገዛእ ርእስኹም ጽሑፍ ንምጥቃም እውን ዓቢ ተዓጻጻፍነት ኣለኩም:
+*   ጽሑፍ ካብ መርበብ ሓበሬታታት ለጥፉ
+*   ፋይላት ጽዓኑ (PDF, PowerPoint, Word)
+
+ብዝሒ ሕቶታት፣ ምርጫታት መልሲን ክንደይ ቅኑዕ መልሲ ከም ዝፍጠርን ብምምራጽ ደረጃ ጸገም ባዕልኹም ትውስኑ።
+
+ብተወሳኺ፣ እቲ ኣፕሊኬሽን ከም መንበቢ ናይ NDLA ትምህርቲ ጽሑፍ ኮይኑ የገልግል፣ ስለዚ ሕቶታት ቅድሚ ምድላውኩም ነቲ ትሕዝቶ ክትርእይዎን ክትግምግምዎን ትኽእሉ።
+
+_ጽቡቕ ዕድል ኣብ ስራሕኩም!_
+
+PS: ጌጋታት ረኺብኩም ወይ ርእይቶ ኣለኩም? በዚ ተወከሱ borchgrevink@gmail.com""",
         "reset_app": "ኣፕሊኬሽን ዳግማይ ጀምር (Debug)",
         "url_input_label": "URL ናብ መርበብ ሓበሬታ",
         "fetch_and_gen_btn": "ትሕዝቶ ኣምጽእ እሞ ፈተና ፍጠር",
@@ -2080,7 +2200,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.2.1")
+                st.sidebar.caption("v2.2.2")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -2098,23 +2218,7 @@ def main():
     if app_mode == get_text("home"):
         st.write(f"{get_text('welcome')}, {st.session_state.get('user_name', '')} ({st.session_state.get('user_email', '')})!")
         
-        st.markdown("""
-        **Velkommen til Flervalgsgeneratoren!**
-
-        Dette verktøyet er utviklet for å gjøre det enkelt og effektivt å lage gode flervalgsoppgaver. Du kan hente fagstoff direkte fra læreboka *Historie på tvers* eller fra NDLA sine omfattende ressurser.
-
-        Du har også stor fleksibilitet til å bruke eget materiale:
-        *   Lim inn tekst fra nettsider
-        *   Last opp filer (PDF, PowerPoint, Word)
-
-        Du styrer selv vanskelighetsgraden ved å velge antall spørsmål, svaralternativer og hvor mange riktige svar som skal genereres.
-
-        I tillegg fungerer appen som en leser for NDLA-fagstoff, slik at du kan bla i og vurdere innholdet før du lager oppgaver.
-
-        _Lykke til med arbeidet!_
-
-        PS: Oppdager du feil eller har forslag? Ta kontakt på borchgrevink@gmail.com
-        """)
+        st.markdown(get_text("welcome_message"))
         
     st.divider()
     
@@ -2150,7 +2254,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.2.0")
+    st.sidebar.caption("v2.2.2")
 
 if __name__ == "__main__":
     main()
