@@ -39,7 +39,7 @@ TRANSLATIONS = {
         "my_history": "Min Historikk",
         "module_quiz": "Quiz-generator",
         "module_ndla": "NDLA Fagstoff",
-        "settings": "Innstillinger",
+        "settings": "Kilde til quiz",
         "source": "Velg kilde:",
         "source_pdf": "Historie på Tvers (Lærebok)",
         "source_ndla": "NDLA (Nettressurs)",
@@ -1369,7 +1369,7 @@ def main():
                 
                 /* FORCE FIXED POSITION ALWAYS */
                 position: fixed !important;
-                top: 60px !important;
+                top: 15px !important;
                 left: 10px !important;
                 box-shadow: none !important;
                 
