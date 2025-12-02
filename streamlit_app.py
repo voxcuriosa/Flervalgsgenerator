@@ -1151,23 +1151,32 @@ def render_admin_panel():
         from storage import save_energy_readings, get_energy_readings
         
         # Button to fetch new data
-        if st.button("Hent strømdata fra Homey nå"):
-            with st.spinner("Kobler til Homey..."):
-                client = HomeyClient()
-                data = client.get_energy_data()
-                if data:
-                    if save_energy_readings(data):
-                        st.success(f"Hentet og lagret data for {len(data)} enheter.")
-                        st.rerun()
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("Hent strømdata fra Homey nå"):
+                with st.spinner("Kobler til Homey..."):
+                    client = HomeyClient()
+                    data = client.get_energy_data()
+                    if data:
+                        if save_energy_readings(data):
+                            st.success(f"Hentet og lagret data for {len(data)} enheter.")
+                            st.rerun()
+                        else:
+                            st.error("Kunne ikke lagre data til databasen.")
                     else:
-                        st.error("Kunne ikke lagre data til databasen.")
-                else:
-                    st.error("Fant ingen data eller kunne ikke koble til Homey.")
+                        st.error("Fant ingen data eller kunne ikke koble til Homey.")
+        with col2:
+            if st.button("Slett mellomlager og oppdater"):
+                st.cache_data.clear()
+                st.rerun()
         
         # Display Data
         readings_df = get_energy_readings()
         
         if not readings_df.empty:
+            # Ensure timestamp is datetime
+            readings_df['timestamp'] = pd.to_datetime(readings_df['timestamp'])
+            
             # Filter unwanted devices
             readings_df = readings_df[~readings_df['device_name'].isin(['Vann', 'Tibber puls'])]
             
@@ -1203,6 +1212,8 @@ def render_admin_panel():
 
             month_names = ["Januar", "Februar", "Mars", "April", "Mai", "Juni", 
                            "Juli", "August", "September", "Oktober", "November", "Desember"]
+
+            yearly_sums = {}
 
             for year in years:
                 year_total = {dev: 0.0 for dev in devices}
@@ -1255,131 +1266,55 @@ def render_admin_panel():
                     for dev in devices:
                         # Calculate total for year based on Latest - Earliest reading in that year
                         # This handles missing monthly data better than summing monthly diffs
+                        # IMPORTANT: We must include 1/1 of the NEXT year to capture the consumption of December.
+                        start_date = pd.Timestamp(year, 1, 1)
+                        end_date = pd.Timestamp(year + 1, 1, 1)
+                        
                         dev_readings = readings_df[
                             (readings_df['device_name'] == dev) & 
-                            (readings_df['timestamp'].dt.year == year)
+                            (readings_df['timestamp'] >= start_date) &
+                            (readings_df['timestamp'] <= end_date)
                         ].sort_values('timestamp')
+                        
                         
                         if not dev_readings.empty:
-                            start_val = dev_readings.iloc[0]['energy_kwh']
-                            end_val = dev_readings.iloc[-1]['energy_kwh']
+                            # Robust Logic: Iterate all readings in the year and sum differences.
+                            # This handles gaps (by summing the big jump) and resets (by detecting negative diff).
+                            total_acc = 0
+                            prev_val = dev_readings.iloc[0]['energy_kwh']
                             
-                            # Handle meter reset logic for year total if needed
-                            # Simple approach: sum of positive diffs? 
-                            # Or just trust the monthly sum if we have all months?
-                            # But we don't have all months for 2025 for some devices.
-                            # If we use Latest - Earliest, we miss the meter reset logic if it happened in between.
-                            # BUT, we have monthly logic that handles resets.
-                            # So: SUM = Sum of calculated monthly consumptions + (Latest - Last Month End)?
-                            # Actually, let's stick to summing the calculated monthly consumptions we just derived above.
-                            # Wait, if we don't have intermediate months, the loop above won't calculate consumption for them.
-                            # Example: 1/1 (100) -> 1/12 (Current, 500). Missing 1/2...1/11.
-                            # Loop above checks 1/1->1/2, 1/2->1/3... 
-                            # It will only find data for 1/1->1/2 if 1/2 exists.
-                            # If 1/2 doesn't exist, it skips.
-                            # So "year_total[dev]" will be 0.
-                            
-                            # We need to capture the "rest of the year" or "total year".
-                            # If we have big gaps, we should probably just take Latest - Earliest (if no reset detected).
-                            # But VVB had a reset.
-                            # If we use year_total calculated in the loop, it's safe for resets but misses gaps.
-                            # If we use Latest - Earliest, it handles gaps but misses resets.
-                            
-                            # Hybrid approach:
-                            # If year_total > 0 (meaning we had monthly data), use it?
-                            # But for 2025, we have 1/1...1/6, then gap to 1/12 (Current).
-                            # The loop will calculate Jan-May.
-                            # It will miss June-Nov.
-                            # We need to calculate the gap from Last Known Reading to Current.
-                            
-                            # Let's add a "Gap Fill" logic.
-                            # Find the last reading used in the monthly loop.
-                            # Compare with Latest reading of the year.
-                            # If Latest > Last Used, add the diff.
-                            
-                            # Actually, simpler:
-                            # For 2025, we want Accumulated.
-                            # If we just take (Current - 1/1), it works for all EXCEPT VVB (reset).
-                            # For VVB, we have monthly data handling the reset.
-                            # So for VVB, the loop sum is correct up to Nov.
-                            # But we are missing Dec? No, "Current" is Dec.
-                            
-                            # Let's trust the loop sum `year_total` BUT we need to ensure the loop covers the gap.
-                            # The loop iterates months 1..12.
-                            # For Month X: Start=1/X, End=1/X+1.
-                            # If we have 1/6 and then Current (say 2/12),
-                            # Month 6 (June): Start 1/6, End 1/7. Missing 1/7. -> No calc.
-                            # ...
-                            # Month 11 (Nov): Start 1/11, End 1/12. If Current is near 1/12, we might match it?
-                            # `get_reading` uses exact match.
-                            
-                            # We need to be more flexible with `get_reading` or the loop.
-                            # Or just calculate "Total Year" separately.
-                            
-                            # For devices WITHOUT reset (everything except VVB?): Latest - Earliest is fine.
-                            # For VVB: We know the reset happened.
-                            # Maybe just special case VVB? Or detect reset in the year.
-                            
-                            # Let's try:
-                            # Total = Latest - Earliest.
-                            # If Total < 0 (Reset happened):
-                            #   Total = (Max_before_reset - Earliest) + Latest.
-                            #   But we don't know Max_before_reset easily without scanning.
-                            
-                            # Given the specific data:
-                            # VVB has monthly data covering the reset (May).
-                            # So `year_total` from the loop IS correct for VVB (it sums 486+353+243+243+381...).
-                            # BUT it stops at June because we miss July data.
-                            # We need to add (Current - Last_Recorded_Monthly).
-                            
-                            # Let's just use the `year_total` accumulated in the loop, 
-                            # AND add a check:
-                            # If we have a "Current" reading (latest in year) that wasn't included in the monthly buckets?
-                            # The monthly buckets cover 1/1 to 1/1 next year.
-                            # If "Current" is today (Dec 2), it falls in Dec bucket (Start 1/12, End 1/1).
-                            # We don't have 1/1/2026 yet.
-                            # So Dec consumption is unknown.
-                            # But we want "Accumulated so far".
-                            # So we should include consumption up to Today.
-                            
-                            # Revised Logic for "SUM {year}":
-                            # 1. Take `year_total` from the loop (handles detailed months + resets).
-                            # 2. Find the last date used in the loop calculations.
-                            # 3. Find the absolute latest reading in the year.
-                            # 4. If Latest > Last Used, add (Latest - Last Used).
-                            
-                            # Implementation:
-                            # Track `last_reading_val` and `last_reading_date` in the loop.
-                            pass
-                        
-                        # Re-calculate properly
-                        # Get all readings for this device this year
-                        d_readings = readings_df[
-                            (readings_df['device_name'] == dev) & 
-                            (readings_df['timestamp'].dt.year == year)
-                        ].sort_values('timestamp')
-                        
-                        if d_readings.empty:
+                            for _, r in dev_readings.iloc[1:].iterrows():
+                                curr_val = r['energy_kwh']
+                                diff = curr_val - prev_val
+                                
+                                # Reset Logic:
+                                # Only treat as reset if diff is negative AND current value is significantly lower (e.g. < 50% of prev)
+                                if diff < 0:
+                                    if curr_val < (prev_val * 0.5):
+                                        # Real Reset
+                                        total_acc += curr_val
+                                    else:
+                                        # Small correction, just add the negative diff (net change)
+                                        total_acc += diff
+                                else:
+                                    total_acc += diff
+                                prev_val = curr_val
+                                
+                            sum_row[dev] = f"**{total_acc:.0f}**"
+                        else:
                             sum_row[dev] = "0"
-                            continue
-                            
-                        # Check for resets by looking for negative diffs between consecutive readings
-                        total_acc = 0
-                        prev_val = d_readings.iloc[0]['energy_kwh']
-                        
-                        for _, r in d_readings.iloc[1:].iterrows():
-                            curr_val = r['energy_kwh']
-                            diff = curr_val - prev_val
-                            if diff < 0:
-                                # Reset detected. Assume consumption is just the new value (or close to it)
-                                total_acc += curr_val
-                            else:
-                                total_acc += diff
-                            prev_val = curr_val
-                            
-                        sum_row[dev] = f"**{total_acc:.0f}**"
                         
                     rows.append(sum_row)
+                    
+                    # Store this year's sum for future comparison
+                    yearly_sums[year] = sum_row.copy()
+                    
+                    # Add comparison rows for previous years (descending)
+                    for prev_year in range(year - 1, 2022, -1):
+                        if prev_year in yearly_sums:
+                            comp_row = yearly_sums[prev_year].copy()
+                            comp_row['Periode'] = f"Sum {prev_year} (tidligere år)"
+                            rows.append(comp_row)
             
             # Create DataFrame
             if rows:
@@ -1388,10 +1323,18 @@ def render_admin_panel():
                 cols = ["Periode"] + devices
                 display_df = display_df[cols]
                 
-                # Display with styling? Streamlit dataframe doesn't support markdown in cells easily for bolding.
-                # But we can try. Or just use plain table.
                 st.markdown("### Forbruksoversikt")
                 st.dataframe(display_df, hide_index=True, use_container_width=True)
+                
+                # Debug Expander
+                with st.expander("Feilsøking (Debug)"):
+                    st.write(f"Antall målinger totalt: {len(readings_df)}")
+                    st.write(f"Unike enheter: {devices}")
+                    st.write("Siste 5 målinger (Raw):")
+                    st.dataframe(readings_df.sort_values('timestamp').tail(5))
+                    if 'VVB' in devices:
+                        st.write("Siste 5 VVB målinger:")
+                        st.dataframe(readings_df[readings_df['device_name'] == 'VVB'].sort_values('timestamp').tail(5))
             else:
                 st.info("Ingen data å vise for perioden.")
                 
@@ -1972,8 +1915,7 @@ def main():
             }
             
             /* Default Text: "Åpne meny" - APPLIED TO CONTAINER */
-            /* Text removed as per user request */
-            
+```
             /* Dynamic Text: "Lukk meny" removed as per user request */
             
             [data-testid="stSidebarCollapseButton"]:hover {
@@ -1986,6 +1928,15 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
+    st.markdown("---")
+    st.markdown(
+        """
+        <div style='text-align: center; color: #666;'>
+            <p>Utviklet av Christian Borchgrevink-Vigeland | v2.1.9</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
     # --- Authentication Logic (Must run before widgets) ---

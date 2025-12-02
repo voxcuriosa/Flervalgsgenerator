@@ -37,9 +37,10 @@ class HomeyClient:
                 "Varmepumpe ": "Varmepumpe",
                 "Vindfang - Varmekabler": "Vindfang", # Assumption
                 "Vindfang - Varmekabler ": "Vindfang",
+                "CBV  (EHVKFY9X)": "Easee",
             }
             
-            IGNORED_DEVICES = ["Vann", "Vann ", "Tibber puls", "Tibber puls ", "CBV  (EHVKFY9X)"]
+            IGNORED_DEVICES = ["Vann", "Vann ", "Tibber puls", "Tibber puls "]
 
             for dev_id, dev in devices.items():
                 caps = dev.get('capabilities', [])
