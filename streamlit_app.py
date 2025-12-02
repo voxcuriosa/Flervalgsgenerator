@@ -1071,76 +1071,74 @@ def render_admin_panel():
     st.divider()
 
     # --- 3. Login Logs Section ---
-    st.info("📋 **Innlogginger**")
-    
-    from storage import get_login_logs
-    logs_df = get_login_logs()
-    
-    if not logs_df.empty:
-        st.dataframe(logs_df, use_container_width=True)
-    else:
-        st.info("Ingen innlogginger registrert ennå.")
+    with st.expander("📋 **Innlogginger**", expanded=False):
+        from storage import get_login_logs
+        logs_df = get_login_logs()
+        
+        if not logs_df.empty:
+            st.dataframe(logs_df, use_container_width=True)
+        else:
+            st.info("Ingen innlogginger registrert ennå.")
 
     st.divider()
 
     # --- 4. User Permissions Management ---
-    st.info("🔒 **Rettighetsstyring**")
-    
-    from storage import get_all_permissions, grant_permission
-    
-    # List all users with permissions
-    perms_df = get_all_permissions()
-    
-    # We also want to see users who have logged in but might not be in the permissions table yet
-    # So let's merge with login logs or just list unique emails from logs
-    all_users = set()
-    if not logs_df.empty:
-        all_users.update(logs_df['user_email'].unique())
-    if not perms_df.empty:
-        all_users.update(perms_df['user_email'].unique())
+    with st.expander("🔒 **Rettighetsstyring**", expanded=False):
+        from storage import get_all_permissions, grant_permission
         
-    # Create a DataFrame for display/editing
-    user_list = []
-    for email in all_users:
-        # Get current permission
-        can_download = False
-        if not perms_df.empty and email in perms_df['user_email'].values:
-            can_download = bool(perms_df[perms_df['user_email'] == email]['can_download'].iloc[0])
+        # List all users with permissions
+        perms_df = get_all_permissions()
         
-        # Admins always have access
-        is_admin = email in ADMINS
-        if is_admin:
-            can_download = True
+        # We also want to see users who have logged in but might not be in the permissions table yet
+        # So let's merge with login logs or just list unique emails from logs
+        all_users = set()
+        if not logs_df.empty:
+            all_users.update(logs_df['user_email'].unique())
+        if not perms_df.empty:
+            all_users.update(perms_df['user_email'].unique())
             
-        user_list.append({"user_email": email, "can_download": can_download, "is_admin": is_admin})
-        
-    users_df = pd.DataFrame(user_list)
-    
-    if not users_df.empty:
-        # Display as a data editor? Or just a list with checkboxes?
-        # Data editor is cleaner
-        
-        st.write("Administrer nedlastningstilgang (MS Forms / PDF):")
-        
-        # We need to handle updates. 
-        # Let's iterate and show toggles.
-        
-        for index, row in users_df.iterrows():
-            c1, c2, c3 = st.columns([3, 1, 1])
-            c1.write(row['user_email'])
+        # Create a DataFrame for display/editing
+        user_list = []
+        for email in all_users:
+            # Get current permission
+            can_download = False
+            if not perms_df.empty and email in perms_df['user_email'].values:
+                can_download = bool(perms_df[perms_df['user_email'] == email]['can_download'].iloc[0])
             
-            if row['is_admin']:
-                c2.success("Admin")
-            else:
-                # Checkbox for permission
-                new_perm = c2.checkbox("Tilgang", value=row['can_download'], key=f"perm_{row['user_email']}")
-                if new_perm != row['can_download']:
-                    if grant_permission(row['user_email'], new_perm):
-                        st.toast(f"Oppdaterte rettigheter for {row['user_email']}")
-                        # We might need to rerun to refresh the list source of truth, but toast is nice
-                        
-    else:
-        st.info("Ingen brukere funnet.")
+            # Admins always have access
+            is_admin = email in ADMINS
+            if is_admin:
+                can_download = True
+                
+            user_list.append({"user_email": email, "can_download": can_download, "is_admin": is_admin})
+            
+        users_df = pd.DataFrame(user_list)
+        
+        if not users_df.empty:
+            # Display as a data editor? Or just a list with checkboxes?
+            # Data editor is cleaner
+            
+            st.write("Administrer nedlastningstilgang (MS Forms / PDF):")
+            
+            # We need to handle updates. 
+            # Let's iterate and show toggles.
+            
+            for index, row in users_df.iterrows():
+                c1, c2, c3 = st.columns([3, 1, 1])
+                c1.write(row['user_email'])
+                
+                if row['is_admin']:
+                    c2.success("Admin")
+                else:
+                    # Checkbox for permission
+                    new_perm = c2.checkbox("Tilgang", value=row['can_download'], key=f"perm_{row['user_email']}")
+                    if new_perm != row['can_download']:
+                        if grant_permission(row['user_email'], new_perm):
+                            st.toast(f"Oppdaterte rettigheter for {row['user_email']}")
+                            # We might need to rerun to refresh the list source of truth, but toast is nice
+                            
+        else:
+            st.info("Ingen brukere funnet.")
 
     st.divider()
 
@@ -1170,91 +1168,101 @@ def render_admin_panel():
         readings_df = get_energy_readings()
         
         if not readings_df.empty:
-            # We need to calculate stats per device
-            # 1. Get latest reading for each device
-            latest_readings = readings_df.sort_values('timestamp', ascending=False).groupby('device_id').first().reset_index()
+            # Filter unwanted devices
+            readings_df = readings_df[~readings_df['device_name'].isin(['Vann', 'Tibber puls'])]
             
-            # 2. Calculate consumption
-            # For "Last Month": Find reading closest to 1st of previous month vs 1st of current month?
-            # User asked for "Consumption last month".
-            # Let's try to find reading from ~30 days ago.
+            # Pivot Logic
+            # We want rows for each month of 2023, 2024, 2025
+            # Columns: Device Names (Alphabetical)
             
-            # For "Accumulated Year": Find reading from Jan 1st this year.
+            # Get unique devices sorted alphabetically
+            devices = sorted(readings_df['device_name'].unique())
             
-            display_data = []
-            now = pd.Timestamp.now()
-            start_of_year = pd.Timestamp(year=now.year, month=1, day=1)
-            start_of_month = pd.Timestamp(year=now.year, month=now.month, day=1)
-            # Start of last month
-            if now.month == 1:
-                start_of_last_month = pd.Timestamp(year=now.year-1, month=12, day=1)
-            else:
-                start_of_last_month = pd.Timestamp(year=now.year, month=now.month-1, day=1)
+            # Prepare rows
+            rows = []
+            
+            years = [2023, 2024, 2025]
+            months = range(1, 13)
+            
+            # Helper to get reading at specific date
+            def get_reading(date, device_name):
+                # Find reading on this date (or very close)
+                # We assume data is stored as YYYY-MM-DD 00:00:00
+                # Filter by device
+                dev_data = readings_df[readings_df['device_name'] == device_name]
+                if dev_data.empty: return None
                 
-            for _, row in latest_readings.iterrows():
-                dev_id = row['device_id']
-                current_kwh = row['energy_kwh']
+                # Exact match first
+                match = dev_data[dev_data['timestamp'] == date]
+                if not match.empty:
+                    return match.iloc[0]['energy_kwh']
                 
-                # Get history for this device
-                dev_history = readings_df[readings_df['device_id'] == dev_id].sort_values('timestamp')
-                
-                # Calc Year
-                # Find reading closest to start_of_year (but before or at it? Or just earliest this year?)
-                # Let's take the earliest reading of this year.
-                year_readings = dev_history[dev_history['timestamp'] >= start_of_year]
-                if not year_readings.empty:
-                    start_year_kwh = year_readings.iloc[0]['energy_kwh']
-                    acc_year = current_kwh - start_year_kwh
-                else:
-                    acc_year = 0 # No data from start of year
-                    
-                # Calc Last Month
-                # We need reading at start_of_last_month and end_of_last_month (which is start_of_month)
-                # Find reading closest to start_of_last_month
-                # This is tricky without exact dates.
-                # Let's just look for readings in the last month window.
-                # Actually, "Consumption last month" usually means the full previous calendar month.
-                # So: Reading at (Start of this month) - Reading at (Start of last month).
-                
-                # Find reading closest to start_of_month
-                # We can use get_loc with method='nearest' if we index by timestamp, but let's be simple.
-                
-                def get_reading_at(timestamp):
-                    # Find reading closest to timestamp within reasonable tolerance (e.g. 2 days)
-                    # For now, just take the closest one before or after
-                    # Filter to readings before timestamp
-                    # This is hard with sparse data.
-                    # Let's just take the reading closest to the target date.
-                    if dev_history.empty: return None
-                    
-                    # Calculate time diff
-                    # Ensure timestamp is compatible type
-                    target = pd.Timestamp(timestamp)
-                    dev_history['diff'] = (dev_history['timestamp'] - target).abs()
-                    closest = dev_history.sort_values('diff').iloc[0]
-                    
-                    # If diff is too large (e.g. > 5 days), maybe ignore?
-                    if closest['diff'] > pd.Timedelta(days=5):
-                        return None
-                    return closest['energy_kwh']
+                # Fallback: Closest within 1 day?
+                # For now, strict match as imported data is clean.
+                return None
 
-                val_start_month = get_reading_at(start_of_month)
-                val_start_last_month = get_reading_at(start_of_last_month)
+            month_names = ["Januar", "Februar", "Mars", "April", "Mai", "Juni", 
+                           "Juli", "August", "September", "Oktober", "November", "Desember"]
+
+            for year in years:
+                year_total = {dev: 0.0 for dev in devices}
+                has_data_for_year = False
                 
-                last_month_consumption = 0
-                if val_start_month is not None and val_start_last_month is not None:
-                    last_month_consumption = val_start_month - val_start_last_month
+                for month in months:
+                    # Consumption for Month M is Reading(M+1) - Reading(M)
+                    # Start Date: 1st of Month M
+                    start_date = pd.Timestamp(year=year, month=month, day=1)
+                    
+                    # End Date: 1st of Month M+1
+                    if month == 12:
+                        end_date = pd.Timestamp(year=year+1, month=1, day=1)
+                    else:
+                        end_date = pd.Timestamp(year=year, month=month+1, day=1)
+                        
+                    row_data = {"Periode": f"{month_names[month-1]} {year}"}
+                    
+                    has_month_data = False
+                    for dev in devices:
+                        val_start = get_reading(start_date, dev)
+                        val_end = get_reading(end_date, dev)
+                        
+                        if val_start is not None and val_end is not None:
+                            consumption = val_end - val_start
+                            # Handle negative consumption (meter reset?) - assume 0 or keep?
+                            # If consumption < 0, maybe data error.
+                            if consumption < 0: consumption = 0
+                            
+                            row_data[dev] = f"{consumption:.0f}" # Integer display as per user example
+                            year_total[dev] += consumption
+                            has_month_data = True
+                        else:
+                            row_data[dev] = ""
+                    
+                    if has_month_data:
+                        rows.append(row_data)
+                        has_data_for_year = True
                 
-                display_data.append({
-                    "Enhet": row['device_name'],
-                    "Strøm nå (W)": f"{row['power_w']:.1f}",
-                    "Forbruk forrige mnd (kWh)": f"{last_month_consumption:.1f}",
-                    "Akkumulert i år (kWh)": f"{acc_year:.1f}",
-                    "Totalt (kWh)": f"{current_kwh:.1f}"
-                })
-                
-            st.dataframe(pd.DataFrame(display_data), hide_index=True)
+                # Add Summary Row for Year
+                if has_data_for_year:
+                    sum_row = {"Periode": f"**SUM {year}**"}
+                    for dev in devices:
+                        sum_row[dev] = f"**{year_total[dev]:.0f}**"
+                    rows.append(sum_row)
             
+            # Create DataFrame
+            if rows:
+                display_df = pd.DataFrame(rows)
+                # Ensure columns are in order: Periode, Dev1, Dev2...
+                cols = ["Periode"] + devices
+                display_df = display_df[cols]
+                
+                # Display with styling? Streamlit dataframe doesn't support markdown in cells easily for bolding.
+                # But we can try. Or just use plain table.
+                st.markdown("### Forbruksoversikt")
+                st.dataframe(display_df, hide_index=True, use_container_width=True)
+            else:
+                st.info("Ingen data å vise for perioden.")
+                
             # Show raw history in expander
             with st.expander("Se rådata (Historikk)"):
                 st.dataframe(readings_df)
