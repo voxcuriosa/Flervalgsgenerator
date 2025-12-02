@@ -38,6 +38,9 @@ def generate_html():
             current_level["_articles"] = []
         current_level["_articles"].append(row)
 
+    def normalize_key(k):
+        return k.lower().replace("(", "").replace(")", "").replace(" ", "").strip()
+
     # Recursive HTML Generation
     def generate_html_recursive(node, level, parent_slug="", subject_name=""):
         html = ""
@@ -71,11 +74,17 @@ def generate_html():
         for key, value in node.items():
             if key == "_articles": continue
             
-            # Check for redundancy at Level 1
-            if level == 1 and key == subject_name:
-                # Flatten: Recurse without creating a new container/header
-                html += generate_html_recursive(value, level, parent_slug, subject_name)
+            # Safety filter for "Om faget"
+            if normalize_key(key) == "omfaget":
                 continue
+            
+            # Check for redundancy at Level 1
+            if level == 1:
+                # Check if key is similar to subject name
+                if normalize_key(key) == normalize_key(subject_name):
+                    # Flatten: Recurse without creating a new container/header
+                    html += generate_html_recursive(value, level, parent_slug, subject_name)
+                    continue
             
             slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
             
@@ -159,14 +168,18 @@ def generate_html():
             keys.append("Diverse")
             
         for key in keys:
+            if normalize_key(key) == "omfaget":
+                continue
             value = node[key]
             slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
             
             # Check for redundancy at Level 1
-            if level == 1 and key == subject_name:
-                # Flatten: Recurse without creating a new list item
-                html += generate_sidebar_recursive(value, level, parent_slug, subject_name)
-                continue
+            if level == 1:
+                # Check if key is similar to subject name
+                if normalize_key(key) == normalize_key(subject_name):
+                    # Flatten: Recurse without creating a new list item
+                    html += generate_sidebar_recursive(value, level, parent_slug, subject_name)
+                    continue
         if "Diverse" in keys:
             keys.remove("Diverse")
             keys.append("Diverse")

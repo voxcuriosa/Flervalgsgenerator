@@ -345,7 +345,9 @@ SUBJECTS = {
     "Bransje og arbeidsliv (RM-RMF vg1)": "urn:subject:1:cd3a3bb8-eed2-4d02-8c21-b3dca5a2a11b",
     "Råvare, produksjon og kvalitet (RM-RMF vg1)": "urn:subject:1:fdefda2a-7d3a-4749-92cf-24ad466a20db",
     "Bransje og arbeidsliv (RM-KOS vg2)": "urn:subject:1:09410bfa-5b0d-470b-8727-5006e711bc1f",
-    "Råvare, produksjon, salg og service (RM-KOS vg2)": "urn:subject:1:9e515764-0ce6-49d5-8ecd-1cde8b08a33f"
+    "Råvare, produksjon, salg og service (RM-KOS vg2)": "urn:subject:1:9e515764-0ce6-49d5-8ecd-1cde8b08a33f",
+    "Kroppsøving (vg1)": "urn:subject:1:ca607ca1-4dd0-4bbd-954f-67461f4b96fc",
+    "Spansk 2": "urn:subject:ca64e4ed-8b7f-4b63-b4c2-85cf262dc134"
 }
 
 def get_subject_topics(subject_name):
