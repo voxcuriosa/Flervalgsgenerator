@@ -1144,6 +1144,126 @@ def render_admin_panel():
 
     st.divider()
 
+    # --- 5. Energy Monitoring (Homey Pro) ---
+    # Only for specific user
+    if st.session_state.user_email == "borchgrevink@gmail.com":
+        st.info("⚡ **Strømforbruk (Homey Pro)**")
+        
+        from homey_client import HomeyClient
+        from storage import save_energy_readings, get_energy_readings
+        
+        # Button to fetch new data
+        if st.button("Hent strømdata fra Homey nå"):
+            with st.spinner("Kobler til Homey..."):
+                client = HomeyClient()
+                data = client.get_energy_data()
+                if data:
+                    if save_energy_readings(data):
+                        st.success(f"Hentet og lagret data for {len(data)} enheter.")
+                        st.rerun()
+                    else:
+                        st.error("Kunne ikke lagre data til databasen.")
+                else:
+                    st.error("Fant ingen data eller kunne ikke koble til Homey.")
+        
+        # Display Data
+        readings_df = get_energy_readings()
+        
+        if not readings_df.empty:
+            # We need to calculate stats per device
+            # 1. Get latest reading for each device
+            latest_readings = readings_df.sort_values('timestamp', ascending=False).groupby('device_id').first().reset_index()
+            
+            # 2. Calculate consumption
+            # For "Last Month": Find reading closest to 1st of previous month vs 1st of current month?
+            # User asked for "Consumption last month".
+            # Let's try to find reading from ~30 days ago.
+            
+            # For "Accumulated Year": Find reading from Jan 1st this year.
+            
+            display_data = []
+            now = pd.Timestamp.now()
+            start_of_year = pd.Timestamp(year=now.year, month=1, day=1)
+            start_of_month = pd.Timestamp(year=now.year, month=now.month, day=1)
+            # Start of last month
+            if now.month == 1:
+                start_of_last_month = pd.Timestamp(year=now.year-1, month=12, day=1)
+            else:
+                start_of_last_month = pd.Timestamp(year=now.year, month=now.month-1, day=1)
+                
+            for _, row in latest_readings.iterrows():
+                dev_id = row['device_id']
+                current_kwh = row['energy_kwh']
+                
+                # Get history for this device
+                dev_history = readings_df[readings_df['device_id'] == dev_id].sort_values('timestamp')
+                
+                # Calc Year
+                # Find reading closest to start_of_year (but before or at it? Or just earliest this year?)
+                # Let's take the earliest reading of this year.
+                year_readings = dev_history[dev_history['timestamp'] >= start_of_year]
+                if not year_readings.empty:
+                    start_year_kwh = year_readings.iloc[0]['energy_kwh']
+                    acc_year = current_kwh - start_year_kwh
+                else:
+                    acc_year = 0 # No data from start of year
+                    
+                # Calc Last Month
+                # We need reading at start_of_last_month and end_of_last_month (which is start_of_month)
+                # Find reading closest to start_of_last_month
+                # This is tricky without exact dates.
+                # Let's just look for readings in the last month window.
+                # Actually, "Consumption last month" usually means the full previous calendar month.
+                # So: Reading at (Start of this month) - Reading at (Start of last month).
+                
+                # Find reading closest to start_of_month
+                # We can use get_loc with method='nearest' if we index by timestamp, but let's be simple.
+                
+                def get_reading_at(timestamp):
+                    # Find reading closest to timestamp within reasonable tolerance (e.g. 2 days)
+                    # For now, just take the closest one before or after
+                    # Filter to readings before timestamp
+                    # This is hard with sparse data.
+                    # Let's just take the reading closest to the target date.
+                    if dev_history.empty: return None
+                    
+                    # Calculate time diff
+                    # Ensure timestamp is compatible type
+                    target = pd.Timestamp(timestamp)
+                    dev_history['diff'] = (dev_history['timestamp'] - target).abs()
+                    closest = dev_history.sort_values('diff').iloc[0]
+                    
+                    # If diff is too large (e.g. > 5 days), maybe ignore?
+                    if closest['diff'] > pd.Timedelta(days=5):
+                        return None
+                    return closest['energy_kwh']
+
+                val_start_month = get_reading_at(start_of_month)
+                val_start_last_month = get_reading_at(start_of_last_month)
+                
+                last_month_consumption = 0
+                if val_start_month is not None and val_start_last_month is not None:
+                    last_month_consumption = val_start_month - val_start_last_month
+                
+                display_data.append({
+                    "Enhet": row['device_name'],
+                    "Strøm nå (W)": f"{row['power_w']:.1f}",
+                    "Forbruk forrige mnd (kWh)": f"{last_month_consumption:.1f}",
+                    "Akkumulert i år (kWh)": f"{acc_year:.1f}",
+                    "Totalt (kWh)": f"{current_kwh:.1f}"
+                })
+                
+            st.dataframe(pd.DataFrame(display_data), hide_index=True)
+            
+            # Show raw history in expander
+            with st.expander("Se rådata (Historikk)"):
+                st.dataframe(readings_df)
+                
+        else:
+            st.info("Ingen strømdata registrert ennå. Trykk på knappen over for å hente første måling.")
+
+    st.divider()
+
     # --- 3. Content Update Section (Moved to Bottom) ---
     st.info("🛠️ **Verktøy for innholdsoppdatering**")
     

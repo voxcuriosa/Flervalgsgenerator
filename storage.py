@@ -83,6 +83,18 @@ def init_db():
                     );
                 """))
                 
+                # Create energy_readings table
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS energy_readings (
+                        id SERIAL PRIMARY KEY,
+                        timestamp TIMESTAMP,
+                        device_id TEXT,
+                        device_name TEXT,
+                        power_w FLOAT,
+                        energy_kwh FLOAT
+                    );
+                """))
+                
                 conn.commit()
         except Exception as e:
             print(f"DEBUG: Database init error: {e}")
@@ -349,23 +361,61 @@ def get_user_permissions(user_email):
             print(f"Error getting permissions for {user_email}: {e}")
     return False
 
-def grant_permission(user_email, can_download=True):
-    """Updates or inserts a user's permission."""
+def grant_permission(user_email, can_download):
+    """Updates or inserts user permission."""
     engine = get_db_connection()
     if engine:
         try:
             with engine.connect() as conn:
                 conn.execute(text("""
-                    INSERT INTO user_permissions (user_email, can_download) 
+                    INSERT INTO user_permissions (user_email, can_download)
                     VALUES (:email, :can_download)
                     ON CONFLICT (user_email) 
                     DO UPDATE SET can_download = :can_download
                 """), {"email": user_email, "can_download": can_download})
                 conn.commit()
-                return True
+            return True
         except Exception as e:
-            print(f"Error granting permission to {user_email}: {e}")
+            st.error(f"Error granting permission: {e}")
+            return False
     return False
+
+def save_energy_readings(readings):
+    """Saves a list of energy readings to the database."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            with engine.connect() as conn:
+                for r in readings:
+                    conn.execute(text("""
+                        INSERT INTO energy_readings (timestamp, device_id, device_name, power_w, energy_kwh)
+                        VALUES (:timestamp, :device_id, :device_name, :power_w, :energy_kwh)
+                    """), {
+                        "timestamp": r['timestamp'],
+                        "device_id": r['id'],
+                        "device_name": r['name'],
+                        "power_w": r['power_w'],
+                        "energy_kwh": r['energy_kwh']
+                    })
+                conn.commit()
+            return True
+        except Exception as e:
+            st.error(f"Error saving energy readings: {e}")
+            return False
+    return False
+
+def get_energy_readings():
+    """Retrieves all energy readings."""
+    engine = get_db_connection()
+    if engine:
+        try:
+            with engine.connect() as conn:
+                df = pd.read_sql("SELECT * FROM energy_readings ORDER BY timestamp DESC", conn)
+                return df
+        except Exception as e:
+            st.error(f"Error fetching energy readings: {e}")
+            return pd.DataFrame()
+    return pd.DataFrame()
 
 def get_all_permissions():
     """Retrieves all user permissions."""
