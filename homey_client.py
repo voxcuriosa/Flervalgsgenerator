@@ -21,10 +21,38 @@ class HomeyClient:
             devices = response.json()
             energy_devices = []
             
+            # Name Mapping (Canonical Name <- Homey Name)
+            # Homey Name might have trailing spaces or be different
+            NAME_MAPPING = {
+                "Bad": "Bad - Varmekabler",
+                "Bad - Varmekabler ": "Bad - Varmekabler",
+                "Bad kjeller": "Bad kjeller - Varmekabler",
+                "Bad kjeller - Varmekabler ": "Bad kjeller - Varmekabler",
+                "Stue - Varmekabler ": "Stue",
+                "Stue - Varmekabler": "Stue",
+                "Kjellergang - Varme": "Kjellergang",
+                "Casper - Varme": "Casper",
+                "Cornelius - Varmekabler ": "Cornelius",
+                "Cornelius - Varmekabler": "Cornelius",
+                "Varmepumpe ": "Varmepumpe",
+                "Vindfang - Varmekabler": "Vindfang", # Assumption
+                "Vindfang - Varmekabler ": "Vindfang",
+            }
+            
+            IGNORED_DEVICES = ["Vann", "Vann ", "Tibber puls", "Tibber puls ", "CBV  (EHVKFY9X)"]
+
             for dev_id, dev in devices.items():
                 caps = dev.get('capabilities', [])
                 if 'meter_power' in caps: # Only interested in devices that measure total energy
                     name = dev.get('name', 'Unknown')
+                    
+                    if name in IGNORED_DEVICES:
+                        continue
+                        
+                    # Apply mapping
+                    if name in NAME_MAPPING:
+                        name = NAME_MAPPING[name]
+                        
                     capabilitiesObj = dev.get('capabilitiesObj', {})
                     
                     # Current Power (W)

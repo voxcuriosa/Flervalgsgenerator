@@ -41,6 +41,15 @@ def generate_html():
     def normalize_key(k):
         return k.lower().replace("(", "").replace(")", "").replace(" ", "").strip()
 
+    SUBJECTS_WITH_OM_FAGET = [
+        "Norsk (PB)", "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", 
+        "Tysk 1", "Tysk 2", "Spansk 2",
+        "Norsk (SF vg2)", "Norsk (SF vg3)", "Religion og etikk",
+        "Mediesamfunnet 1", "Medieuttrykk 1",
+        "Mediesamfunnet 2", "Medieuttrykk 2",
+        "Mediesamfunnet 3", "Medieuttrykk 3"
+    ]
+
     # Recursive HTML Generation
     def generate_html_recursive(node, level, parent_slug="", subject_name=""):
         html = ""
@@ -74,9 +83,9 @@ def generate_html():
         for key, value in node.items():
             if key == "_articles": continue
             
-            # Safety filter for "Om faget" - DISABLED
-            # if normalize_key(key) == "omfaget":
-            #     continue
+            # Safety filter for "Om faget"
+            if normalize_key(key) == "omfaget" and subject_name not in SUBJECTS_WITH_OM_FAGET:
+                continue
             
             # Check for redundancy at Level 1
             if level == 1:
@@ -177,8 +186,8 @@ def generate_html():
             html += "</ul>"
 
         for key in keys:
-            # if normalize_key(key) == "omfaget":
-            #     continue
+            if normalize_key(key) == "omfaget" and subject_name not in SUBJECTS_WITH_OM_FAGET:
+                continue
             value = node[key]
             slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
             

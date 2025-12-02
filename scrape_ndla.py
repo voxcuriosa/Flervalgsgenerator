@@ -347,10 +347,37 @@ SUBJECTS = {
     "Bransje og arbeidsliv (RM-KOS vg2)": "urn:subject:1:09410bfa-5b0d-470b-8727-5006e711bc1f",
     "Råvare, produksjon, salg og service (RM-KOS vg2)": "urn:subject:1:9e515764-0ce6-49d5-8ecd-1cde8b08a33f",
     "Kroppsøving (vg1)": "urn:subject:1:ca607ca1-4dd0-4bbd-954f-67461f4b96fc",
-    "Spansk 2": "urn:subject:ca64e4ed-8b7f-4b63-b4c2-85cf262dc134"
+    "Spansk 2": "urn:subject:ca64e4ed-8b7f-4b63-b4c2-85cf262dc134",
+    "Kroppsøving (vg2)": "urn:subject:ef3ac9038dd8",
+    "Matematikk 2P": "urn:subject:1:36bbf8f7-8d78-406e-b554-920393006e8d",
+    "Norsk (SF vg2)": "urn:subject:c86dc51f-59f1-4c32-8535-6131c36013d8",
+    "Matematikk R1": "urn:subject:1:17014b16-d4f9-4034-8b17-0c6248366487",
+    "Matematikk S1": "urn:subject:1:8b9a3334-5c01-4194-8454-f90e29602931",
+    "Engelsk 1": "urn:subject:1:c8d6ed8b-d376-4c7b-b73a-3a1d48c3a357",
+    "Kroppsøving (vg3)": "urn:subject:187c1484-84a5-474d-bf63-0c7915809a7d",
+    "Norsk (SF vg3)": "urn:subject:30bcefff-7577-4e0b-afc6-b07f437ea354",
+    "Religion og etikk": "urn:subject:ea2822da-52f0-4517-bf01-c63f8e96f446",
+    "Matematikk R2": "urn:subject:c499dbee-cfdd-4b76-8836-ae685db03baa",
+    "Matematikk S2": "urn:subject:da2379d0-3c91-4e4d-94d7-fc42f69593d2",
+    "Engelsk 2": "urn:subject:6e2e2319-cb8a-4dd2-b382-e30f001633bb",
+    "Mediesamfunnet 1": "urn:subject:1:e7b9fcee-cb8b-4e0e-a16d-d7dddbe0b643",
+    "Medieuttrykk 1": "urn:subject:1:090997c4-78d3-4a79-93ad-178d465cdba3",
+    "Mediesamfunnet 2": "urn:subject:1:ca0f428c-d59a-4836-83be-83cbc3191a23",
+    "Medieuttrykk 2": "urn:subject:1:00a0141d-2307-4a5a-a154-0c821449f6d2",
+    "Mediesamfunnet 3": "urn:subject:1:7588cdad-751d-46a8-8546-caa28075a167",
+    "Medieuttrykk 3": "urn:subject:1:20bc82bc-62e3-4276-8629-84a65b8a6ad2"
 }
 
 def get_subject_topics(subject_name):
+    SUBJECTS_WITH_OM_FAGET = [
+        "Norsk (PB)", "Norsk (SF vg1)", "Norsk kort botid (SF vg1)", 
+        "Tysk 1", "Tysk 2", "Spansk 2",
+        "Norsk (SF vg2)", "Norsk (SF vg3)", "Religion og etikk",
+        "Mediesamfunnet 1", "Medieuttrykk 1",
+        "Mediesamfunnet 2", "Medieuttrykk 2",
+        "Mediesamfunnet 3", "Medieuttrykk 3"
+    ]
+
     root_node_id = SUBJECTS.get(subject_name)
     
     if not root_node_id:
@@ -368,8 +395,8 @@ def get_subject_topics(subject_name):
         topics = []
         for child in children:
             name = child.get('name', '').strip()
-            # Filter out "Om faget" (robust check) - ENABLED AGAIN
-            if name.lower() == "om faget":
+            # Filter out "Om faget" unless allowed
+            if name.lower() == "om faget" and subject_name not in SUBJECTS_WITH_OM_FAGET:
                 continue
                 
             # We only want topics, not resources (though at this level they should be topics)
@@ -385,7 +412,7 @@ def get_subject_topics(subject_name):
                 sub_children = get_nodes(child.get('id'))
                 for sub in sub_children:
                     sub_name = sub.get('name', '').strip()
-                    if sub_name.lower() == "om faget":
+                    if sub_name.lower() == "om faget" and subject_name not in SUBJECTS_WITH_OM_FAGET:
                         continue
                         
                     topic_data['children'].append({
@@ -405,13 +432,21 @@ def get_subject_topics(subject_name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scrape NDLA subject content.")
     parser.add_argument("subject", help="Name of the subject (e.g., 'Historie vg3')")
-    parser.add_argument("url", help="Start URL or Node ID")
-    
+    parser.add_argument("url", nargs="?", help="Start URL or Node ID (optional if subject is known)")
+
     args = parser.parse_args()
     
-    scrape_subject(args.subject, args.url)
+    url = args.url
+    if not url:
+        url = SUBJECTS.get(args.subject)
+        if not url:
+            print(f"Error: URL not provided and subject '{args.subject}' not found in known subjects.")
+            exit(1) # Use exit(1) for non-zero exit code on error
+
+    scrape_subject(args.subject, url)
     
     # Automatically update HTML viewer
     print("\nUpdating HTML viewer...")
     generate_html()
     print("HTML viewer updated.")
+
