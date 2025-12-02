@@ -39,7 +39,7 @@ def generate_html():
         current_level["_articles"].append(row)
 
     # Recursive HTML Generation
-    def generate_html_recursive(node, level, parent_slug=""):
+    def generate_html_recursive(node, level, parent_slug="", subject_name=""):
         html = ""
         
         # 1. Render Articles in this node
@@ -70,6 +70,12 @@ def generate_html():
         # 2. Render Sub-topics
         for key, value in node.items():
             if key == "_articles": continue
+            
+            # Check for redundancy at Level 1
+            if level == 1 and key == subject_name:
+                # Flatten: Recurse without creating a new container/header
+                html += generate_html_recursive(value, level, parent_slug, subject_name)
+                continue
             
             slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
             
@@ -104,13 +110,13 @@ def generate_html():
                 html += f'<div id="{slug}" class="{container_class}">'
                 if show_header:
                     html += f'<h2 class="{header_class}">{key}</h2>'
-                html += generate_html_recursive(value, level + 1, slug)
+                html += generate_html_recursive(value, level + 1, slug, subject_name)
                 html += '</div>'
             else:
                 # Higher levels are just structural dividers
                 html += f'<div id="{slug}">'
                 html += f'<div class="{header_class}">{key}</div>'
-                html += generate_html_recursive(value, level + 1, slug)
+                html += generate_html_recursive(value, level + 1, slug, subject_name)
                 html += '</div>'
                 
         return html
@@ -142,12 +148,25 @@ def generate_html():
         
         # Let's modify the recursive function to handle sorting and collapsibility.
         
-    def generate_sidebar_recursive(node, level, parent_slug=""):
+    def generate_sidebar_recursive(node, level, parent_slug="", subject_name=""):
         html = ""
         
         # Sort keys: "Diverse" last, others alphabetically
         keys = [k for k in node.keys() if k != "_articles"]
         keys.sort()
+        if "Diverse" in keys:
+            keys.remove("Diverse")
+            keys.append("Diverse")
+            
+        for key in keys:
+            value = node[key]
+            slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
+            
+            # Check for redundancy at Level 1
+            if level == 1 and key == subject_name:
+                # Flatten: Recurse without creating a new list item
+                html += generate_sidebar_recursive(value, level, parent_slug, subject_name)
+                continue
         if "Diverse" in keys:
             keys.remove("Diverse")
             keys.append("Diverse")
@@ -183,7 +202,7 @@ def generate_html():
                             html += f'<li><a href="#" onclick="var el = document.getElementById(\'{art_slug}\'); if(el) {{ el.open = true; el.scrollIntoView({{behavior: \'smooth\', block: \'center\'}}); }} return false;">{row["title"]}</a></li>'
                     
                     # 2. Recurse
-                    html += generate_sidebar_recursive(value, level + 1, slug)
+                    html += generate_sidebar_recursive(value, level + 1, slug, subject_name)
                     html += "</ul>"
                 else:
                     # Normal: Collapsible Header
@@ -200,9 +219,12 @@ def generate_html():
                         for row in articles:
                             art_slug = f"{slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
                             html += f'<li><a href="#" onclick="var el = document.getElementById(\'{art_slug}\'); if(el) {{ el.open = true; el.scrollIntoView({{behavior: \'smooth\', block: \'center\'}}); }} return false;">{row["title"]}</a></li>'
-                    
-                    # 2. Recurse for deeper levels
-                    html += generate_sidebar_recursive(value, level + 1, slug)
+            # Recursion
+            # If level 1 (Subject) -> Level 2 (Topic)
+            # We want to show children of Level 2
+            
+                    children_html = generate_sidebar_recursive(value, level + 1, slug, subject_name)
+                    html += children_html
                     html += """
                         </ul>
                     </details>
@@ -218,7 +240,7 @@ def generate_html():
                         <details>
                             <summary><a href="#" onclick="document.getElementById(\'{slug}\').scrollIntoView({{behavior: \'smooth\'}}); return false;" style="display:inline;">{key}</a></summary>
                             <ul>
-                                {generate_sidebar_recursive(value, level + 1, slug)}
+                                {generate_sidebar_recursive(value, level + 1, slug, subject_name)}
                             </ul>
                         </details>
                     </li>
@@ -421,7 +443,7 @@ def generate_html():
     for subject in sorted_subjects:
         root_node = hierarchy[subject]
         html_content += f'<div class="nav-level-1" style="color: #e67e22; font-weight: bold; padding-left: 10px; margin-top: 20px;">{subject}</div>'
-        html_content += generate_sidebar_recursive(root_node, 1, subject)
+        html_content += generate_sidebar_recursive(root_node, 1, subject, subject)
     
     html_content += """
     </div>
@@ -441,7 +463,7 @@ def generate_html():
     for subject in sorted_subjects:
         root_node = hierarchy[subject]
         html_content += f'<h1 class="subject-header">{subject}</h1>'
-        html_content += generate_html_recursive(root_node, 1, subject)
+        html_content += generate_html_recursive(root_node, 1, subject, subject)
 
     html_content += """
     </div>
