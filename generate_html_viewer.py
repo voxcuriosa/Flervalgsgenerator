@@ -74,9 +74,9 @@ def generate_html():
         for key, value in node.items():
             if key == "_articles": continue
             
-            # Safety filter for "Om faget"
-            if normalize_key(key) == "omfaget":
-                continue
+            # Safety filter for "Om faget" - DISABLED
+            # if normalize_key(key) == "omfaget":
+            #     continue
             
             # Check for redundancy at Level 1
             if level == 1:
@@ -167,9 +167,18 @@ def generate_html():
             keys.remove("Diverse")
             keys.append("Diverse")
             
+        # Render direct articles for this node (e.g. "Om faget" which has no sub-topics)
+        if "_articles" in node:
+            html += "<ul>"
+            articles = sorted(node["_articles"], key=lambda x: x['title'])
+            for row in articles:
+                art_slug = f"{parent_slug}-{row['title']}".replace(" ", "-").replace(":", "").replace(",", "").lower()
+                html += f'<li><a href="#" onclick="var el = document.getElementById(\'{art_slug}\'); if(el) {{ el.open = true; el.scrollIntoView({{behavior: \'smooth\', block: \'center\'}}); }} return false;">{row["title"]}</a></li>'
+            html += "</ul>"
+
         for key in keys:
-            if normalize_key(key) == "omfaget":
-                continue
+            # if normalize_key(key) == "omfaget":
+            #     continue
             value = node[key]
             slug = f"{parent_slug}-{key}".replace(" ", "-").replace(":", "").replace(",", "").lower()
             
