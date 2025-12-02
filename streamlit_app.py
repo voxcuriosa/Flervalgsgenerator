@@ -1313,7 +1313,7 @@ def render_admin_panel():
                     for prev_year in range(year - 1, 2022, -1):
                         if prev_year in yearly_sums:
                             comp_row = yearly_sums[prev_year].copy()
-                            comp_row['Periode'] = f"Sum {prev_year} (tidligere år)"
+                            comp_row['Periode'] = f"Sum {prev_year}"
                             rows.append(comp_row)
             
             # Create DataFrame
@@ -1323,8 +1323,26 @@ def render_admin_panel():
                 cols = ["Periode"] + devices
                 display_df = display_df[cols]
                 
+                # Column Visibility Toggle
+                # Default hidden columns
+                default_hidden = ["Kjellerstue - Varmeovn", "Kjellerstue - Varmekabler ", "Vaskerom - varme"]
+                
+                # Determine default selection (All devices minus hidden ones)
+                default_selection = [d for d in devices if d not in default_hidden]
+                
+                selected_devices = st.multiselect(
+                    "Velg enheter som skal vises:",
+                    options=devices,
+                    default=default_selection
+                )
+                
+                # Filter DataFrame
+                final_cols = ["Periode"] + selected_devices
+                # Ensure Periode is always first and exists
+                display_df_filtered = display_df[final_cols]
+                
                 st.markdown("### Forbruksoversikt")
-                st.dataframe(display_df, hide_index=True, use_container_width=True)
+                st.dataframe(display_df_filtered, hide_index=True, use_container_width=True)
                 
                 # Debug Expander
                 with st.expander("Feilsøking (Debug)"):
@@ -1932,7 +1950,7 @@ def main():
     st.markdown(
         """
         <div style='text-align: center; color: #666;'>
-            <p>Utviklet av Christian Borchgrevink-Vigeland | v2.1.9</p>
+            <p>Utviklet av Christian Borchgrevink-Vigeland | v2.2.0</p>
         </div>
         """,
         unsafe_allow_html=True
