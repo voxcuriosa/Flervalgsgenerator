@@ -1329,9 +1329,66 @@ def render_admin_panel():
             # Create DataFrame
             if rows:
                 display_df = pd.DataFrame(rows)
-                # Ensure columns are in order: Periode, Dev1, Dev2...
-                cols = ["Periode"] + devices
-                display_df = display_df[cols]
+                
+                # --- Inject Manual Data for Husholdningen (forbruk) ---
+                husholdning_col = "Husholdningen (forbruk)"
+                
+                # Manual Data (kWh)
+                # Format: Year -> Month -> Value
+                manual_data = {
+                    2024: {
+                        1: 3386, 2: 2466, 3: 1826, 4: 2036, 5: 1405, 6: 1495,
+                        7: 1313, 8: 1456, 9: 1511, 10: 1802, 11: 2273, 12: 2833
+                    },
+                    2025: {
+                        1: 3148, 2: 2654, 3: 2362, 4: 1679, 5: 1549, 6: 1099,
+                        7: 1199, 8: 1224, 9: 1382, 10: 1921, 11: 2172
+                    }
+                }
+                
+                # Add column if not exists
+                if husholdning_col not in display_df.columns:
+                    display_df[husholdning_col] = ""
+
+                # Populate rows
+                for idx, row in display_df.iterrows():
+                    periode = row['Periode']
+                    
+                    # Check if it's a sum row
+                    if "**Sum" in periode:
+                        try:
+                            year = int(periode.replace("**Sum ", "").replace("**", ""))
+                            if year in manual_data:
+                                total = sum(manual_data[year].values())
+                                display_df.at[idx, husholdning_col] = f"**{total}**"
+                        except ValueError:
+                            pass
+                    else:
+                        # Parse "Month Year"
+                        try:
+                            parts = periode.split(" ")
+                            if len(parts) == 2:
+                                month_name = parts[0]
+                                year = int(parts[1])
+                                month_idx = month_names.index(month_name) + 1
+                                
+                                if year in manual_data and month_idx in manual_data[year]:
+                                    display_df.at[idx, husholdning_col] = str(manual_data[year][month_idx])
+                        except (ValueError, IndexError):
+                            pass
+
+                # Ensure columns are in order: Periode, Husholdningen (forbruk), Dev1, Dev2...
+                # Remove Husholdningen from devices list if it was there (unlikely)
+                other_cols = [c for c in devices if c != husholdning_col]
+                cols = ["Periode", husholdning_col] + other_cols
+                
+                # Reorder and handle missing columns safely
+                final_cols_ordered = [c for c in cols if c in display_df.columns]
+                display_df = display_df[final_cols_ordered]
+                
+                # Update devices list for multiselect to include the new column
+                devices = [husholdning_col] + other_cols
+                # --------------------------------------------------
                 
                 # Column Visibility Toggle
                 # Default hidden columns
