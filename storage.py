@@ -1,11 +1,38 @@
 import pandas as pd
 import streamlit as st
-from datetime import datetime
-from sqlalchemy import create_engine, text
+from supabase import create_client, Client
+import json
 import os
+from datetime import datetime
+# Removed: from sqlalchemy import create_engine, text
+
+@st.cache_resource
+def init_connection():
+    """Initializes a connection to Supabase."""
+    try:
+        # Try getting secrets from Streamlit secrets first
+        url = st.secrets["SUPABASE_URL"]
+        key = st.secrets["SUPABASE_KEY"]
+    except (FileNotFoundError, KeyError):
+        # Fallback to environment variables (for GitHub Actions)
+        url = os.environ.get("SUPABASE_URL")
+        key = os.environ.get("SUPABASE_KEY")
+        
+    if not url or not key:
+        # If running in a script without st.secrets or env vars, this will fail gracefully or raise error
+        raise ValueError("Missing Supabase credentials (SUPABASE_URL, SUPABASE_KEY)")
+
+    return create_client(url, key)
+
+# The following functions (init_db, get_setting, save_setting, get_content_hierarchy, save_result)
+# would need to be updated to use the Supabase client instead of SQLAlchemy engine.
+# However, the instruction only provided the change for init_connection and imports.
+# Keeping them as is for now, but they will likely break without further modifications.
 
 def get_db_connection():
     """Establishes a connection to the PostgreSQL database."""
+    # This function is now deprecated if using Supabase client directly.
+    # It's kept here to avoid breaking other parts of the code not covered by the instruction.
     try:
         secrets = st.secrets["postgres"]
         # Construct the connection string

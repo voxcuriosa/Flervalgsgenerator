@@ -1,15 +1,24 @@
 import requests
 import pandas as pd
-from datetime import datetime
-
-HOMEY_ID = "65abb7fff169f294d54ef2f4"
-API_KEY = "4031c90e-348c-4b76-8f54-ef38b546081d:62ce7efa-9615-4004-b60b-53f3978f81fc:f94e3d39babfb9936746cf3a7f02a3712e7e62d1"
+from datetime import datetime, timedelta
+import os
 
 class HomeyClient:
     def __init__(self):
-        self.base_url = f"https://{HOMEY_ID}.connect.athom.com/api/manager/devices/device"
+        # Try to get credentials from environment variables first (for GitHub Actions)
+        self.homey_id = os.environ.get("HOMEY_ID")
+        self.api_key = os.environ.get("API_KEY")
+        
+        # Fallback to hardcoded values (for local testing if env vars missing)
+        if not self.homey_id:
+            self.homey_id = "5c9096191244054e36667527"
+        if not self.api_key:
+            self.api_key = "490a6d05-9551-4e43-9b43-46d332661596"
+            
+        self.base_url = f"https://{self.homey_id}.connect.athom.com/api/manager/insights"
         self.headers = {
-            "Authorization": f"Bearer {API_KEY}"
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
         }
 
     def get_energy_data(self):
