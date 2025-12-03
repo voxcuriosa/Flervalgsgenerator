@@ -2513,7 +2513,12 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.2.4")
+                try:
+                    with open("version.txt", "r") as f:
+                        version = f.read().strip()
+                except FileNotFoundError:
+                    version = "v2.2.5" # Fallback
+                st.sidebar.caption(version)
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -2567,7 +2572,12 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.2.4")
+    try:
+        with open("version.txt", "r") as f:
+            version = f.read().strip()
+    except FileNotFoundError:
+        version = "v2.2.5" # Fallback
+    st.sidebar.caption(version)
 
 if __name__ == "__main__":
     main()
