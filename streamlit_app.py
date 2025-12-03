@@ -1251,8 +1251,7 @@ def render_admin_panel():
                         if year == 2025 and month in estimates_2025 and dev == "Bad kjeller - Varmekabler":
                             consumption = estimates_2025[month]
                             row_data[dev] = f"{consumption}"
-                            # We don't add to year_total here because we use the robust sum logic below, 
-                            # but we will need to add it manually to the sum row later.
+                            year_total[dev] += consumption
                             has_month_data = True
                             continue
 
@@ -1306,9 +1305,9 @@ def render_admin_panel():
                                     total_acc += diff
                                 prev_val = curr_val
                         
-                        # Add estimates to sum if applicable
+                        # Use year_total for Bad kjeller 2025 (since we manually injected data)
                         if year == 2025 and dev == "Bad kjeller - Varmekabler":
-                            total_acc += sum(estimates_2025.values())
+                            total_acc = year_total[dev]
 
                         if total_acc > 0:
                             sum_row[dev] = f"**{total_acc:.0f}**"
