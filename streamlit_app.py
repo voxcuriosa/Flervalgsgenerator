@@ -1250,7 +1250,7 @@ def render_admin_panel():
                         # Check for estimate first (Bad kjeller 2025)
                         if year == 2025 and month in estimates_2025 and dev == "Bad kjeller - Varmekabler":
                             consumption = estimates_2025[month]
-                            row_data[dev] = f"{consumption}"
+                            row_data[dev] = f"{consumption} (Estimert)"
                             year_total[dev] += consumption
                             has_month_data = True
                             continue
