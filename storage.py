@@ -4,7 +4,7 @@ from supabase import create_client, Client
 import json
 import os
 from datetime import datetime
-# Removed: from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text
 
 @st.cache_resource
 def init_connection():
@@ -31,22 +31,39 @@ def init_connection():
 
 def get_db_connection():
     """Establishes a connection to the PostgreSQL database."""
-    # This function is now deprecated if using Supabase client directly.
-    # It's kept here to avoid breaking other parts of the code not covered by the instruction.
     try:
-        secrets = st.secrets["postgres"]
+        # Try getting secrets from Streamlit secrets first
+        try:
+            secrets = st.secrets["postgres"]
+            host = secrets['host']
+            port = secrets['port']
+            dbname = secrets['dbname']
+            user = secrets['user']
+            password = secrets['password']
+            sslmode = secrets['sslmode']
+            sslrootcert = secrets['sslrootcert']
+        except (FileNotFoundError, KeyError):
+            # Fallback to environment variables (for GitHub Actions)
+            host = os.environ.get("POSTGRES_HOST")
+            port = os.environ.get("POSTGRES_PORT")
+            dbname = os.environ.get("POSTGRES_DB")
+            user = os.environ.get("POSTGRES_USER")
+            password = os.environ.get("POSTGRES_PASSWORD")
+            sslmode = "require" # Default for Aiven
+            sslrootcert = "ca.pem" # Default for Aiven in this repo
+            
+        if not host or not user or not password:
+             print("DEBUG: Missing database credentials")
+             return None
+
         # Construct the connection string
-        # Note: We need to handle the SSL certificate path correctly
-        # In Streamlit Cloud, we might need to write the CA cert to a temp file if it's not present
-        # But for now, we assume ca.pem is in the root
-        
-        db_url = f"postgresql://{secrets['user']}:{secrets['password']}@{secrets['host']}:{secrets['port']}/{secrets['dbname']}?sslmode={secrets['sslmode']}&sslrootcert={secrets['sslrootcert']}"
+        db_url = f"postgresql://{user}:{password}@{host}:{port}/{dbname}?sslmode={sslmode}&sslrootcert={sslrootcert}"
         
         engine = create_engine(db_url)
         return engine
     except Exception as e:
         print(f"DEBUG: Database connection error: {e}")
-        st.error(f"Database connection error: {e}")
+        # st.error might fail if running headless, but print works
         return None
 
 def init_db():

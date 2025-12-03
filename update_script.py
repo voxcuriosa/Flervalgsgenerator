@@ -7,7 +7,7 @@ def main():
     print("Starting monthly energy data update...")
     
     # Check for required environment variables
-    required_vars = ["HOMEY_ID", "API_KEY", "SUPABASE_URL", "SUPABASE_KEY"]
+    required_vars = ["HOMEY_ID", "API_KEY", "POSTGRES_HOST", "POSTGRES_USER", "POSTGRES_PASSWORD"]
     missing_vars = [var for var in required_vars if not os.environ.get(var)]
     
     if missing_vars:
