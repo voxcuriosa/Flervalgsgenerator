@@ -141,7 +141,7 @@ def process_node(node, path_stack, engine, subject_name):
     # Filter out "Om faget" - ONLY for specific subjects per user request
     # Drop for: Geografi, Matematikk 1P, Matematikk 1T
     # Keep for: Norsk (PB), Norsk (SF vg1), Norsk kort botid (SF vg1), Tysk 1, Tysk 2
-    subjects_to_skip_om_faget = ["Geografi", "Matematikk 1P", "Matematikk 1T"]
+    subjects_to_skip_om_faget = ["Geografi", "Matematikk 1P", "Matematikk 1T", "Kroppsøving (vg2)"]
     
     if node_name == "Om faget" and subject_name in subjects_to_skip_om_faget:
         print(f"Skipping 'Om faget' for {subject_name}")
@@ -348,7 +348,7 @@ SUBJECTS = {
     "Råvare, produksjon, salg og service (RM-KOS vg2)": "urn:subject:1:9e515764-0ce6-49d5-8ecd-1cde8b08a33f",
     "Kroppsøving (vg1)": "urn:subject:1:ca607ca1-4dd0-4bbd-954f-67461f4b96fc",
     "Spansk 2": "urn:subject:ca64e4ed-8b7f-4b63-b4c2-85cf262dc134",
-    "Kroppsøving (vg2)": "urn:subject:ef3ac9038dd8",
+    "Kroppsøving (vg2)": "urn:subject:1:fa2a7d6a-5e8e-4976-82c0-9a1266684c1c",
     "Matematikk 2P": "urn:subject:1:36bbf8f7-8d78-406e-b554-920393006e8d",
     "Norsk (SF vg2)": "urn:subject:c86dc51f-59f1-4c32-8535-6131c36013d8",
     "Matematikk R1": "urn:subject:1:17014b16-d4f9-4034-8b17-0c6248366487",

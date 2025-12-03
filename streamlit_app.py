@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st # Force reload v2.2.4 fix
 import pandas as pd
 import os
 from quiz_generator import generate_quiz
@@ -1313,7 +1313,7 @@ def render_admin_panel():
                     for prev_year in range(year - 1, 2022, -1):
                         if prev_year in yearly_sums:
                             comp_row = yearly_sums[prev_year].copy()
-                            comp_row['Periode'] = f"Sum {prev_year}"
+                            comp_row['Periode'] = f"**SUM {prev_year}**"
                             rows.append(comp_row)
             
             # Create DataFrame
@@ -1322,6 +1322,42 @@ def render_admin_panel():
                 # Ensure columns are in order: Periode, Dev1, Dev2...
                 cols = ["Periode"] + devices
                 display_df = display_df[cols]
+
+                # --- Inject Estimated Data for Bad kjeller 2025 ---
+                # User request: Fill missing/zero values with 2024 data
+                bad_kjeller_col = "Bad kjeller - Varmekabler"
+                if bad_kjeller_col in display_df.columns:
+                    estimates = {
+                        "Mars 2025": "243", # User said 243 for April? Wait. User list: 62, 243, 97...
+                        # User list: 62 (Mar?), 243 (Apr?), 97 (May?)...
+                        # User text: "Tallene som mangler eller er 0 for Bad kjeller 2025 kan fylles med samme tall som for de samme månedene i 2024... Altså: 62, 243, 97, 180, 146, 142, 165, 310, 392"
+                        # Let's map them to months starting from March (since Jan/Feb have data)
+                        # March: 62
+                        # April: 243
+                        # May: 97
+                        # June: 180
+                        # July: 146
+                        # August: 142
+                        # September: 165
+                        # October: 310
+                        # November: 392
+                        "Mars 2025": "62",
+                        "April 2025": "243",
+                        "Mai 2025": "97",
+                        "Juni 2025": "180",
+                        "Juli 2025": "146",
+                        "August 2025": "142",
+                        "September 2025": "165",
+                        "Oktober 2025": "310",
+                        "November 2025": "392"
+                    }
+                    
+                    for period, value in estimates.items():
+                        # Find the row with this period
+                        mask = display_df['Periode'] == period
+                        if mask.any():
+                            display_df.loc[mask, bad_kjeller_col] = value
+                # --------------------------------------------------
                 
                 # Column Visibility Toggle
                 # Default hidden columns
@@ -1946,15 +1982,7 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("---")
-    st.markdown(
-        """
-        <div style='text-align: center; color: #666;'>
-            <p>Utviklet av Christian Borchgrevink-Vigeland | v2.2.0</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+
 
 
     # --- Authentication Logic (Must run before widgets) ---
@@ -2510,7 +2538,7 @@ def main():
                 
                 # Version at the bottom (Login Screen)
                 st.sidebar.markdown("---")
-                st.sidebar.caption("v2.2.3")
+                st.sidebar.caption("v2.2.4")
                 return
 
     # --- Main App (Only reached if logged in) ---
@@ -2564,7 +2592,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.2.3")
+    st.sidebar.caption("v2.2.4")
 
 if __name__ == "__main__":
     main()
