@@ -1330,8 +1330,8 @@ def render_admin_panel():
             if rows:
                 display_df = pd.DataFrame(rows)
                 
-                # --- Inject Manual Data for Husholdningen (forbruk) ---
-                husholdning_col = "Husholdningen (forbruk)"
+                # --- Inject Manual Data for Totalt ---
+                husholdning_col = "Totalt"
                 
                 # Manual Data (kWh)
                 # Format: Year -> Month -> Value
