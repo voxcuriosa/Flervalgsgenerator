@@ -1214,6 +1214,19 @@ def render_admin_panel():
                            "Juli", "August", "September", "Oktober", "November", "Desember"]
 
             yearly_sums = {}
+            
+            # Estimates for Bad kjeller 2025
+            estimates_2025 = {
+                3: 62,   # Mars
+                4: 243,  # April
+                5: 97,   # Mai
+                6: 180,  # Juni
+                7: 146,  # Juli
+                8: 142,  # August
+                9: 165,  # September
+                10: 310, # Oktober
+                11: 392  # November
+            }
 
             for year in years:
                 year_total = {dev: 0.0 for dev in devices}
@@ -1234,39 +1247,41 @@ def render_admin_panel():
                     
                     has_month_data = False
                     for dev in devices:
+                        # Check for estimate first (Bad kjeller 2025)
+                        if year == 2025 and month in estimates_2025 and dev == "Bad kjeller - Varmekabler":
+                            consumption = estimates_2025[month]
+                            row_data[dev] = f"{consumption}"
+                            # We don't add to year_total here because we use the robust sum logic below, 
+                            # but we will need to add it manually to the sum row later.
+                            has_month_data = True
+                            continue
+
                         val_start = get_reading(start_date, dev)
                         val_end = get_reading(end_date, dev)
                         
                         if val_start is not None and val_end is not None:
                             consumption = val_end - val_start
                             
-                            # Handle meter reset (e.g. VVB in May 2024)
-                            # If end value is less than start value, assume reset to 0 at some point
-                            # and that the end value represents the consumption from 0.
-                            # (Or consumption = (MAX - start) + end, but we don't know MAX).
-                            # Given the data, assuming consumption = val_end works for the VVB case (16 -> 381).
-                            # Actually, for VVB May: Start 10972, End 381. 
-                            # If we assume reset to 0 happened exactly at start of month: consumption = 381.
+                            # Handle meter reset
                             if consumption < 0:
                                 consumption = val_end
                             
-                            row_data[dev] = f"{consumption:.0f}" # Integer display as per user example
+                            row_data[dev] = f"{consumption:.0f}"
                             year_total[dev] += consumption
                             has_month_data = True
                         else:
                             row_data[dev] = ""
                     
+                    # Always append row if it has data OR if it's an estimated month for 2025
                     if has_month_data:
                         rows.append(row_data)
                         has_data_for_year = True
                 
                 # Add Summary Row for Year
                 if has_data_for_year:
-                    sum_row = {"Periode": f"**SUM {year}**"}
+                    sum_row = {"Periode": f"**Sum {year}**"}
                     for dev in devices:
                         # Calculate total for year based on Latest - Earliest reading in that year
-                        # This handles missing monthly data better than summing monthly diffs
-                        # IMPORTANT: We must include 1/1 of the NEXT year to capture the consumption of December.
                         start_date = pd.Timestamp(year, 1, 1)
                         end_date = pd.Timestamp(year + 1, 1, 1)
                         
@@ -1276,30 +1291,26 @@ def render_admin_panel():
                             (readings_df['timestamp'] <= end_date)
                         ].sort_values('timestamp')
                         
-                        
+                        total_acc = 0
                         if not dev_readings.empty:
-                            # Robust Logic: Iterate all readings in the year and sum differences.
-                            # This handles gaps (by summing the big jump) and resets (by detecting negative diff).
-                            total_acc = 0
                             prev_val = dev_readings.iloc[0]['energy_kwh']
-                            
                             for _, r in dev_readings.iloc[1:].iterrows():
                                 curr_val = r['energy_kwh']
                                 diff = curr_val - prev_val
-                                
-                                # Reset Logic:
-                                # Only treat as reset if diff is negative AND current value is significantly lower (e.g. < 50% of prev)
                                 if diff < 0:
                                     if curr_val < (prev_val * 0.5):
-                                        # Real Reset
                                         total_acc += curr_val
                                     else:
-                                        # Small correction, just add the negative diff (net change)
                                         total_acc += diff
                                 else:
                                     total_acc += diff
                                 prev_val = curr_val
-                                
+                        
+                        # Add estimates to sum if applicable
+                        if year == 2025 and dev == "Bad kjeller - Varmekabler":
+                            total_acc += sum(estimates_2025.values())
+
+                        if total_acc > 0:
                             sum_row[dev] = f"**{total_acc:.0f}**"
                         else:
                             sum_row[dev] = "0"
@@ -1313,7 +1324,7 @@ def render_admin_panel():
                     for prev_year in range(year - 1, 2022, -1):
                         if prev_year in yearly_sums:
                             comp_row = yearly_sums[prev_year].copy()
-                            comp_row['Periode'] = f"**SUM {prev_year}**"
+                            comp_row['Periode'] = f"**Sum {prev_year}**"
                             rows.append(comp_row)
             
             # Create DataFrame
@@ -1322,42 +1333,6 @@ def render_admin_panel():
                 # Ensure columns are in order: Periode, Dev1, Dev2...
                 cols = ["Periode"] + devices
                 display_df = display_df[cols]
-
-                # --- Inject Estimated Data for Bad kjeller 2025 ---
-                # User request: Fill missing/zero values with 2024 data
-                bad_kjeller_col = "Bad kjeller - Varmekabler"
-                if bad_kjeller_col in display_df.columns:
-                    estimates = {
-                        "Mars 2025": "243", # User said 243 for April? Wait. User list: 62, 243, 97...
-                        # User list: 62 (Mar?), 243 (Apr?), 97 (May?)...
-                        # User text: "Tallene som mangler eller er 0 for Bad kjeller 2025 kan fylles med samme tall som for de samme månedene i 2024... Altså: 62, 243, 97, 180, 146, 142, 165, 310, 392"
-                        # Let's map them to months starting from March (since Jan/Feb have data)
-                        # March: 62
-                        # April: 243
-                        # May: 97
-                        # June: 180
-                        # July: 146
-                        # August: 142
-                        # September: 165
-                        # October: 310
-                        # November: 392
-                        "Mars 2025": "62",
-                        "April 2025": "243",
-                        "Mai 2025": "97",
-                        "Juni 2025": "180",
-                        "Juli 2025": "146",
-                        "August 2025": "142",
-                        "September 2025": "165",
-                        "Oktober 2025": "310",
-                        "November 2025": "392"
-                    }
-                    
-                    for period, value in estimates.items():
-                        # Find the row with this period
-                        mask = display_df['Periode'] == period
-                        if mask.any():
-                            display_df.loc[mask, bad_kjeller_col] = value
-                # --------------------------------------------------
                 
                 # Column Visibility Toggle
                 # Default hidden columns
