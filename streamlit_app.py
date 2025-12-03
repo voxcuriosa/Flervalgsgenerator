@@ -2592,7 +2592,7 @@ def main():
 
     # Version at the bottom (Main App)
     st.sidebar.markdown("---")
-    st.sidebar.caption("v2.2.4")
+    st.sidebar.caption("v2.2.4 (DEBUG LOADED)")
 
 if __name__ == "__main__":
     main()
