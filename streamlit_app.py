@@ -73,7 +73,7 @@ TRANSLATIONS = {
         "new_quiz": "Ta ny quiz",
         "admin_panel": "Vis Admin-panel",
         "admin_header": "Admin: Resultater (fra Database)",
-        "admin_tools": "**Verktøy:**\n- [Åpne NDLA Database-visning](http://localhost:8000/ndla_content_viewer.html) (Krever at server kjører lokalt)",
+        "admin_tools": "**Verktøy:**\n- [Åpne NDLA Database-visning](ndla_content_viewer.html) (Krever at server kjører lokalt)",
         "select_user": "Velg bruker for detaljer",
         "results_for": "Resultater for: {}",
         "total_quizzes": "Antall Quizer",

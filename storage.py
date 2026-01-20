@@ -30,9 +30,25 @@ def init_connection():
 # Keeping them as is for now, but they will likely break without further modifications.
 
 def get_db_connection():
-    """Establishes a connection to the PostgreSQL database."""
+    """Establishes a connection to the database (PostgreSQL or MySQL)."""
     try:
-        # Try getting secrets from Streamlit secrets first
+        # Check for MySQL configuration first
+        try:
+            secrets = st.secrets["mysql"]
+            host = secrets['host']
+            port = secrets.get('port', 3306)
+            dbname = secrets['dbname']
+            user = secrets['user']
+            password = secrets['password']
+            
+            # MySQL Connection String
+            db_url = f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{dbname}"
+            engine = create_engine(db_url)
+            return engine
+        except (FileNotFoundError, KeyError):
+            pass # Fall through to Postgres
+
+        # Try getting secrets from Streamlit secrets first (Postgres)
         try:
             secrets = st.secrets["postgres"]
             host = secrets['host']
@@ -42,28 +58,22 @@ def get_db_connection():
             password = secrets['password']
             sslmode = secrets['sslmode']
             sslrootcert = secrets['sslrootcert']
-        except (FileNotFoundError, KeyError):
-            # Fallback to environment variables (for GitHub Actions)
-            host = os.environ.get("POSTGRES_HOST")
-            port = os.environ.get("POSTGRES_PORT")
-            dbname = os.environ.get("POSTGRES_DB")
-            user = os.environ.get("POSTGRES_USER")
-            password = os.environ.get("POSTGRES_PASSWORD")
-            sslmode = "require" # Default for Aiven
-            sslrootcert = "ca.pem" # Default for Aiven in this repo
             
-        if not host or not user or not password:
-             print("DEBUG: Missing database credentials")
-             return None
+            # Construct the connection string
+            db_url = f"postgresql://{user}:{password}@{host}:{port}/{dbname}?sslmode={sslmode}&sslrootcert={sslrootcert}"
+            engine = create_engine(db_url)
+            return engine
+        except (FileNotFoundError, KeyError):
+            pass
+            
+        # Fallback to environment variables
+        # Check for Generic DB_URL
+        if os.environ.get("DATABASE_URL"):
+            return create_engine(os.environ.get("DATABASE_URL"))
 
-        # Construct the connection string
-        db_url = f"postgresql://{user}:{password}@{host}:{port}/{dbname}?sslmode={sslmode}&sslrootcert={sslrootcert}"
-        
-        engine = create_engine(db_url)
-        return engine
+        return None
     except Exception as e:
         print(f"DEBUG: Database connection error: {e}")
-        # st.error might fail if running headless, but print works
         return None
 
 def init_db():
@@ -71,11 +81,20 @@ def init_db():
     engine = get_db_connection()
     if engine:
         try:
+            # Determine dialect for Auto Increment syntax
+            dialect = engine.dialect.name
+            if dialect == 'mysql':
+                id_col = "id INTEGER AUTO_INCREMENT PRIMARY KEY"
+                ts_default = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+            else: # Postgres
+                id_col = "id SERIAL PRIMARY KEY"
+                ts_default = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+
             with engine.connect() as conn:
                 # Create quiz_results table if it doesn't exist
-                conn.execute(text("""
+                conn.execute(text(f"""
                     CREATE TABLE IF NOT EXISTS quiz_results (
-                        id SERIAL PRIMARY KEY,
+                        {id_col},
                         timestamp TEXT,
                         user_email TEXT,
                         user_name TEXT,
@@ -88,21 +107,27 @@ def init_db():
                 """))
                 
                 # Create learning_materials table for NDLA content
-                conn.execute(text("""
+                conn.execute(text(f"""
                     CREATE TABLE IF NOT EXISTS learning_materials (
-                        id SERIAL PRIMARY KEY,
+                        {id_col},
                         topic TEXT,
                         title TEXT,
                         content TEXT,
                         url TEXT,
                         source_id TEXT UNIQUE,
                         path TEXT,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        created_at {ts_default}
                     );
                 """))
                 
                 # Create settings table
                 conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS settings (
+                        `key` TEXT,
+                        value TEXT,
+                        PRIMARY KEY (`key`(100))
+                    ) CHARACTER SET utf8mb4;
+                """) if dialect == 'mysql' else text("""
                     CREATE TABLE IF NOT EXISTS settings (
                         key TEXT PRIMARY KEY,
                         value TEXT
@@ -110,9 +135,9 @@ def init_db():
                 """))
                 
                 # Create login_logs table
-                conn.execute(text("""
+                conn.execute(text(f"""
                     CREATE TABLE IF NOT EXISTS login_logs (
-                        id SERIAL PRIMARY KEY,
+                        {id_col},
                         timestamp TEXT,
                         user_email TEXT,
                         user_name TEXT
@@ -124,10 +149,14 @@ def init_db():
                     CREATE TABLE IF NOT EXISTS user_permissions (
                         user_email TEXT PRIMARY KEY,
                         can_download BOOLEAN DEFAULT FALSE
+                    ) CHARACTER SET utf8mb4;
+                """) if dialect == 'mysql' else text("""
+                    CREATE TABLE IF NOT EXISTS user_permissions (
+                        user_email TEXT PRIMARY KEY,
+                        can_download BOOLEAN DEFAULT FALSE
                     );
                 """))
                 
-
                 conn.commit()
         except Exception as e:
             print(f"DEBUG: Database init error: {e}")
@@ -152,13 +181,21 @@ def save_setting(key, value):
     engine = get_db_connection()
     if engine:
         try:
+            dialect = engine.dialect.name
             with engine.connect() as conn:
-                conn.execute(text("""
-                    INSERT INTO settings (key, value) 
-                    VALUES (:key, :value) 
-                    ON CONFLICT (key) 
-                    DO UPDATE SET value = :value
-                """), {"key": key, "value": str(value)})
+                if dialect == 'mysql':
+                    conn.execute(text("""
+                        INSERT INTO settings (`key`, value) 
+                        VALUES (:key, :value) 
+                        ON DUPLICATE KEY UPDATE value = :value
+                    """), {"key": key, "value": str(value)})
+                else: # Postgres
+                    conn.execute(text("""
+                        INSERT INTO settings (key, value) 
+                        VALUES (:key, :value) 
+                        ON CONFLICT (key) 
+                        DO UPDATE SET value = :value
+                    """), {"key": key, "value": str(value)})
                 conn.commit()
                 return True
         except Exception as e:

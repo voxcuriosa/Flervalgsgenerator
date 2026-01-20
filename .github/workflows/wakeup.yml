@@ -1,0 +1,16 @@
+name: Wake Up App
+
+on:
+  schedule:
+    # Run at 06:00 UTC every day
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allows manual triggering from Actions tab
+
+jobs:
+  wakeup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up Streamlit App
+        run: |
+          curl -I https://flervalg.streamlit.app/ || true
+          echo "Ping sent to Streamlit App"
