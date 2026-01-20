@@ -10,10 +10,11 @@ jobs:
   wakeup:
     runs-on: ubuntu-latest
     steps:
-      - name: Random Delay (Human behavior)
+      - name: Random Delay (Save Quota)
         run: |
-          # Sleep for a random time between 1 minute and 4 hours (14400 seconds)
-          SLEEP_TIME=$((1 + RANDOM % 14400))
+          # Sleep for a random time between 1 and 45 minutes (max 2700 seconds)
+          # We mitigate usage to save your 2000 free monthly GitHub Action minutes.
+          SLEEP_TIME=$((1 + RANDOM % 2700))
           echo "Sleeping for $SLEEP_TIME seconds..."
           sleep $SLEEP_TIME
 
