@@ -10,6 +10,13 @@ jobs:
   wakeup:
     runs-on: ubuntu-latest
     steps:
+      - name: Random Delay (Human behavior)
+        run: |
+          # Sleep for a random time between 1 minute and 4 hours (14400 seconds)
+          SLEEP_TIME=$((1 + RANDOM % 14400))
+          echo "Sleeping for $SLEEP_TIME seconds..."
+          sleep $SLEEP_TIME
+
       - name: Wake up Streamlit App
         run: |
           curl -I https://flervalg.streamlit.app/ || true
