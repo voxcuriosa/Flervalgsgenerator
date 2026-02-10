@@ -2,23 +2,25 @@ name: Wake Up App
 
 on:
   schedule:
-    # Run at 06:00 UTC every day
-    - cron: '0 6 * * *'
+    # Run every hour to keep the app warm
+    - cron: '0 * * * *'
   workflow_dispatch: # Allows manual triggering from Actions tab
 
 jobs:
   wakeup:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Random Delay (Save Quota)
+      - name: Small Random Delay
         run: |
-          # Sleep for a random time between 1 and 45 minutes (max 2700 seconds)
-          # We mitigate usage to save your 2000 free monthly GitHub Action minutes.
-          SLEEP_TIME=$((1 + RANDOM % 2700))
+          # Sleep for a random time between 1 and 300 seconds (5 minutes)
+          SLEEP_TIME=$((1 + RANDOM % 300))
           echo "Sleeping for $SLEEP_TIME seconds..."
           sleep $SLEEP_TIME
 
       - name: Wake up Streamlit App
         run: |
-          curl -I https://flervalg.streamlit.app/ || true
+          # Use -L to follow redirects and -S to show errors
+          curl -L -S -f --max-time 30 https://flervalg.streamlit.app/ || echo "App might be booting..."
           echo "Ping sent to Streamlit App"
+
