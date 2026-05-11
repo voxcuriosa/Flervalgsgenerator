@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://flervalg.streamlit.app/sitemap.xml

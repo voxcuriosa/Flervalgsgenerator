@@ -20,6 +20,109 @@ import json
 # Page Config
 st.set_page_config(page_title="Flervalgsgenerator", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
 
+# SEO and Cookie Consent Injection
+seo_and_cookie_code = """
+<script>
+    // 1. SEO Injection (Targeting parent head)
+    const metaTags = [
+        {name: "description", content: "Generator for flervalgsoppgaver basert på NDLA og lærebøker. Lag quizer enkelt med AI."},
+        {name: "keywords", content: "flervalgsoppgaver, quiz generator, NDLA, skole, læring, AI, pedagogikk"},
+        {property: "og:title", content: "Flervalgsgenerator - Lag quizer på sekunder"},
+        {property: "og:description", content: "En moderne generator for lærere og elever. Bruk NDLA-stoff eller egne tekster."},
+        {property: "og:type", content: "website"}
+    ];
+
+    try {
+        const parentHead = window.parent.document.head;
+        metaTags.forEach(tag => {
+            const meta = window.parent.document.createElement('meta');
+            Object.entries(tag).forEach(([key, value]) => meta.setAttribute(key, value));
+            parentHead.appendChild(meta);
+        });
+    } catch (e) {
+        console.log("Could not inject SEO tags to parent head due to cross-origin restrictions.");
+    }
+
+    // 2. Cookie Consent Logic
+    function setConsent(status) {
+        localStorage.setItem('cookie_consent', status);
+        document.getElementById('cookie-banner').style.display = 'none';
+        if (status === 'accepted') {
+            enableTracking();
+        }
+    }
+
+    function enableTracking() {
+        // Initialize GA4 if accepted
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-YYPRYXPN70');
+        
+        // Load the script
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = "https://www.googletagmanager.com/gtag/js?id=G-YYPRYXPN70";
+        document.head.appendChild(script);
+    }
+
+    window.onload = function() {
+        const consent = localStorage.getItem('cookie_consent');
+        if (!consent) {
+            document.getElementById('cookie-banner').style.display = 'block';
+        } else if (consent === 'accepted') {
+            enableTracking();
+        }
+    };
+</script>
+
+<div id="cookie-banner" style="
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1e1e1e;
+    color: white;
+    padding: 20px;
+    z-index: 999999;
+    font-family: sans-serif;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+    text-align: center;
+">
+    <div style="max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+        <div style="text-align: left; flex: 1; min-width: 300px;">
+            <p style="margin: 0; font-size: 14px;">
+                Vi bruker informasjonskapsler for å forbedre din opplevelse og analysere trafikk. 
+                Godtar du bruken av informasjonskapsler?
+            </p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="setConsent('accepted')" style="
+                background: #00d1b2;
+                color: white;
+                border: none;
+                padding: 10px 25px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+            ">Ja</button>
+            <button onclick="setConsent('declined')" style="
+                background: #ff3860;
+                color: white;
+                border: none;
+                padding: 10px 25px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+            ">Nei</button>
+        </div>
+    </div>
+</div>
+"""
+# Inject into the app
+components.html(seo_and_cookie_code, height=0)
+
 # Constants
 PDF_FILES = ["HPT.pdf", "HPTx.pdf"]
 HTML_VIEWER_PATH = "ndla_content_viewer.html"
@@ -941,6 +1044,53 @@ def render_admin_panel():
         time.sleep(1)
         st.rerun()
 
+    # --- 0. NEW: Subtitle Translation Tool (Top Priority) ---
+    with st.expander("🎬 **Oversett og Konverter Undertekster (SRT/VTT)**", expanded=True):
+        st.write("Last opp en fil (SRT eller VTT) for å oversette den til norsk og konvertere til streng WebVTT-format som Microsoft Stream godtar.")
+        
+        uploaded_sub = st.file_uploader("Velg undertekstfil", type=["srt", "vtt"])
+        
+        if uploaded_sub:
+            # Read content
+            sub_content = uploaded_sub.getvalue().decode("utf-8")
+            st.text_area("Forhåndsvisning (første 500 tegn):", sub_content[:500] + "...", height=150)
+            
+            if st.button("Oversett til Norsk & Konverter til VTT", type="primary"):
+                try:
+                    import subtitle_utils
+                    
+                    with st.spinner("Analyserer fil..."):
+                        if uploaded_sub.name.lower().endswith(".srt"):
+                            cues = subtitle_utils.parse_srt(sub_content)
+                        else:
+                            cues = subtitle_utils.parse_vtt(sub_content)
+                            
+                    st.success(f"Fant {len(cues)} linjer. Starter oversettelse...")
+                    
+                    with st.spinner("Oversetter (dette kan ta litt tid)..."):
+                        translated_cues = subtitle_utils.translate_batched(cues, target_lang="no")
+                        
+                    with st.spinner("Genererer VTT..."):
+                        vtt_output = subtitle_utils.generate_vtt(translated_cues)
+                        
+                    st.success("Ferdig!")
+                    
+                    # Create filename
+                    original_name = uploaded_sub.name.rsplit('.', 1)[0]
+                    new_filename = f"{original_name}_NO.vtt"
+                    
+                    st.download_button(
+                        label="Last ned overrsatt VTT-fil",
+                        data=vtt_output,
+                        file_name=new_filename,
+                        mime="text/vtt"
+                    )
+                    
+                except Exception as e:
+                    st.error(f"En feil oppstod: {e}")
+
+    st.divider()
+
     # --- 1. Settings (Max Questions) ---
     st.info("⚙️ **Innstillinger**")
     
@@ -1140,6 +1290,8 @@ def render_admin_panel():
         else:
             st.info("Ingen brukere funnet.")
 
+    st.divider()
+    
     st.divider()
 
     # (Energy Monitoring moved to separate app)
